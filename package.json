@@ -1,0 +1,68 @@
+{
+    "name": "animalallies-frontend",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "lint": "bun run --bun eslint --fix .",
+        "lint:styles": "bun run --bun stylelint **/*.css --fix --ignore-path .gitignore",
+        "format": "bun run --bun prettier . --write --ignore-path .gitignore",
+        "dev": "bun run --bun next dev --turbopack",
+        "build": "bun run --bun next build",
+        "start": "bun run --bun next start",
+        "prepare": "bun run --bun husky"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.(json|md|yaml|yml|Dockerfile)": [
+            "bun run --bun prettier --write --ignore-path .gitignore"
+        ],
+        "*.(js|jsx|mjs|ts|tsx)": [
+            "bun run --bun prettier --write --ignore-path .gitignore",
+            "bun run --bun eslint --fix"
+        ],
+        "*.css": [
+            "bun run --bun stylelint --fix --ignore-path .gitignore"
+        ]
+    },
+    "dependencies": {
+        "@heroui/react": "^2.7.5",
+        "framer-motion": "^12.6.0",
+        "next": "15.2.4",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@eslint/compat": "^1.2.6",
+        "@eslint/eslintrc": "^3",
+        "@eslint/js": "^9.20.0",
+        "@iconify/react": "^5.2.1",
+        "@tailwindcss/postcss": "^4",
+        "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+        "@types/node": "^22.13.13",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "autoprefixer": "^10.4.21",
+        "eslint": "^9",
+        "eslint-config-next": "15.2.4",
+        "eslint-config-prettier": "^10.1.1",
+        "husky": "^9.1.7",
+        "lint-staged": "^15.5.0",
+        "next-themes": "^0.4.4",
+        "postcss": "^8",
+        "prettier": "^3.5.3",
+        "prettier-plugin-tailwindcss": "^0.6.11",
+        "stylelint": "^16.15.0",
+        "stylelint-config-recommended": "^15.0.0",
+        "stylelint-config-tailwindcss": "^1.0.0",
+        "swr": "^2.3.3",
+        "tailwind-merge": "^3.0.2",
+        "tailwindcss": "~3",
+        "tailwindcss-animate": "^1.0.7",
+        "typescript": "^5.8.2",
+        "typescript-eslint": "^8.26.0"
+    }
+}

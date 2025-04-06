@@ -1,0 +1,40 @@
+### Dependencies
+/node_modules/
+
+### Testing
+/coverage/
+
+### Next.js
+/.next/
+/out/
+
+### Vercel
+.vercel/
+
+### Production
+/build/
+
+### Misc
+.DS_Store
+*.pem
+
+### Env files
+.env
+
+### Typescript
+*.tsbuildinfo
+next-env.d.ts
+
+### IDEs and editors
+/.idea/
+/.vscode/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+### Temp directory
+.temp/
+.tmp/

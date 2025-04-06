@@ -1,0 +1,125 @@
+name: Linters
+permissions:
+    contents: read
+    pull-requests: read
+
+on:
+    push:
+        paths:
+            - "**.js"
+            - "**.mjs"
+            - "**.ts"
+            - "**.jsx"
+            - "**.tsx"
+            - "**.html"
+            - "**.css"
+            - ".github/**"
+    pull_request:
+        paths:
+            - "**.js"
+            - "**.ts"
+            - "**.jsx"
+            - "**.tsx"
+            - "**.html"
+            - "**.css"
+            - ".github/**"
+
+jobs:
+    setup:
+        runs-on: ubuntu-latest
+        outputs:
+            cache-key: ${{ steps.cache-deps.outputs.cache-hit }}
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@v4
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.2.2
+
+            - name: Cache dependencies
+              id: cache-deps
+              uses: actions/cache@v4
+              with:
+                  path: ~/.bun/install/cache
+                  key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+                  restore-keys: ${{ runner.os }}-bun-
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+    eslint:
+        runs-on: ubuntu-latest
+        needs: setup
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@v4
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.2.2
+
+            - name: Restore cached dependencies
+              uses: actions/cache@v4
+              with:
+                  path: ~/.bun/install/cache
+                  key: ${{ needs.setup.outputs.cache-key }}
+                  restore-keys: ${{ runner.os }}-bun-
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Run ESLint
+              run: bun run lint
+
+    stylelint:
+        runs-on: ubuntu-latest
+        needs: setup
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@v4
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.2.2
+
+            - name: Restore cached dependencies
+              uses: actions/cache@v4
+              with:
+                  path: ~/.bun/install/cache
+                  key: ${{ needs.setup.outputs.cache-key }}
+                  restore-keys: ${{ runner.os }}-bun-
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Run StyleLint
+              run: bun run lint:styles
+
+    prettier:
+        runs-on: ubuntu-latest
+        needs: setup
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@v4
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.2.2
+
+            - name: Restore cached dependencies
+              uses: actions/cache@v4
+              with:
+                  path: ~/.bun/install/cache
+                  key: ${{ needs.setup.outputs.cache-key }}
+                  restore-keys: ${{ runner.os }}-bun-
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Run Prettier
+              run: bun run format

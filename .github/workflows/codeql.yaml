@@ -1,0 +1,57 @@
+name: CodeQL (JS, TS, GH Actions)
+
+on:
+    push:
+        branches: ["main"]
+        paths:
+            - "**.js"
+            - "**.mjs"
+            - "**.ts"
+            - "**.jsx"
+            - "**.tsx"
+            - "**.html"
+            - ".github/**"
+    pull_request:
+        branches: ["main"]
+        paths:
+            - "**.js"
+            - "**.ts"
+            - "**.jsx"
+            - "**.tsx"
+            - "**.html"
+            - ".github/**"
+    schedule:
+        - cron: "0 0 * * 1"
+
+jobs:
+    analyze:
+        runs-on: "ubuntu-latest"
+        permissions:
+            security-events: write
+            packages: read
+            actions: read
+            contents: read
+        strategy:
+            fail-fast: false
+            matrix:
+                language: ["javascript-typescript", "actions"]
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.2.2
+
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v3
+              with:
+                  languages: ${{ matrix.language }}
+                  dependency-caching: true
+
+            - name: Perform CodeQL Analysis
+              uses: github/codeql-action/analyze@v3
+              with:
+                  category: "/language:${{ matrix.language }}"
