@@ -71,7 +71,6 @@ export default function PasswordInput() {
 
     return (
         <Input
-            className="max-w-xs"
             endContent={
                 <button
                     aria-label="toggle password visibility"
@@ -87,7 +86,7 @@ export default function PasswordInput() {
                 </button>
             }
             label="Пароль"
-            type={isVisible ? "text" : "пароль"}
+            type={isVisible ? "text" : "password"}
             variant="bordered"
         />
     );
