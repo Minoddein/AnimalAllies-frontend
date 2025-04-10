@@ -29,6 +29,7 @@
         ]
     },
     "dependencies": {
+        "@heroui/input": "^2.4.17",
         "@heroui/react": "^2.7.5",
         "framer-motion": "^12.6.0",
         "next": "15.2.4",
