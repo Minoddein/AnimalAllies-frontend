@@ -1,6 +1,7 @@
 "use client";
 
 import PasswordInput from "@/components/password-input";
+import { Link } from "@heroui/link";
 import { Input } from "@heroui/react";
 
 export default function Page() {
@@ -14,6 +15,11 @@ export default function Page() {
                         <PasswordInput />
                     </div>
                 </form>
+                <div className="mx-2 my-4 flex justify-center">
+                    <Link color="foreground" href="/registration">
+                        Ещё нет аккаунта? Создать
+                    </Link>
+                </div>
             </div>
         </main>
     );
