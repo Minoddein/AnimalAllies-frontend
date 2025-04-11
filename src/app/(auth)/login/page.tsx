@@ -12,6 +12,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const formSchema = z.object({
     email: z.string().min(1, "Email обязателен").email("Некорректный email"),
+    password: z
+        .string()
+        .min(6, "Пароль должен содержать минимум 6 символов")
+        .regex(/[A-Z]/, "Пароль должен содержать хотя бы одну заглавную букву")
+        .regex(/[0-9]/, "Пароль должен содержать хотя бы одну цифру"),
 });
 
 export default function Page() {
@@ -25,11 +30,11 @@ export default function Page() {
         resolver: zodResolver(formSchema),
     });
 
-    const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (data) => {
+    const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = (data) => {
         try {
             setIsLoading(true);
             console.log(data);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            // await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (error) {
             console.error(error);
         } finally {
@@ -56,7 +61,11 @@ export default function Page() {
                             isInvalid={!!errors.email}
                             errorMessage={errors.email?.message}
                         />
-                        <PasswordInput />
+                        <PasswordInput
+                            {...register("password")}
+                            isInvalid={!!errors.password}
+                            errorMessage={errors.password?.message}
+                        />
                         <Button type="submit" color="success" isLoading={isLoading}>
                             Вход
                         </Button>

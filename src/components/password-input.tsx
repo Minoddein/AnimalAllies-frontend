@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Input } from "@heroui/react";
+import { Input, InputProps } from "@heroui/react";
 
 export const EyeSlashFilledIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => {
     return (
@@ -62,7 +62,12 @@ export const EyeFilledIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) =>
     );
 };
 
-export default function PasswordInput() {
+interface PasswordInputProps extends InputProps {
+    errorMessage?: string;
+    isInvalid?: boolean;
+}
+
+export default function PasswordInput({ errorMessage, isInvalid, ...props }: PasswordInputProps) {
     const [isVisible, setIsVisible] = React.useState(false);
 
     const toggleVisibility = () => {
@@ -88,6 +93,9 @@ export default function PasswordInput() {
             label="Пароль"
             type={isVisible ? "text" : "password"}
             variant="bordered"
+            isInvalid={isInvalid ?? false}
+            errorMessage={errorMessage}
+            {...props}
         />
     );
 }
