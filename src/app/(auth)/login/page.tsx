@@ -2,7 +2,7 @@
 
 import PasswordInput from "@/components/password-input";
 import { Link } from "@heroui/link";
-import { Input } from "@heroui/react";
+import { Button, Input } from "@heroui/react";
 
 export default function Page() {
     return (
@@ -13,6 +13,7 @@ export default function Page() {
                     <div className="flex flex-col gap-4">
                         <Input label="Email" type="email" variant="bordered" />
                         <PasswordInput />
+                        <Button color="success">Вход</Button>
                     </div>
                 </form>
                 <div className="mx-2 my-4 flex justify-center">
