@@ -33,10 +33,12 @@
         "@heroui/input": "^2.4.17",
         "@heroui/link": "^2.2.14",
         "@heroui/react": "^2.7.5",
+        "@hookform/resolvers": "^5.0.1",
         "framer-motion": "^12.6.0",
         "next": "15.2.4",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
+        "react-hook-form": "^7.55.0",
         "zod": "^3.24.2"
     },
     "devDependencies": {
