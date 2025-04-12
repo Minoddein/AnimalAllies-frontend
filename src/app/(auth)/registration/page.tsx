@@ -44,9 +44,17 @@ const volunteerSchema = baseSchema
 export default function Page() {
     return (
         <main className="flex h-screen items-center justify-center">
-            <div className="w-1/4">
+            <div className="md:w-1/4">
                 <p className="mx-2 my-4 text-center text-2xl">Регистрация</p>
-                <Tabs aria-label="Options">
+                <Tabs
+                    aria-label="RegisterForms"
+                    className="w-full"
+                    classNames={{
+                        tabList: "w-full", // Растягиваем список вкладок
+                        tab: "flex-1", // Каждая вкладка занимает равное пространство
+                        tabContent: "w-full text-center", // Центрируем текст внутри вкладок
+                    }}
+                >
                     <Tab key="user" title="Пользователь">
                         <UserForm />
                     </Tab>
