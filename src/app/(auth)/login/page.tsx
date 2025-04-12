@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import PasswordInput from "@/components/password-input";
+import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Link } from "@heroui/link";
 import { Button, Input } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,34 +50,38 @@ export default function Page() {
 
     return (
         <main className="flex h-screen items-center justify-center">
-            <div className="w-1/4">
-                <p className="mx-2 my-4 text-center text-2xl">Вход в аккаунт</p>
-                <form onSubmit={handleFormSubmit}>
-                    <div className="flex flex-col gap-4">
-                        <Input
-                            label="Email"
-                            type="email"
-                            variant="bordered"
-                            {...register("email")}
-                            isInvalid={!!errors.email}
-                            errorMessage={errors.email?.message}
-                        />
-                        <PasswordInput
-                            {...register("password")}
-                            isInvalid={!!errors.password}
-                            errorMessage={errors.password?.message}
-                        />
-                        <Button type="submit" color="success" isLoading={isLoading}>
-                            Вход
-                        </Button>
-                    </div>
-                </form>
-                <div className="mx-2 my-4 flex justify-center">
+            <Card className="w-1/4">
+                <CardHeader className="justify-center">
+                    <p className="mx-2 my-4 text-2xl">Вход в аккаунт</p>
+                </CardHeader>
+                <CardBody>
+                    <form onSubmit={handleFormSubmit}>
+                        <div className="flex flex-col gap-4">
+                            <Input
+                                label="Email"
+                                type="email"
+                                variant="bordered"
+                                {...register("email")}
+                                isInvalid={!!errors.email}
+                                errorMessage={errors.email?.message}
+                            />
+                            <PasswordInput
+                                {...register("password")}
+                                isInvalid={!!errors.password}
+                                errorMessage={errors.password?.message}
+                            />
+                            <Button type="submit" color="success" isLoading={isLoading}>
+                                Вход
+                            </Button>
+                        </div>
+                    </form>
+                </CardBody>
+                <CardFooter className="mx-2 my-4 flex justify-center">
                     <Link color="foreground" href="/registration">
                         Ещё нет аккаунта? Создать
                     </Link>
-                </div>
-            </div>
+                </CardFooter>
+            </Card>
         </main>
     );
 }
