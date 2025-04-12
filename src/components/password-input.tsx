@@ -63,11 +63,12 @@ export const EyeFilledIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) =>
 };
 
 interface PasswordInputProps extends InputProps {
+    label?: string;
     errorMessage?: string;
     isInvalid?: boolean;
 }
 
-export default function PasswordInput({ errorMessage, isInvalid, ...props }: PasswordInputProps) {
+export default function PasswordInput({ errorMessage, isInvalid, label = "Пароль", ...props }: PasswordInputProps) {
     const [isVisible, setIsVisible] = React.useState(false);
 
     const toggleVisibility = () => {
@@ -90,7 +91,7 @@ export default function PasswordInput({ errorMessage, isInvalid, ...props }: Pas
                     )}
                 </button>
             }
-            label="Пароль"
+            label={label}
             type={isVisible ? "text" : "password"}
             variant="bordered"
             isInvalid={isInvalid ?? false}
