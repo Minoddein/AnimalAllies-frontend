@@ -33,6 +33,7 @@
         "@heroui/input": "^2.4.17",
         "@heroui/link": "^2.2.14",
         "@heroui/react": "^2.7.5",
+        "@heroui/tabs": "^2.2.14",
         "@hookform/resolvers": "^5.0.1",
         "framer-motion": "^12.6.0",
         "next": "15.2.4",
