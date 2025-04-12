@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import PasswordInput from "@/components/password-input";
+import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button, Input } from "@heroui/react";
 import { Tab, Tabs } from "@heroui/tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,25 +45,21 @@ const volunteerSchema = baseSchema
 export default function Page() {
     return (
         <main className="flex h-screen items-center justify-center">
-            <div className="md:w-1/4">
-                <p className="mx-2 my-4 text-center text-2xl">Регистрация</p>
-                <Tabs
-                    aria-label="RegisterForms"
-                    className="w-full"
-                    classNames={{
-                        tabList: "w-full", // Растягиваем список вкладок
-                        tab: "flex-1", // Каждая вкладка занимает равное пространство
-                        tabContent: "w-full text-center", // Центрируем текст внутри вкладок
-                    }}
-                >
-                    <Tab key="user" title="Пользователь">
-                        <UserForm />
-                    </Tab>
-                    <Tab key="volunteer" title="Волонтёр">
-                        <VolunteerForm />
-                    </Tab>
-                </Tabs>
-            </div>
+            <Card className="bg-zinc-950 md:w-1/4">
+                <CardHeader className="justify-center">
+                    <p className="mx-2 my-4 text-2xl">Регистрация</p>
+                </CardHeader>
+                <CardBody>
+                    <Tabs aria-label="RegisterForms" className="w-full" fullWidth>
+                        <Tab key="user" title="Пользователь">
+                            <UserForm />
+                        </Tab>
+                        <Tab key="volunteer" title="Волонтёр">
+                            <VolunteerForm />
+                        </Tab>
+                    </Tabs>
+                </CardBody>
+            </Card>
         </main>
     );
 }
