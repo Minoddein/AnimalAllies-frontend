@@ -50,7 +50,7 @@ export default function Page() {
 
     return (
         <main className="flex h-screen items-center justify-center">
-            <Card className="bg-zinc-950 md:w-1/4">
+            <Card className="w-96 bg-zinc-950 p-2">
                 <CardHeader className="justify-center">
                     <p className="mx-2 my-4 text-2xl">Вход в аккаунт</p>
                 </CardHeader>
