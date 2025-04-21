@@ -50,10 +50,10 @@ const Header = () => {
             </NavbarContent>
             <NavbarContent justify="end">
                 <NavbarItem className="hidden lg:flex">
-                    <Link href="#">Войти</Link>
+                    <Link href="/login">Войти</Link>
                 </NavbarItem>
                 <NavbarItem>
-                    <Button as={Link} color="primary" href="#" variant="flat">
+                    <Button as={Link} color="primary" href="/registration" variant="flat">
                         Регистрация
                     </Button>
                 </NavbarItem>
