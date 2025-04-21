@@ -11,7 +11,7 @@ export default function App() {
     return (
         <main>
             <Header />
-            <div>Здесь будет мой веб</div>
+            <div></div>
         </main>
     );
 }
@@ -44,7 +44,12 @@ const Header = () => {
                 </NavbarItem>
                 <NavbarItem>
                     <Link color="foreground" href="#">
-                        Подать заявку
+                        Заявки
+                    </Link>
+                </NavbarItem>
+                <NavbarItem>
+                    <Link color="foreground" href="#">
+                        События
                     </Link>
                 </NavbarItem>
             </NavbarContent>
