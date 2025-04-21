@@ -14,7 +14,7 @@ export default function App() {
     );
 }
 
-export const AcmeLogo = () => {
+const AcmeLogo = () => {
     return (
         <svg fill="none" height="36" viewBox="0 0 32 32" width="36">
             <path
@@ -27,7 +27,7 @@ export const AcmeLogo = () => {
     );
 };
 
-function Header() {
+const Header = () => {
     return (
         <Navbar isBordered isBlurred={false} maxWidth="full" className="px-4">
             <NavbarBrand>
@@ -63,4 +63,4 @@ function Header() {
             </NavbarContent>
         </Navbar>
     );
-}
+};
