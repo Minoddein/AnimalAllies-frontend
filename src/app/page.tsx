@@ -1,5 +1,5 @@
 "use client";
 
 export default function App() {
-    return <main>Hello, world!</main>;
+    return <main><div>Здесь будет мой веб</div></main>;
 }
