@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import PasswordInput from "@/components/password-input";
 import { RegisterProps, api } from "@/lib/api";
 import { Envelope } from "@/models/envelope";
+import { Alert } from "@heroui/alert";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button, Input } from "@heroui/react";
 import { Tab, Tabs } from "@heroui/tabs";
@@ -59,6 +60,7 @@ export default function Page() {
 function UserForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [messageType, setMessageType] = useState<"success" | "error" | null>(null);
     const router = useRouter();
 
@@ -98,7 +100,7 @@ function UserForm() {
                 router.push("/confirm-email");
             }
         } catch (error) {
-            console.error(error);
+            console.log(error);
             setMessage("Не получилось");
             setMessageType("error");
         } finally {
@@ -110,7 +112,6 @@ function UserForm() {
         e.preventDefault();
         handleSubmit(onSubmit)(e).catch(console.error);
     };
-    //TODO: Пофиксить потом вывод ошибок на более красивое решение
     return (
         <form onSubmit={handleFormSubmit}>
             <div className="flex flex-col gap-4">
@@ -165,15 +166,7 @@ function UserForm() {
                     isInvalid={!!errors.passwordRepeat}
                     errorMessage={errors.passwordRepeat?.message}
                 />
-                {message && (
-                    <div
-                        className={`rounded p-4 text-center ${
-                            messageType === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                        }`}
-                    >
-                        {message}
-                    </div>
-                )}
+                {message && <Alert color={"danger"} title={message} />}
                 <Button type="submit" color="success" isLoading={isLoading} fullWidth className="mt-6">
                     Регистрация
                 </Button>
