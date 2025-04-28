@@ -1,8 +1,8 @@
 import { ErrorType } from "./errorType";
 
 export interface Error {
-    code: string;
-    message: string;
+    errorCode: string;
+    errorMessage: string;
     type: ErrorType;
     invalidField: string;
 }

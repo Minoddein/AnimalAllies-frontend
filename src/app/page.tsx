@@ -11,7 +11,6 @@ export default function App() {
     return (
         <main>
             <Header />
-            <div></div>
         </main>
     );
 }

@@ -5,7 +5,11 @@ import { z } from "zod";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
+import { useRouter } from "next/navigation";
+
 import PasswordInput from "@/components/password-input";
+import { RegisterProps, api } from "@/lib/api";
+import { Envelope } from "@/models/envelope";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button, Input } from "@heroui/react";
 import { Tab, Tabs } from "@heroui/tabs";
@@ -54,6 +58,9 @@ export default function Page() {
 
 function UserForm() {
     const [isLoading, setIsLoading] = useState(false);
+    const [message, setMessage] = useState<string | null>(null);
+    const [messageType, setMessageType] = useState<"success" | "error" | null>(null);
+    const router = useRouter();
 
     const {
         register,
@@ -63,13 +70,37 @@ function UserForm() {
         resolver: zodResolver(userSchema),
     });
 
-    const onSubmit: SubmitHandler<z.infer<typeof userSchema>> = (data) => {
+    const onSubmit: SubmitHandler<z.infer<typeof userSchema>> = async (data) => {
         try {
             setIsLoading(true);
+            setMessage(null);
+            setMessageType(null);
+
             console.log(data);
-            // await new Promise((resolve) => setTimeout(resolve, 100));
+
+            const registerData: RegisterProps = {
+                email: data.email,
+                userName: data.nickname,
+                firstName: data.firstname,
+                secondName: data.secondname,
+                patronymic: data.patronymic || null,
+                password: data.password,
+            };
+
+            const response = await api.register(registerData);
+
+            const result = (await response.json()) as Envelope;
+
+            if (result.result === null) {
+                setMessage(result.errors.map((e) => e.errorMessage).join(",") || "Ошибка регистрации");
+                setMessageType("error");
+            } else {
+                router.push("/confirm-email");
+            }
         } catch (error) {
             console.error(error);
+            setMessage("Не получилось");
+            setMessageType("error");
         } finally {
             setIsLoading(false);
         }
@@ -79,7 +110,7 @@ function UserForm() {
         e.preventDefault();
         handleSubmit(onSubmit)(e).catch(console.error);
     };
-
+    //TODO: Пофиксить потом вывод ошибок на более красивое решение
     return (
         <form onSubmit={handleFormSubmit}>
             <div className="flex flex-col gap-4">
@@ -134,6 +165,15 @@ function UserForm() {
                     isInvalid={!!errors.passwordRepeat}
                     errorMessage={errors.passwordRepeat?.message}
                 />
+                {message && (
+                    <div
+                        className={`rounded p-4 text-center ${
+                            messageType === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        }`}
+                    >
+                        {message}
+                    </div>
+                )}
                 <Button type="submit" color="success" isLoading={isLoading} fullWidth className="mt-6">
                     Регистрация
                 </Button>

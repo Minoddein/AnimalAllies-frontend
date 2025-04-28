@@ -1,7 +1,7 @@
 import { Error } from "./error";
 
-export interface Envelope<T> {
-    result: T | null;
+export interface Envelope {
+    result: object | null;
     errors: Error[];
     timeGenerated: Date;
 }
