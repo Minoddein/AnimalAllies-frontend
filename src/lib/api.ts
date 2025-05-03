@@ -1,13 +1,5 @@
 ﻿import "dotenv/config";
-
-export interface RegisterProps {
-  email: string;
-  userName: string;
-  firstName: string;
-  secondName: string;
-  patronymic: string | null;
-  password: string;
-}
+import { RegisterProps } from "../models/requests/RegisterProps";
 
 export const api = {
   async register(data: RegisterProps): Promise<Response> {
