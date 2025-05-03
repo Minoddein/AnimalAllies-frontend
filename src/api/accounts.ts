@@ -3,27 +3,23 @@ import { RegisterProps } from "@/models/requests/RegisterProps";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { Result } from "@/models/result";
 import axios, { AxiosResponse } from "axios";
-
-const API_URL: string | undefined = process.env.NEXT_PUBLIC_BACKEND_URL;
+import { api } from "./api";
 
 export class AccountsService {
   static async login(
     email: string,
     password: string
   ): Promise<AxiosResponse<Envelope<LoginResponse>>> {
-    return axios.post<Envelope<LoginResponse>>(
-      API_URL + "Account/authentication",
-      {
-        email,
-        password,
-      }
-    );
+    return api.post<Envelope<LoginResponse>>("Account/authentication", {
+      email,
+      password,
+    });
   }
 
   static async register(
     data: RegisterProps
   ): Promise<AxiosResponse<Envelope<Result>>> {
-    return axios.post<Envelope<Result>>(API_URL + "Account/registration", {
+    return api.post<Envelope<Result>>("Account/registration", {
       email: data.email,
       userName: data.userName,
       firstName: data.firstName,
