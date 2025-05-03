@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import PasswordInput from "@/components/password-input";
@@ -10,7 +10,8 @@ import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Link } from "@heroui/link";
 import { Button, Input } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AccountsService } from "@/api/accounts";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z.string().min(1, "Email обязателен").email("Некорректный email"),
@@ -24,9 +25,9 @@ const formSchema = z.object({
 export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
+  const router = useRouter();
 
-  const [accessToken, setAccessToken] = useState("");
-  const [refreshToken, setRefreshToken] = useState("");
+  const { login, accessToken } = useAuth();
 
   const {
     register,
@@ -39,25 +40,19 @@ export default function Page() {
   const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (data) => {
     try {
       setIsLoading(true);
-      console.log(data);
-
-      const response = await AccountsService.login(data.email, data.password);
-      setIsLoading(false);
-
-      if (!response.data.result) {
-        //TODO: Обработать ошибку
-      } else {
-        setAccessToken(response.data.result!.accessToken);
-
-        console.log(response);
-      }
+      await login(data.email, data.password);
     } catch (error) {
       console.error(error);
-    } finally {
       setIsLoading(false);
       setIsError(true);
     }
   };
+
+  useEffect(() => {
+    if (accessToken) {
+      router.push("/");
+    }
+  }, [accessToken]);
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
