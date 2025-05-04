@@ -1,4 +1,3 @@
-
 export interface RegisterProps {
     email: string;
     userName: string;
