@@ -22,6 +22,29 @@ export const AuthProvider = ({ children }: Props) => {
   const [isError, setIsError] = useState(false);
 
   useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const response = await AccountsService.refresh();
+        setAccessToken(response.data.result!.accessToken);
+
+        const user: User = {
+          id: response.data.result!.userId,
+          email: response.data.result!.email,
+          userName: response.data.result!.userName,
+          firstName: response.data.result!.firstName,
+          secondName: response.data.result!.secondName,
+          patronymic: response.data.result?.patronymic,
+        };
+        setUser(user);
+      } catch (error) {
+        console.log("Auto-refresh failed");
+      }
+    };
+
+    initializeAuth();
+  }, []);
+
+  useEffect(() => {
     const accessTokenInterceptor = api.interceptors.request.use((config) => {
       config.headers.Authorization = accessToken
         ? `Bearer ${accessToken}`
@@ -31,19 +54,21 @@ export const AuthProvider = ({ children }: Props) => {
     });
 
     return () => {
-      api.interceptors.response.eject(accessTokenInterceptor);
+      api.interceptors.request.eject(accessTokenInterceptor);
     };
   }, [accessToken]);
 
   useLayoutEffect(() => {
     const refreshInterceptor = api.interceptors.response.use(
-      (config) => config,
+      (response) => response,
       async (error) => {
-        if (error.response.status === 401) {
-          const originalRequest = error.config;
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+
           try {
             const response = await AccountsService.refresh();
-
             setAccessToken(response.data.result!.accessToken);
 
             const user: User = {
@@ -54,25 +79,21 @@ export const AuthProvider = ({ children }: Props) => {
               secondName: response.data.result!.secondName,
               patronymic: response.data.result?.patronymic,
             };
-
             setUser(user);
 
             originalRequest.headers.Authorization = `Bearer ${response.data.result!.accessToken}`;
-
             return api(originalRequest);
-          } catch {
+          } catch (refreshError) {
             setAccessToken(undefined);
             setUser(undefined);
+            return Promise.reject(refreshError);
           }
         }
-
         return Promise.reject(error);
       }
     );
 
-    return () => {
-      api.interceptors.response.eject(refreshInterceptor);
-    };
+    return () => api.interceptors.response.eject(refreshInterceptor);
   }, []);
 
   const login = async (email: string, password: string) => {
