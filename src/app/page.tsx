@@ -87,10 +87,8 @@ const Header = () => {
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile Actions" variant="flat">
               <DropdownItem key="profile" className="h-14 gap-2">
-                <p className="font-semibold">Вошёл как</p>
-                <p className="font-semibold">{user.email}</p>
+                <p className="font-semibold">{user.userName}</p>
               </DropdownItem>
-              <DropdownItem key="profile">Профиль</DropdownItem>
               <DropdownItem key="settings">Настройки</DropdownItem>
               <DropdownItem key="statistic">Статистика</DropdownItem>
               <DropdownItem key="help_and_feedback">Помощь</DropdownItem>

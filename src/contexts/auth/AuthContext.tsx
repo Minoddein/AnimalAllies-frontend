@@ -7,6 +7,7 @@ type AuthContextType = {
   accessToken: string | undefined;
   user: User | undefined;
   login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -21,23 +22,30 @@ export const AuthProvider = ({ children }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
+  const updateAuthData = (data: any) => {
+    setAccessToken(data.accessToken);
+    setUser({
+      id: data.userId,
+      email: data.email,
+      userName: data.userName,
+      firstName: data.firstName,
+      secondName: data.secondName,
+      patronymic: data.patronymic,
+    });
+  };
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        setIsLoading(true);
         const response = await AccountsService.refresh();
-        setAccessToken(response.data.result!.accessToken);
-
-        const user: User = {
-          id: response.data.result!.userId,
-          email: response.data.result!.email,
-          userName: response.data.result!.userName,
-          firstName: response.data.result!.firstName,
-          secondName: response.data.result!.secondName,
-          patronymic: response.data.result?.patronymic,
-        };
-        setUser(user);
+        if (response.data.result) {
+          updateAuthData(response.data.result);
+        }
       } catch (error) {
         console.log("Auto-refresh failed");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -45,21 +53,21 @@ export const AuthProvider = ({ children }: Props) => {
   }, []);
 
   useEffect(() => {
-    const accessTokenInterceptor = api.interceptors.request.use((config) => {
-      config.headers.Authorization = accessToken
-        ? `Bearer ${accessToken}`
-        : config.headers.Authorization;
-
+    const requestInterceptor = api.interceptors.request.use((config) => {
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+        console.log(`access interceptor`);
+      }
       return config;
     });
 
     return () => {
-      api.interceptors.request.eject(accessTokenInterceptor);
+      api.interceptors.request.eject(requestInterceptor);
     };
   }, [accessToken]);
 
   useLayoutEffect(() => {
-    const refreshInterceptor = api.interceptors.response.use(
+    const responseInterceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
@@ -69,71 +77,56 @@ export const AuthProvider = ({ children }: Props) => {
 
           try {
             const response = await AccountsService.refresh();
-            setAccessToken(response.data.result!.accessToken);
-
-            const user: User = {
-              id: response.data.result!.userId,
-              email: response.data.result!.email,
-              userName: response.data.result!.userName,
-              firstName: response.data.result!.firstName,
-              secondName: response.data.result!.secondName,
-              patronymic: response.data.result?.patronymic,
-            };
-            setUser(user);
-
-            originalRequest.headers.Authorization = `Bearer ${response.data.result!.accessToken}`;
-            return api(originalRequest);
+            if (response.data.result) {
+              updateAuthData(response.data.result);
+              console.log(`refresh interceptor` + response);
+              originalRequest.headers.Authorization = `Bearer ${response.data.result.accessToken}`;
+              return api(originalRequest);
+            }
           } catch (refreshError) {
             setAccessToken(undefined);
             setUser(undefined);
             return Promise.reject(refreshError);
           }
         }
+
         return Promise.reject(error);
       }
     );
 
-    return () => api.interceptors.response.eject(refreshInterceptor);
+    return () => {
+      api.interceptors.response.eject(responseInterceptor);
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
+      setIsError(false);
 
       const response = await AccountsService.login(email, password);
-      setIsLoading(false);
-
-      if (!response.data.result) {
-        throw new Error("auth error");
+      if (response.data.result) {
+        updateAuthData(response.data.result);
       } else {
-        setAccessToken(response.data.result!.accessToken);
-
-        const user: User = {
-          id: response.data.result!.userId,
-          email: response.data.result!.email,
-          userName: response.data.result!.userName,
-          firstName: response.data.result!.firstName,
-          secondName: response.data.result!.secondName,
-          patronymic: response.data.result?.patronymic,
-        };
-
-        setUser(user);
-
-        setIsLoading(false);
-
-        console.log(response);
+        throw new Error("Authentication failed");
       }
     } catch (error) {
       console.error(error);
-      setIsLoading(false);
       setIsError(true);
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
+  const logout = () => {
+    setAccessToken(undefined);
+    setUser(undefined);
+    // Здесь можно добавить вызов API для logout
+  };
+
   return (
-    <AuthContext.Provider value={{ accessToken, user, login }}>
+    <AuthContext.Provider value={{ accessToken, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
