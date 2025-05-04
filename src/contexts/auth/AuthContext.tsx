@@ -86,6 +86,18 @@ export const AuthProvider = ({ children }: Props) => {
         throw new Error("auth error");
       } else {
         setAccessToken(response.data.result!.accessToken);
+
+        const user: User = {
+          id: response.data.result!.userId,
+          email: response.data.result!.email,
+          userName: response.data.result!.userName,
+          firstName: response.data.result!.firstName,
+          secondName: response.data.result!.secondName,
+          patronymic: response.data.result?.patronymic,
+        };
+
+        setUser(user);
+
         setIsLoading(false);
 
         console.log(response);
