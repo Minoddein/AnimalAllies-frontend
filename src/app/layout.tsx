@@ -1,12 +1,6 @@
-"use client";
-
-import React, { useState } from "react";
-
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import { Providers } from "@/components/providres";
-import siteMetadata from "@/conf/site-metadata";
 import "@/styles/globals.css";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
 

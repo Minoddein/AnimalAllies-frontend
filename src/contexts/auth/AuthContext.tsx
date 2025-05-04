@@ -1,9 +1,10 @@
+"use client";
+
 import { AccountsService } from "@/api/accounts";
 import { api } from "@/api/api";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { User } from "@/models/user";
 import { createContext, useEffect, useLayoutEffect, useState } from "react";
-import { boolean } from "zod";
 
 type AuthContextType = {
   accessToken: string | undefined;
@@ -15,7 +16,7 @@ type AuthContextType = {
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
+  undefined,
 );
 
 type Props = { children: React.ReactNode };
@@ -60,7 +61,7 @@ export const AuthProvider = ({ children }: Props) => {
       }
     };
 
-    initializeAuth();
+    void initializeAuth();
   }, []);
 
   useEffect(() => {
@@ -96,7 +97,7 @@ export const AuthProvider = ({ children }: Props) => {
           }
         }
         return Promise.reject(error);
-      }
+      },
     );
 
     return () => api.interceptors.response.eject(refreshInterceptor);
