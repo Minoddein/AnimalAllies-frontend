@@ -7,4 +7,6 @@ export interface LoginResponse {
   firstName: string;
   secondName: string;
   patronymic: string | null;
+  roles: string[];
+  permissions: string[];
 }

@@ -1,5 +1,6 @@
 import { AccountsService } from "@/api/accounts";
 import { api } from "@/api/api";
+import { LoginResponse } from "@/models/responses/loginResponse";
 import { User } from "@/models/user";
 import { createContext, useEffect, useLayoutEffect, useState } from "react";
 
@@ -21,21 +22,27 @@ export const AuthProvider = ({ children }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
+  const initData = (response: LoginResponse) => {
+    setAccessToken(response.accessToken);
+
+    const user: User = {
+      id: response.userId,
+      email: response.email,
+      userName: response.userName,
+      firstName: response.firstName,
+      secondName: response.secondName,
+      patronymic: response.patronymic,
+      roles: response.roles,
+      permissions: response.permissions,
+    };
+    setUser(user);
+  };
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
         const response = await AccountsService.refresh();
-        setAccessToken(response.data.result!.accessToken);
-
-        const user: User = {
-          id: response.data.result!.userId,
-          email: response.data.result!.email,
-          userName: response.data.result!.userName,
-          firstName: response.data.result!.firstName,
-          secondName: response.data.result!.secondName,
-          patronymic: response.data.result?.patronymic,
-        };
-        setUser(user);
+        initData(response.data.result!);
       } catch (error) {
         console.log("Auto-refresh failed");
       }
@@ -67,17 +74,7 @@ export const AuthProvider = ({ children }: Props) => {
 
           try {
             const response = await AccountsService.refresh();
-            setAccessToken(response.data.result!.accessToken);
-
-            const user: User = {
-              id: response.data.result!.userId,
-              email: response.data.result!.email,
-              userName: response.data.result!.userName,
-              firstName: response.data.result!.firstName,
-              secondName: response.data.result!.secondName,
-              patronymic: response.data.result?.patronymic,
-            };
-            setUser(user);
+            initData(response.data.result!);
 
             originalRequest.headers.Authorization = `Bearer ${response.data.result!.accessToken}`;
             return api(originalRequest);
@@ -103,18 +100,7 @@ export const AuthProvider = ({ children }: Props) => {
       if (!response.data.result) {
         throw new Error("auth error");
       } else {
-        setAccessToken(response.data.result!.accessToken);
-
-        const user: User = {
-          id: response.data.result!.userId,
-          email: response.data.result!.email,
-          userName: response.data.result!.userName,
-          firstName: response.data.result!.firstName,
-          secondName: response.data.result!.secondName,
-          patronymic: response.data.result?.patronymic,
-        };
-
-        setUser(user);
+        initData(response.data.result!);
 
         setIsLoading(false);
 

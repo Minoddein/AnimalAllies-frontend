@@ -5,4 +5,6 @@ export interface User {
   firstName: string;
   secondName: string;
   patronymic: string | null | undefined;
+  roles: string[];
+  permissions: string[];
 }
