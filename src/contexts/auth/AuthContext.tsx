@@ -3,11 +3,14 @@ import { api } from "@/api/api";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { User } from "@/models/user";
 import { createContext, useEffect, useLayoutEffect, useState } from "react";
+import { boolean } from "zod";
 
 type AuthContextType = {
   accessToken: string | undefined;
   user: User | undefined;
   login: (email: string, password: string) => Promise<void>;
+  hasRole: (role: string) => Boolean;
+  hasPermission: (permission: string) => Boolean;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -36,6 +39,14 @@ export const AuthProvider = ({ children }: Props) => {
       permissions: response.permissions,
     };
     setUser(user);
+  };
+
+  const hasRole = (role: string) => {
+    return user?.roles?.includes(role) || false;
+  };
+
+  const hasPermission = (permission: string) => {
+    return user?.permissions?.includes(permission) || false;
   };
 
   useEffect(() => {
@@ -116,7 +127,9 @@ export const AuthProvider = ({ children }: Props) => {
   };
 
   return (
-    <AuthContext.Provider value={{ accessToken, user, login }}>
+    <AuthContext.Provider
+      value={{ accessToken, user, login, hasRole, hasPermission }}
+    >
       {children}
     </AuthContext.Provider>
   );
