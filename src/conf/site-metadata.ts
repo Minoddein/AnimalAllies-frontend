@@ -2,7 +2,7 @@ const siteMetadata = {
     name: "AnimalAllies",
     shortName: "AnimalAllies",
     description: "Платформа волонтёрской помощи животным",
-    repoUrl: "https://github.com/code-418-dpr/KNTista",
+    repoUrl: "https://github.com/McConderEz/AnimalAllies-frontend",
     authors: { name: "Код 418", url: "https://github.com/code-418-dpr" },
     email: "s.scorpi-on@ya.ru",
     /* appIcon: {
