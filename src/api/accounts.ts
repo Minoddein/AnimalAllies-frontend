@@ -29,6 +29,10 @@ export class AccountsService {
     });
   }
 
+  static async logout(): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<Result>>("Account/logout", {});
+  }
+
   static async refresh() {
     return axios.post<Envelope<LoginResponse>>(
       `${API_URL}Account/refreshing`,

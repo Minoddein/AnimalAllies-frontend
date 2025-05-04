@@ -9,6 +9,7 @@ type AuthContextType = {
   accessToken: string | undefined;
   user: User | undefined;
   login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   hasRole: (role: string) => Boolean;
   hasPermission: (permission: string) => Boolean;
 };
@@ -101,6 +102,15 @@ export const AuthProvider = ({ children }: Props) => {
     return () => api.interceptors.response.eject(refreshInterceptor);
   }, []);
 
+  const logout = async () => {
+    const response = await AccountsService.logout();
+    console.log(response);
+    if (response.data.result?.IsSucess) {
+      setAccessToken(undefined);
+      setUser(undefined);
+    }
+  };
+
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
@@ -128,7 +138,7 @@ export const AuthProvider = ({ children }: Props) => {
 
   return (
     <AuthContext.Provider
-      value={{ accessToken, user, login, hasRole, hasPermission }}
+      value={{ accessToken, user, login, logout, hasRole, hasPermission }}
     >
       {children}
     </AuthContext.Provider>
