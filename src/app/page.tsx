@@ -6,6 +6,8 @@ import Link from "next/link";
 
 import { Button } from "@heroui/button";
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@heroui/react";
+import { useContext } from "react";
+import { AuthContext } from "@/contexts/auth/AuthContext";
 
 export default function App() {
   return (
@@ -24,6 +26,8 @@ const AnimalAlliesLogo = () => {
 };
 
 const Header = () => {
+  const accessToken = useContext(AuthContext)?.accessToken;
+
   return (
     <Navbar isBordered isBlurred={false} maxWidth="full" className="px-4">
       <NavbarBrand className="flex justify-normal gap-2">
@@ -53,14 +57,30 @@ const Header = () => {
         </NavbarItem>
       </NavbarContent>
       <NavbarContent justify="end">
-        <NavbarItem className="hidden lg:flex">
-          <Link href="/login">Войти</Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Button as={Link} color="primary" href="/registration" variant="flat">
-            Регистрация
-          </Button>
-        </NavbarItem>
+        {/* Условный рендеринг для авторизованных/неавторизованных пользователей */}
+        {accessToken ? (
+          // Если accessToken существует, показываем вкладку "Профиль"
+          <NavbarItem className="hidden lg:flex">
+            <Link href="/profile">Профиль</Link>
+          </NavbarItem>
+        ) : (
+          // Если accessToken отсутствует, показываем "Войти" и "Регистрация"
+          <>
+            <NavbarItem className="hidden lg:flex">
+              <Link href="/login">Войти</Link>
+            </NavbarItem>
+            <NavbarItem>
+              <Button
+                as={Link}
+                color="primary"
+                href="/registration"
+                variant="flat"
+              >
+                Регистрация
+              </Button>
+            </NavbarItem>
+          </>
+        )}
       </NavbarContent>
     </Navbar>
   );

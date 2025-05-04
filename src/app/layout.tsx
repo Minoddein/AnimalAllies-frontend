@@ -17,8 +17,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [accessToken, setAccessToken] = useState("");
-
   return (
     <html lang="ru" suppressHydrationWarning>
       <body className={inter.className}>

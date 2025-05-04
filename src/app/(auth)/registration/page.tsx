@@ -8,7 +8,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
 import PasswordInput from "@/components/password-input";
-import { api } from "@/lib/api";
 import { RegisterProps } from "@/models/requests/RegisterProps";
 import { Envelope } from "@/models/envelope";
 import { Alert } from "@heroui/alert";

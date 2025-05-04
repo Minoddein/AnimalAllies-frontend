@@ -45,6 +45,8 @@ export default function Page() {
       console.error(error);
       setIsLoading(false);
       setIsError(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 

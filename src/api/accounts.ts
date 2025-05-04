@@ -3,7 +3,7 @@ import { RegisterProps } from "@/models/requests/RegisterProps";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { Result } from "@/models/result";
 import axios, { AxiosResponse } from "axios";
-import { api } from "./api";
+import { api, API_URL } from "./api";
 
 export class AccountsService {
   static async login(
@@ -27,5 +27,15 @@ export class AccountsService {
       patronymic: data.patronymic,
       password: data.password,
     });
+  }
+
+  static async refresh() {
+    return axios.post<Envelope<LoginResponse>>(
+      `${API_URL}Account/refreshing`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
   }
 }

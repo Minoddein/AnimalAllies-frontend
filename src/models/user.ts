@@ -4,5 +4,5 @@ export interface User {
   email: string;
   firstName: string;
   secondName: string;
-  Patronymic: string;
+  patronymic: string | null | undefined;
 }
