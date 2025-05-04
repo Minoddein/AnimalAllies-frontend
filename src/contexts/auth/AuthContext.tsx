@@ -1,31 +1,34 @@
 "use client";
 
-import { AccountsService } from "@/api/accounts";
 import { api } from "@/api/api";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { User } from "@/models/user";
 import { createContext, useEffect, useLayoutEffect, useState } from "react";
+import { AxiosResponse } from "axios";
+import { login, logout, refresh } from "@/api/accounts";
 
-type AuthContextType = {
+interface AuthContextType {
   accessToken: string | undefined;
   user: User | undefined;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  hasRole: (role: string) => Boolean;
-  hasPermission: (permission: string) => Boolean;
-};
+  handleLogin: (email: string, password: string) => Promise<void>;
+  handleLogout: () => Promise<void>;
+  hasRole: (role: string) => boolean | undefined;
+  hasPermission: (permission: string) => boolean | undefined;
+}
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
 
-type Props = { children: React.ReactNode };
+interface Props {
+  children: React.ReactNode;
+}
 
 export const AuthProvider = ({ children }: Props) => {
   const [accessToken, setAccessToken] = useState<string | undefined>();
   const [user, setUser] = useState<User | undefined>();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const [, setIsLoading] = useState(false);
+  const [, setIsError] = useState(false);
 
   const initData = (response: LoginResponse) => {
     setAccessToken(response.accessToken);
@@ -44,19 +47,19 @@ export const AuthProvider = ({ children }: Props) => {
   };
 
   const hasRole = (role: string) => {
-    return user?.roles?.includes(role) || false;
+    return user?.roles.includes(role);
   };
 
   const hasPermission = (permission: string) => {
-    return user?.permissions?.includes(permission) || false;
+    return user?.permissions.includes(permission);
   };
 
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const response = await AccountsService.refresh();
+        const response = await refresh();
         initData(response.data.result!);
-      } catch (error) {
+      } catch {
         console.log("Auto-refresh failed");
       }
     };
@@ -81,30 +84,32 @@ export const AuthProvider = ({ children }: Props) => {
   useLayoutEffect(() => {
     const refreshInterceptor = api.interceptors.response.use(
       (config) => config,
-      async (error) => {
-        if (error.response?.status === 401) {
+      async (error: AxiosResponse<Response, Error>) => {
+        if (error.status === 401) {
           const originalRequest = error.config;
 
           try {
-            const response = await AccountsService.refresh();
+            const response = await refresh();
             initData(response.data.result!);
 
             originalRequest.headers.Authorization = `Bearer ${response.data.result!.accessToken}`;
-            return api(originalRequest);
-          } catch (refreshError) {
+            return await api(originalRequest);
+          } catch {
             setAccessToken(undefined);
             setUser(undefined);
           }
         }
-        return Promise.reject(error);
+        return Promise.reject(new Error("Unauthorized"));
       },
     );
 
-    return () => api.interceptors.response.eject(refreshInterceptor);
+    return () => {
+      api.interceptors.response.eject(refreshInterceptor);
+    };
   }, []);
 
-  const logout = async () => {
-    const response = await AccountsService.logout();
+  const handleLogout = async () => {
+    const response = await logout();
     console.log(response);
     if (response.data.result?.IsSucess) {
       setAccessToken(undefined);
@@ -112,17 +117,17 @@ export const AuthProvider = ({ children }: Props) => {
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const handleLogin = async (email: string, password: string) => {
     try {
       setIsLoading(true);
 
-      const response = await AccountsService.login(email, password);
+      const response = await login(email, password);
       setIsLoading(false);
 
       if (!response.data.result) {
         throw new Error("auth error");
       } else {
-        initData(response.data.result!);
+        initData(response.data.result);
 
         setIsLoading(false);
 
@@ -139,7 +144,14 @@ export const AuthProvider = ({ children }: Props) => {
 
   return (
     <AuthContext.Provider
-      value={{ accessToken, user, login, logout, hasRole, hasPermission }}
+      value={{
+        accessToken,
+        user,
+        handleLogin,
+        handleLogout,
+        hasRole,
+        hasPermission,
+      }}
     >
       {children}
     </AuthContext.Provider>

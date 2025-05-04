@@ -24,10 +24,10 @@ const formSchema = z.object({
 
 export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const [, setIsError] = useState(false);
   const router = useRouter();
 
-  const { login, accessToken } = useAuth();
+  const { handleLogin, accessToken } = useAuth();
 
   const {
     register,
@@ -40,7 +40,7 @@ export default function Page() {
   const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (data) => {
     try {
       setIsLoading(true);
-      await login(data.email, data.password);
+      await handleLogin(data.email, data.password);
     } catch (error) {
       console.error(error);
       setIsLoading(false);
@@ -54,7 +54,7 @@ export default function Page() {
     if (accessToken) {
       router.push("/");
     }
-  }, [accessToken]);
+  }, [accessToken, router]);
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();

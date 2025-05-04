@@ -9,13 +9,12 @@ import { useRouter } from "next/navigation";
 
 import PasswordInput from "@/components/password-input";
 import { RegisterProps } from "@/models/requests/RegisterProps";
-import { Envelope } from "@/models/envelope";
 import { Alert } from "@heroui/alert";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button, Input } from "@heroui/react";
 import { Tab, Tabs } from "@heroui/tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AccountsService } from "@/api/accounts";
+import { register } from "@/api/accounts";
 
 // Базовая схема с общими полями
 const baseSchema = z.object({
@@ -39,7 +38,7 @@ const userSchema = baseSchema.refine(
   {
     message: "Пароли не совпадают",
     path: ["passwordRepeat"],
-  }
+  },
 );
 
 export default function Page() {
@@ -64,14 +63,11 @@ export default function Page() {
 function UserForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [messageType, setMessageType] = useState<"success" | "error" | null>(
-    null
-  );
+  const [, setMessageType] = useState<"success" | "error" | null>(null);
   const router = useRouter();
 
   const {
-    register,
+    register: registerValidator,
     handleSubmit,
     formState: { errors },
   } = useForm({
@@ -95,12 +91,12 @@ function UserForm() {
         password: data.password,
       };
 
-      const response = await AccountsService.register(registerData);
+      const response = await register(registerData);
 
       if (!response.data.result) {
         setMessage(
           response.data.errors.map((e) => e.errorMessage).join(",") ||
-            "Ошибка регистрации"
+            "Ошибка регистрации",
         );
         setMessageType("error");
       } else {
@@ -126,7 +122,7 @@ function UserForm() {
           label="Email"
           type="email"
           variant="bordered"
-          {...register("email")}
+          {...registerValidator("email")}
           isInvalid={!!errors.email}
           errorMessage={errors.email?.message}
         />
@@ -134,7 +130,7 @@ function UserForm() {
           label="Никнейм"
           type="text"
           variant="bordered"
-          {...register("nickname")}
+          {...registerValidator("nickname")}
           isInvalid={!!errors.nickname}
           errorMessage={errors.nickname?.message}
         />
@@ -142,7 +138,7 @@ function UserForm() {
           label="Имя"
           type="text"
           variant="bordered"
-          {...register("firstname")}
+          {...registerValidator("firstname")}
           isInvalid={!!errors.firstname}
           errorMessage={errors.firstname?.message}
         />
@@ -150,7 +146,7 @@ function UserForm() {
           label="Фамилия"
           type="text"
           variant="bordered"
-          {...register("secondname")}
+          {...registerValidator("secondname")}
           isInvalid={!!errors.secondname}
           errorMessage={errors.secondname?.message}
         />
@@ -158,18 +154,18 @@ function UserForm() {
           label="Отчество"
           type="text"
           variant="bordered"
-          {...register("patronymic")}
+          {...registerValidator("patronymic")}
           isInvalid={!!errors.patronymic}
           errorMessage={errors.patronymic?.message}
         />
         <PasswordInput
-          {...register("password")}
+          {...registerValidator("password")}
           isInvalid={!!errors.password}
           errorMessage={errors.password?.message}
         />
         <PasswordInput
           label="Повторите пароль"
-          {...register("passwordRepeat")}
+          {...registerValidator("passwordRepeat")}
           isInvalid={!!errors.passwordRepeat}
           errorMessage={errors.passwordRepeat?.message}
         />

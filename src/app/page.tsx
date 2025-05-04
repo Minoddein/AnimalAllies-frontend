@@ -16,10 +16,8 @@ import {
   NavbarContent,
   NavbarItem,
 } from "@heroui/react";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { AuthContext } from "@/contexts/auth/AuthContext";
-import { User } from "@/models/user";
-import { useRouter } from "next/navigation";
 
 export default function App() {
   return (
@@ -38,14 +36,13 @@ const AnimalAlliesLogo = () => {
 };
 
 const Header = () => {
-  const { accessToken, user, logout } = useContext(AuthContext)!;
-  const router = useRouter();
+  const { accessToken, user, handleLogout } = useContext(AuthContext)!;
 
   console.log(user);
 
-  const handleLogout = async () => {
+  const handleOnClickLogout = async () => {
     try {
-      await logout();
+      await handleLogout();
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -101,7 +98,11 @@ const Header = () => {
               <DropdownItem key="settings">Настройки</DropdownItem>
               <DropdownItem key="statistic">Статистика</DropdownItem>
               <DropdownItem key="help_and_feedback">Помощь</DropdownItem>
-              <DropdownItem key="logout" color="danger" onClick={handleLogout}>
+              <DropdownItem
+                key="logout"
+                color="danger"
+                onPressEnd={() => handleOnClickLogout}
+              >
                 Выйти
               </DropdownItem>
             </DropdownMenu>
