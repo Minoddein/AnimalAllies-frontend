@@ -21,7 +21,7 @@ import {
     useDisclosure,
 } from "@heroui/react";
 import ModalOrDrawer from "@/components/modal-or-drawer";
-import RegistrationFrom from "@/app/_components/auth/registration-from";
+import AuthForm from "@/app/_components/auth/auth-form";
 
 export default function App() {
     return (
@@ -119,21 +119,13 @@ const Header = () => {
                     </Dropdown>
                 ) : (
                     <>
-                        <NavbarItem className="hidden lg:flex">
+                        <NavbarItem className="flex">
                             <Button variant="light" onPress={onLoginOpen}>
                                 Войти
                             </Button>
                             <ModalOrDrawer label="Вход" isOpen={isLoginOpen}
                                            onOpenChangeAction={onLoginOpenChange}>
-                            </ModalOrDrawer>
-                        </NavbarItem>
-                        <NavbarItem>
-                            <Button color="primary" variant="flat" onPress={onRegistrationOpen}>
-                                Регистрация
-                            </Button>
-                            <ModalOrDrawer label="Регистрация" isOpen={isRegistrationOpen}
-                                           onOpenChangeAction={onRegistrationOpenChange}>
-                                <RegistrationFrom/>
+                                <AuthForm/>
                             </ModalOrDrawer>
                         </NavbarItem>
                     </>
