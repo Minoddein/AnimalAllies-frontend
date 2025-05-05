@@ -1,15 +1,15 @@
 "use client";
 
-import { PawPrintIcon as Paw } from "lucide-react";
+import {PawPrintIcon as Paw} from "lucide-react";
 
-import { useContext } from "react";
+import {useContext} from "react";
 
 import Link from "next/link";
 
-import { AuthContext } from "@/contexts/auth/AuthContext";
-import { Button } from "@heroui/button";
+import {AuthContext} from "@/contexts/auth/AuthContext";
 import {
     Avatar,
+    Button,
     Dropdown,
     DropdownItem,
     DropdownMenu,
@@ -18,12 +18,15 @@ import {
     NavbarBrand,
     NavbarContent,
     NavbarItem,
+    useDisclosure,
 } from "@heroui/react";
+import ModalOrDrawer from "@/components/modal-or-drawer";
+import RegistrationFrom from "@/app/_components/auth/registration-from";
 
 export default function App() {
     return (
         <main>
-            <Header />
+            <Header/>
         </main>
     );
 }
@@ -31,13 +34,23 @@ export default function App() {
 const AnimalAlliesLogo = () => {
     return (
         <div className="flex items-center gap-1">
-            <Paw size={28} className="text-primary" />
+            <Paw size={28} className="text-primary"/>
         </div>
     );
 };
 
 const Header = () => {
-    const { accessToken, user, handleLogout } = useContext(AuthContext)!;
+    const {
+        isOpen: isRegistrationOpen,
+        onOpen: onRegistrationOpen,
+        onOpenChange: onRegistrationOpenChange
+    } = useDisclosure();
+    const {
+        isOpen: isLoginOpen,
+        onOpen: onLoginOpen,
+        onOpenChange: onLoginOpenChange
+    } = useDisclosure();
+    const {accessToken, user, handleLogout} = useContext(AuthContext)!;
 
     console.log(user);
 
@@ -52,7 +65,7 @@ const Header = () => {
     return (
         <Navbar isBordered isBlurred={false} maxWidth="full" className="px-4">
             <NavbarBrand className="flex justify-normal gap-2">
-                <AnimalAlliesLogo />
+                <AnimalAlliesLogo/>
                 <p className="font-bold text-inherit">AnimalAllies</p>
             </NavbarBrand>
             <NavbarContent className="hidden gap-4 sm:flex" justify="center">
@@ -107,12 +120,21 @@ const Header = () => {
                 ) : (
                     <>
                         <NavbarItem className="hidden lg:flex">
-                            <Link href="/login">Войти</Link>
+                            <Button variant="light" onPress={onLoginOpen}>
+                                Войти
+                            </Button>
+                            <ModalOrDrawer label="Вход" isOpen={isLoginOpen}
+                                           onOpenChangeAction={onLoginOpenChange}>
+                            </ModalOrDrawer>
                         </NavbarItem>
                         <NavbarItem>
-                            <Button as={Link} color="primary" href="/registration" variant="flat">
+                            <Button color="primary" variant="flat" onPress={onRegistrationOpen}>
                                 Регистрация
                             </Button>
+                            <ModalOrDrawer label="Регистрация" isOpen={isRegistrationOpen}
+                                           onOpenChangeAction={onRegistrationOpenChange}>
+                                <RegistrationFrom/>
+                            </ModalOrDrawer>
                         </NavbarItem>
                     </>
                 )}
