@@ -40,16 +40,7 @@ const AnimalAlliesLogo = () => {
 };
 
 const Header = () => {
-    const {
-        isOpen: isRegistrationOpen,
-        onOpen: onRegistrationOpen,
-        onOpenChange: onRegistrationOpenChange
-    } = useDisclosure();
-    const {
-        isOpen: isLoginOpen,
-        onOpen: onLoginOpen,
-        onOpenChange: onLoginOpenChange
-    } = useDisclosure();
+    const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const {accessToken, user, handleLogout} = useContext(AuthContext)!;
 
     console.log(user);
@@ -120,11 +111,11 @@ const Header = () => {
                 ) : (
                     <>
                         <NavbarItem className="flex">
-                            <Button variant="light" onPress={onLoginOpen}>
+                            <Button variant="light" onPress={onOpen}>
                                 Войти
                             </Button>
-                            <ModalOrDrawer label="Вход" isOpen={isLoginOpen}
-                                           onOpenChangeAction={onLoginOpenChange}>
+                            <ModalOrDrawer label="Вход" isOpen={isOpen}
+                                           onOpenChangeAction={onOpenChange}>
                                 <AuthForm/>
                             </ModalOrDrawer>
                         </NavbarItem>
