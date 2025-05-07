@@ -1,77 +1,30 @@
 "use client";
 
-import { z } from "zod";
-
-import React, { useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-
-import { useRouter } from "next/navigation";
-
-import { register } from "@/api/accounts";
+import React, {useState} from "react";
+import {SubmitHandler, useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {z} from "zod";
+import {RegisterProps} from "@/models/requests/RegisterProps";
+import {register} from "@/api/accounts";
+import {addToast, Button, Input} from "@heroui/react";
 import PasswordInput from "@/components/password-input";
-import { RegisterProps } from "@/models/requests/RegisterProps";
-import { Alert } from "@heroui/alert";
-import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Button, Input } from "@heroui/react";
-import { Tab, Tabs } from "@heroui/tabs";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {Alert} from "@heroui/alert";
+import {baseRegistrationSchema} from "@/schemas/base-registration-schema";
 
-// Базовая схема с общими полями
-const baseSchema = z.object({
-    email: z.string().min(1, "Email обязателен").email("Некорректный email"),
-    nickname: z.string().min(1, "Никнейм обязателен"),
-    firstname: z.string().min(1, "Имя обязательно"),
-    secondname: z.string().min(1, "Фамилия обязательна"),
-    patronymic: z.string(),
-    password: z
-        .string()
-        .min(8, "Пароль должен содержать минимум 8 символов")
-        .regex(/[A-ZА-ЯЁ]/, "Пароль должен содержать хотя бы одну заглавную букву")
-        .regex(/[a-zа-яё]/, "Пароль должен содержать хотя бы одну строчную букву")
-        .regex(/[0-9]/, "Пароль должен содержать хотя бы одну цифру"),
-    passwordRepeat: z.string(),
-});
-
-// Схема для пользователя
-const userSchema = baseSchema.refine((data) => data.password === data.passwordRepeat, {
-    message: "Пароли не совпадают",
-    path: ["passwordRepeat"],
-});
-
-export default function Page() {
-    return (
-        <main className="flex h-screen items-center justify-center">
-            <Card className="w-96 bg-zinc-950 p-2">
-                <CardHeader className="justify-center">
-                    <p className="mx-2 my-4 text-2xl">Регистрация</p>
-                </CardHeader>
-                <CardBody>
-                    <Tabs aria-label="RegisterForms" className="w-full" fullWidth>
-                        <Tab key="user" title="Пользователь">
-                            <UserForm />
-                        </Tab>
-                    </Tabs>
-                </CardBody>
-            </Card>
-        </main>
-    );
-}
-
-function UserForm() {
+export default function UserForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [, setMessageType] = useState<"success" | "error" | null>(null);
-    const router = useRouter();
 
     const {
         register: registerValidator,
         handleSubmit,
-        formState: { errors },
+        formState: {errors},
     } = useForm({
-        resolver: zodResolver(userSchema),
+        resolver: zodResolver(baseRegistrationSchema),
     });
 
-    const onSubmit: SubmitHandler<z.infer<typeof userSchema>> = async (data) => {
+    const onSubmit: SubmitHandler<z.infer<typeof baseRegistrationSchema>> = async (data) => {
         try {
             setIsLoading(true);
             setMessage(null);
@@ -94,7 +47,13 @@ function UserForm() {
                 setMessage(response.data.errors.map((e) => e.errorMessage).join(",") || "Ошибка регистрации");
                 setMessageType("error");
             } else {
-                router.push("/confirm-email");
+                addToast({
+                    title: "Подтверждение почты",
+                    description: "Мы отправили Вам письмо с подтверждением на почту",
+                    color: "success",
+                    timeout: 5000,
+                    shouldShowTimeoutProgress: true
+                });
             }
         } catch (error) {
             console.log(error);
@@ -109,6 +68,7 @@ function UserForm() {
         e.preventDefault();
         handleSubmit(onSubmit)(e).catch(console.error);
     };
+
     return (
         <form onSubmit={handleFormSubmit}>
             <div className="flex flex-col gap-4">
@@ -163,7 +123,7 @@ function UserForm() {
                     isInvalid={!!errors.passwordRepeat}
                     errorMessage={errors.passwordRepeat?.message}
                 />
-                {message && <Alert color={"danger"} title={message} />}
+                {message && <Alert color={"danger"} title={message}/>}
                 <Button type="submit" color="success" isLoading={isLoading} fullWidth className="mt-6">
                     Регистрация
                 </Button>
