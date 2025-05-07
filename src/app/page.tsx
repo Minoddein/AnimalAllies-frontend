@@ -8,6 +8,7 @@ import Link from "next/link";
 
 import {AuthContext} from "@/contexts/auth/AuthContext";
 import {
+    addToast,
     Avatar,
     Button,
     Dropdown,
@@ -104,14 +105,22 @@ const Header = () => {
                             <DropdownItem key="settings">Настройки</DropdownItem>
                             <DropdownItem key="statistic">Статистика</DropdownItem>
                             <DropdownItem key="help_and_feedback">Помощь</DropdownItem>
-                            <DropdownItem key="logout" color="danger" onPressEnd={handleOnClickLogout}>
+                            <DropdownItem key="logout" color="danger" onPressEnd={() => {
+                                void handleOnClickLogout()
+                            }}>
                                 Выйти
                             </DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
                 ) : (
                     <NavbarItem className="flex">
-                        <Button variant="light" onPress={onOpen}>
+                        <Button variant="light" onPress={() => addToast({
+                            title: "Подтверждение почты",
+                            description: "Мы отправили Вам письмо с подтверждением на почту",
+                            color: "success",
+                            timeout: 3000,
+                            shouldShowTimeoutProgress: true,
+                        })}>
                             Войти
                         </Button>
                         <ModalOrDrawer label="Вход" isOpen={isOpen}
