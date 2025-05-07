@@ -1,8 +1,8 @@
-import { ErrorList } from "./errorList";
+import {ErrorList} from "./errorList";
 
 export interface Result {
     Errors: ErrorList;
-    IsSucess: boolean;
+    isSuccess: boolean;
     IsFailure: boolean;
 }
 

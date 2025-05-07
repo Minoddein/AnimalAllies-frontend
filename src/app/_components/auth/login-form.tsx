@@ -40,6 +40,7 @@ export default function LoginForm() {
         try {
             setIsLoading(true);
             await handleLogin(data.email, data.password);
+
         } catch (error) {
             console.error(error);
             setIsLoading(false);

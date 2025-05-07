@@ -40,7 +40,7 @@ const AnimalAlliesLogo = () => {
 };
 
 const Header = () => {
-    const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const {isOpen, onOpen, onOpenChange, onClose} = useDisclosure();
     const {accessToken, user, handleLogout} = useContext(AuthContext)!;
 
     console.log(user);
@@ -48,6 +48,7 @@ const Header = () => {
     const handleOnClickLogout = async () => {
         try {
             await handleLogout();
+            onClose();
         } catch (error) {
             console.error("Logout failed:", error);
         }
@@ -103,23 +104,21 @@ const Header = () => {
                             <DropdownItem key="settings">Настройки</DropdownItem>
                             <DropdownItem key="statistic">Статистика</DropdownItem>
                             <DropdownItem key="help_and_feedback">Помощь</DropdownItem>
-                            <DropdownItem key="logout" color="danger" onPressEnd={() => handleOnClickLogout}>
+                            <DropdownItem key="logout" color="danger" onPressEnd={handleOnClickLogout}>
                                 Выйти
                             </DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
                 ) : (
-                    <>
-                        <NavbarItem className="flex">
-                            <Button variant="light" onPress={onOpen}>
-                                Войти
-                            </Button>
-                            <ModalOrDrawer label="Вход" isOpen={isOpen}
-                                           onOpenChangeAction={onOpenChange}>
-                                <AuthForm/>
-                            </ModalOrDrawer>
-                        </NavbarItem>
-                    </>
+                    <NavbarItem className="flex">
+                        <Button variant="light" onPress={onOpen}>
+                            Войти
+                        </Button>
+                        <ModalOrDrawer label="Вход" isOpen={isOpen}
+                                       onOpenChangeAction={onOpenChange}>
+                            <AuthForm/>
+                        </ModalOrDrawer>
+                    </NavbarItem>
                 )}
             </NavbarContent>
         </Navbar>
