@@ -2,6 +2,7 @@
 
 import {PawPrintIcon as Paw} from "lucide-react";
 
+import * as React from "react";
 import {useContext} from "react";
 
 import Link from "next/link";
@@ -113,7 +114,7 @@ const Header = () => {
                     </Dropdown>
                 ) : (
                     <NavbarItem className="flex">
-                        <Button variant="light" onPress={onOpen}>
+                        <Button variant="light" onPressEnd={onOpen}>
                             Войти
                         </Button>
                         <ModalOrDrawer label="Вход" isOpen={isOpen}

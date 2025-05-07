@@ -1,13 +1,12 @@
 "use client";
 
 import React, {useState} from "react";
-import {useRouter} from "next/navigation";
 import {SubmitHandler, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
 import {RegisterProps} from "@/models/requests/RegisterProps";
 import {register} from "@/api/accounts";
-import {Button, Input} from "@heroui/react";
+import {addToast, Button, Input} from "@heroui/react";
 import PasswordInput from "@/components/password-input";
 import {Alert} from "@heroui/alert";
 import {baseRegistrationSchema} from "@/schemas/base-registration-schema";
@@ -16,7 +15,6 @@ export default function UserForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [, setMessageType] = useState<"success" | "error" | null>(null);
-    const router = useRouter();
 
     const {
         register: registerValidator,
@@ -49,7 +47,13 @@ export default function UserForm() {
                 setMessage(response.data.errors.map((e) => e.errorMessage).join(",") || "Ошибка регистрации");
                 setMessageType("error");
             } else {
-                router.push("/confirm-email");
+                addToast({
+                    title: "Подтверждение почты",
+                    description: "Мы отправили Вам письмо с подтверждением на почту",
+                    color: "success",
+                    timeout: 5000,
+                    shouldShowTimeoutProgress: true
+                });
             }
         } catch (error) {
             console.log(error);
