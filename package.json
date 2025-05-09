@@ -6,7 +6,7 @@
         "lint": "bun run --bun eslint --fix .",
         "lint:styles": "bun run --bun stylelint **/*.css --fix --ignore-path .gitignore",
         "format": "bun run --bun prettier . --write --ignore-path .gitignore",
-        "dev": "bun run --bun next dev --turbopack",
+        "dev": "bun run --bun --inspect=0.0.0.0 next dev --turbopack",
         "build": "bun run --bun next build",
         "start": "bun run --bun next start",
         "prepare": "bun run --bun husky"

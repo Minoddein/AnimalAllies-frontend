@@ -1,13 +1,13 @@
 "use client";
 
-import {AxiosResponse} from "axios";
+import { AxiosResponse } from "axios";
 
-import {createContext, useEffect, useLayoutEffect, useState} from "react";
+import { createContext, useEffect, useLayoutEffect, useState } from "react";
 
-import {login, logout, refresh} from "@/api/accounts";
-import {api} from "@/api/api";
-import {LoginResponse} from "@/models/responses/loginResponse";
-import {User} from "@/models/user";
+import { login, logout, refresh } from "@/api/accounts";
+import { api } from "@/api/api";
+import { LoginResponse } from "@/models/responses/loginResponse";
+import { User } from "@/models/user";
 
 interface AuthContextType {
     accessToken: string | undefined;
@@ -24,7 +24,7 @@ interface Props {
     children: React.ReactNode;
 }
 
-export const AuthProvider = ({children}: Props) => {
+export const AuthProvider = ({ children }: Props) => {
     const [accessToken, setAccessToken] = useState<string | undefined>();
     const [user, setUser] = useState<User | undefined>();
     const [, setIsLoading] = useState(false);

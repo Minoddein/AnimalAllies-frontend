@@ -1,13 +1,15 @@
 "use client";
 
-import {PawPrintIcon as Paw} from "lucide-react";
+import { PawPrintIcon as Paw } from "lucide-react";
 
 import * as React from "react";
-import {useContext} from "react";
+import { useContext } from "react";
 
 import Link from "next/link";
 
-import {AuthContext} from "@/contexts/auth/AuthContext";
+import AuthForm from "@/app/_components/auth/auth-form";
+import ModalOrDrawer from "@/components/modal-or-drawer";
+import { AuthContext } from "@/contexts/auth/AuthContext";
 import {
     Avatar,
     Button,
@@ -21,13 +23,11 @@ import {
     NavbarItem,
     useDisclosure,
 } from "@heroui/react";
-import ModalOrDrawer from "@/components/modal-or-drawer";
-import AuthForm from "@/app/_components/auth/auth-form";
 
 export default function App() {
     return (
         <main>
-            <Header/>
+            <Header />
         </main>
     );
 }
@@ -35,14 +35,14 @@ export default function App() {
 const AnimalAlliesLogo = () => {
     return (
         <div className="flex items-center gap-1">
-            <Paw size={28} className="text-primary"/>
+            <Paw size={28} className="text-primary" />
         </div>
     );
 };
 
 const Header = () => {
-    const {isOpen, onOpen, onOpenChange, onClose} = useDisclosure();
-    const {accessToken, user, handleLogout} = useContext(AuthContext)!;
+    const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+    const { accessToken, user, handleLogout } = useContext(AuthContext)!;
 
     console.log(user);
 
@@ -58,7 +58,7 @@ const Header = () => {
     return (
         <Navbar isBordered isBlurred={false} maxWidth="full" className="px-4">
             <NavbarBrand className="flex justify-normal gap-2">
-                <AnimalAlliesLogo/>
+                <AnimalAlliesLogo />
                 <p className="font-bold text-inherit">AnimalAllies</p>
             </NavbarBrand>
             <NavbarContent className="hidden gap-4 sm:flex" justify="center">
@@ -99,15 +99,19 @@ const Header = () => {
                             />
                         </DropdownTrigger>
                         <DropdownMenu aria-label="Profile Actions" variant="flat">
-                            <DropdownItem key="profile" className="h-14 gap-2">
+                            <DropdownItem key="profile" className="h-14 gap-2" href="/profile">
                                 <p className="font-semibold">{user!.userName}</p>
                             </DropdownItem>
                             <DropdownItem key="settings">Настройки</DropdownItem>
                             <DropdownItem key="statistic">Статистика</DropdownItem>
                             <DropdownItem key="help_and_feedback">Помощь</DropdownItem>
-                            <DropdownItem key="logout" color="danger" onPressEnd={() => {
-                                void handleOnClickLogout()
-                            }}>
+                            <DropdownItem
+                                key="logout"
+                                color="danger"
+                                onPressEnd={() => {
+                                    void handleOnClickLogout();
+                                }}
+                            >
                                 Выйти
                             </DropdownItem>
                         </DropdownMenu>
@@ -117,9 +121,8 @@ const Header = () => {
                         <Button variant="light" onPressEnd={onOpen}>
                             Войти
                         </Button>
-                        <ModalOrDrawer label="Вход" isOpen={isOpen}
-                                       onOpenChangeAction={onOpenChange}>
-                            <AuthForm/>
+                        <ModalOrDrawer label="Вход" isOpen={isOpen} onOpenChangeAction={onOpenChange}>
+                            <AuthForm />
                         </ModalOrDrawer>
                     </NavbarItem>
                 )}
