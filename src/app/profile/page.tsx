@@ -70,7 +70,7 @@ function ProfileHeader() {
 function ProfileTabs({ user }: PersonalInfoProps) {
     return (
         <div className="flex w-full flex-col pt-4">
-            <Tabs aria-label="Options">
+            <Tabs aria-label="Options" fullWidth={true}>
                 <Tab key="info" title="Личная информация" className="flex-1 py-4 text-center">
                     <div className="space-y-4">
                         <PersonalInfo user={user} />
