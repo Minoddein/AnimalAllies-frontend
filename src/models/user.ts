@@ -2,6 +2,7 @@ export interface User {
     id: string;
     userName: string;
     email: string;
+    phoneNumber: string;
     firstName: string;
     secondName: string;
     patronymic: string | null | undefined;

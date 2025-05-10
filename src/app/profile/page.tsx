@@ -75,8 +75,8 @@ function ProfileTabs({ user }: PersonalInfoProps) {
                     <div className="space-y-4">
                         <PersonalInfo user={user} />
                         {user.roles.some((r) => r === "Volunteer") ? (
-                            <div>
-                                <ContactInfo />
+                            <div className="space-y-4">
+                                <ContactInfo user={user} />
                                 <SocialMedia />
                             </div>
                         ) : null}
@@ -84,13 +84,9 @@ function ProfileTabs({ user }: PersonalInfoProps) {
                 </Tab>
                 {user.roles.some((r) => r === "Volunteer") ? (
                     <Tab key="prof" title="Профессиональная" className="flex-1 py-4 text-center">
-                        <Card>
-                            <CardBody>
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                            </CardBody>
-                        </Card>
+                        <div className="space-y-4">
+                            <Roles user={user} />
+                        </div>
                     </Tab>
                 ) : null}
                 <Tab key="settings" title="Настройки" className="flex-1 py-4 text-center">
@@ -156,7 +152,7 @@ function PersonalInfo({ user }: PersonalInfoProps) {
     );
 }
 
-function ContactInfo() {
+function ContactInfo({ user }: PersonalInfoProps) {
     return (
         <Card className="pt-3">
             <CardHeader>
@@ -170,7 +166,7 @@ function ContactInfo() {
                     </div>
                     <div className="flex items-center gap-2">
                         <Phone className="text-muted-foreground h-4 w-4" />
-                        <p className="text-medium font-medium text-white">+7 (999) 123-45-67</p>
+                        <p className="text-medium font-medium text-white">{user.phoneNumber}</p>
                     </div>
                 </div>
             </CardBody>
@@ -207,6 +203,58 @@ function SocialMedia() {
         </Card>
     );
 }
+
+function Roles({ user }: PersonalInfoProps) {
+    return (
+        <Card>
+            <CardHeader>
+                <h4 className="text-large font-medium text-white">Роли</h4>
+            </CardHeader>
+            <Divider />
+            <CardBody>
+                <div className="flex flex-wrap gap-2">
+                    {user.roles.map((role, index) => (
+                        <Card key={index} className="px-4 py-2" isBlurred={true}>
+                            {role}
+                        </Card>
+                    ))}
+                </div>
+            </CardBody>
+        </Card>
+    );
+}
+
+/*
+function PaymentDetails() {
+    return (
+        <Card>
+            <CardHeader>
+                <h4 className="text-large font-medium text-white">Реквизиты</h4>
+            </CardHeader>
+            <Divider className="bg-white/20" />
+            <CardBody className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label htmlFor="bankName">Название банка</Label>
+                        <Input id="bankName" defaultValue="Сбербанк" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="accountNumber">Номер счета</Label>
+                        <Input id="accountNumber" defaultValue="40817810099910004312" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="bik">БИК</Label>
+                        <Input id="bik" defaultValue="044525225" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="inn">ИНН</Label>
+                        <Input id="inn" defaultValue="7707083893" />
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
+    );
+}*/
 
 function ProfileSkeleton() {
     return (
