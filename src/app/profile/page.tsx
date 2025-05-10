@@ -74,19 +74,25 @@ function ProfileTabs({ user }: PersonalInfoProps) {
                 <Tab key="info" title="Личная информация" className="flex-1 py-4 text-center">
                     <div className="space-y-4">
                         <PersonalInfo user={user} />
-                        <ContactInfo />
-                        <SocialMedia />
+                        {user.roles.some((r) => r === "Volunteer") ? (
+                            <div>
+                                <ContactInfo />
+                                <SocialMedia />
+                            </div>
+                        ) : null}
                     </div>
                 </Tab>
-                <Tab key="prof" title="Профессиональная" className="flex-1 py-4 text-center">
-                    <Card>
-                        <CardBody>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                            laboris nisi ut aliquip ex ea commodo consequat.
-                        </CardBody>
-                    </Card>
-                </Tab>
+                {user.roles.some((r) => r === "Volunteer") ? (
+                    <Tab key="prof" title="Профессиональная" className="flex-1 py-4 text-center">
+                        <Card>
+                            <CardBody>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                            </CardBody>
+                        </Card>
+                    </Tab>
+                ) : null}
                 <Tab key="settings" title="Настройки" className="flex-1 py-4 text-center">
                     <Card>
                         <CardBody>
@@ -135,14 +141,15 @@ function PersonalInfo({ user }: PersonalInfoProps) {
                             <p className="text-medium font-medium text-white">{user.email}</p>
                         </div>
                     </div>
-
-                    <div className="space-y-1">
-                        <p className="text-sm text-white/60">Местоположение</p>
-                        <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-white/60" />
-                            <p className="text-medium font-medium text-white">Москва, Россия</p>
+                    {user.roles.some((r) => r === "Volunteer") ? (
+                        <div className="space-y-1">
+                            <p className="text-sm text-white/60">Местоположение</p>
+                            <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-white/60" />
+                                <p className="text-medium font-medium text-white">Москва, Россия</p>
+                            </div>
                         </div>
-                    </div>
+                    ) : null}
                 </div>
             </CardBody>
         </Card>
