@@ -10,6 +10,7 @@ import { AuthContext } from "@/contexts/auth/AuthContext";
 import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationSettingsProps";
 import { User } from "@/models/user";
 import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Chip } from "@heroui/chip";
 import { Avatar, Button, Divider, Skeleton, Switch, Tab, Tabs } from "@heroui/react";
 
 interface PersonalInfoProps {
@@ -328,9 +329,9 @@ function Roles({ user }: PersonalInfoProps) {
             <CardBody>
                 <div className="flex flex-wrap gap-2">
                     {user.roles.map((role, index) => (
-                        <Card key={index} className="px-4 py-2" isBlurred={true}>
+                        <Chip key={index} className="px-4 py-2" color="warning" variant="shadow">
                             {role}
-                        </Card>
+                        </Chip>
                     ))}
                 </div>
             </CardBody>
