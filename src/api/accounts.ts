@@ -6,7 +6,7 @@ import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationS
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { Result } from "@/models/result";
 
-import { API_URL, api } from "./api";
+import { API_URL, NOTIFICATION_URL, api, notificationApi } from "./api";
 
 export async function login(email: string, password: string): Promise<AxiosResponse<Envelope<LoginResponse>>> {
     return api.post<Envelope<LoginResponse>>("Account/authentication", {
@@ -46,4 +46,14 @@ export async function setNotificationSettings(
     return api.post(`${API_URL}Account/notifications-settings`, {
         ...data,
     });
+}
+
+export async function getNotificationSettings(userId: string) {
+    return notificationApi.get<{
+        id: string;
+        userId: string;
+        emailNotifications: boolean;
+        telegramNotifications: boolean;
+        webNotifications: boolean;
+    }>(`${NOTIFICATION_URL}Notifications/user-notification-settings/${userId}`, {});
 }

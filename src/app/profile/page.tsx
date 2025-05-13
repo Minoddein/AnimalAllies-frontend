@@ -1,10 +1,11 @@
 "use client";
 
+import { AxiosResponse } from "axios";
 import { Mail, MapPin, Phone } from "lucide-react";
 
-import { useContext, useState } from "react";
+import { useContext, useLayoutEffect, useState } from "react";
 
-import { setNotificationSettings } from "@/api/accounts";
+import { getNotificationSettings, setNotificationSettings } from "@/api/accounts";
 import { AuthContext } from "@/contexts/auth/AuthContext";
 import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationSettingsProps";
 import { User } from "@/models/user";
@@ -92,17 +93,35 @@ function ProfileTabs({ user }: PersonalInfoProps) {
                     </Tab>
                 ) : null}
                 <Tab key="settings" title="Настройки" className="flex-1 py-4 text-center">
-                    <Settings />
+                    <Settings user={user} />
                 </Tab>
             </Tabs>
         </div>
     );
 }
 
-function Settings() {
-    const [isEmailNotification, setEmailNotification] = useState(true);
+function Settings({ user }: PersonalInfoProps) {
+    const [isEmailNotification, setEmailNotification] = useState(false);
     const [isTelegramNotification, setTelegramNotification] = useState(false);
     const [isWebNotification, setWebNotification] = useState(false);
+
+    useLayoutEffect(() => {
+        void (async () => {
+            const response: AxiosResponse<{
+                id: string;
+                userId: string;
+                emailNotifications: boolean;
+                telegramNotifications: boolean;
+                webNotifications: boolean;
+            }> = await getNotificationSettings(user.id);
+
+            console.log(response);
+
+            setEmailNotification(response.data.emailNotifications);
+            setTelegramNotification(response.data.telegramNotifications);
+            setWebNotification(response.data.webNotifications);
+        })();
+    }, [user.id]);
 
     function onTelegramNotificationChange() {
         const newTelegramNotification = !isTelegramNotification;
