@@ -2,12 +2,14 @@
 
 import { Mail, MapPin, Phone } from "lucide-react";
 
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
+import { setNotificationSettings } from "@/api/accounts";
 import { AuthContext } from "@/contexts/auth/AuthContext";
+import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationSettingsProps";
 import { User } from "@/models/user";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Avatar, Button, Divider, Skeleton, Tab, Tabs } from "@heroui/react";
+import { Avatar, Button, Divider, Skeleton, Switch, Tab, Tabs } from "@heroui/react";
 
 interface PersonalInfoProps {
     user: User;
@@ -90,16 +92,113 @@ function ProfileTabs({ user }: PersonalInfoProps) {
                     </Tab>
                 ) : null}
                 <Tab key="settings" title="Настройки" className="flex-1 py-4 text-center">
-                    <Card>
-                        <CardBody>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                            laboris nisi ut aliquip ex ea commodo consequat.
-                        </CardBody>
-                    </Card>
+                    <Settings />
                 </Tab>
             </Tabs>
         </div>
+    );
+}
+
+function Settings() {
+    const [isEmailNotification, setEmailNotification] = useState(true);
+    const [isTelegramNotification, setTelegramNotification] = useState(false);
+    const [isWebNotification, setWebNotification] = useState(false);
+
+    function onTelegramNotificationChange() {
+        const newTelegramNotification = !isTelegramNotification;
+        setTelegramNotification(newTelegramNotification);
+        console.log(newTelegramNotification);
+
+        void (async () => {
+            const data: SetNotificationSettingsProps = {
+                emailNotifications: isEmailNotification,
+                telegramNotifications: newTelegramNotification,
+                webNotifications: isWebNotification,
+            };
+            const response = await setNotificationSettings(data);
+            if (response.data.result === null) console.log(response.data.errors);
+        })();
+    }
+
+    function onWebNotificationChange() {
+        const newWebNotification = !isWebNotification;
+        setWebNotification(newWebNotification);
+        console.log(newWebNotification);
+
+        void (async () => {
+            const data: SetNotificationSettingsProps = {
+                emailNotifications: isEmailNotification,
+                telegramNotifications: isTelegramNotification,
+                webNotifications: newWebNotification,
+            };
+            const response = await setNotificationSettings(data);
+            if (response.data.result === null) console.log(response.data.errors);
+        })();
+    }
+
+    function onEmailNotificationChange() {
+        const newEmailNotification = !isEmailNotification;
+        setEmailNotification(newEmailNotification);
+        console.log(newEmailNotification);
+
+        void (async () => {
+            const data = {
+                emailNotifications: newEmailNotification,
+                telegramNotifications: isTelegramNotification,
+                webNotifications: isWebNotification,
+            };
+            const response = await setNotificationSettings(data);
+            if (response.data.result === null) console.log(response.data.errors);
+        })();
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <h4 className="text-large font-medium text-white">Настройки</h4>
+            </CardHeader>
+            <Divider />
+            <CardBody className="space-y-4">
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <h4 className="text-large font-medium text-white">Уведомления на почту</h4>
+                        </div>
+                        <Switch
+                            id="email-notification"
+                            onChange={onEmailNotificationChange}
+                            isSelected={isEmailNotification}
+                        />
+                    </div>
+                    <Divider />
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <div className="space-y-0.5">
+                                <h4 className="text-large font-medium text-white">Уведомления на telegram</h4>
+                            </div>
+                        </div>
+                        <Switch
+                            id="telegram-notification"
+                            onChange={onTelegramNotificationChange}
+                            isSelected={isTelegramNotification}
+                        />
+                    </div>
+                    <Divider />
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <div className="space-y-0.5">
+                                <h4 className="text-large font-medium text-white">Уведомления на веб-аккаунт</h4>
+                            </div>
+                        </div>
+                        <Switch
+                            id="web-notification"
+                            onChange={onWebNotificationChange}
+                            isSelected={isWebNotification}
+                        />
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
     );
 }
 

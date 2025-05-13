@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 
 import { Envelope } from "@/models/envelope";
 import { RegisterProps } from "@/models/requests/RegisterProps";
+import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationSettingsProps";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { Result } from "@/models/result";
 
@@ -37,4 +38,12 @@ export async function refresh() {
             withCredentials: true,
         },
     );
+}
+
+export async function setNotificationSettings(
+    data: SetNotificationSettingsProps,
+): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post(`${API_URL}Account/notifications-settings`, {
+        ...data,
+    });
 }
