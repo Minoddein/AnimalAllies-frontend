@@ -173,10 +173,6 @@ function Settings({ user }: PersonalInfoProps) {
 
     return (
         <Card>
-            <CardHeader>
-                <h4 className="text-large font-medium text-white">Настройки</h4>
-            </CardHeader>
-            <Divider />
             <CardBody className="space-y-4">
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
