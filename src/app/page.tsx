@@ -6,7 +6,7 @@ import Header from "@/components/header";
 import {Tab} from "@/types/tabs";
 
 export default function App() {
-    const [activeTab, setActiveTab] = useState<Tab>("");
+    const [activeTab, setActiveTab] = useState<Tab>("main");
     return (
         <main>
             <Header activeTab={activeTab} setActiveTabAction={setActiveTab}/>

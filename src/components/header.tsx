@@ -56,6 +56,7 @@ export default function Header({activeTab, setActiveTabAction}: NavbarProps) {
 
     const getTabLabel = (tab: Tab): string => {
         const labels = {
+            main: "Главная",
             animals: "Животные",
             volunteers: "Волонтёры",
             requests: "Заявки",

@@ -1,1 +1,1 @@
-export type Tab = "" | "animals" | "volunteers" | "requests" | "events";
+export type Tab = "main" | "animals" | "volunteers" | "requests" | "events";

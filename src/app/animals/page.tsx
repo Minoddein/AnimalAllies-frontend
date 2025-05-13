@@ -49,11 +49,11 @@ export default function AnimalsPage() {
 
     const animalsPageItems = useMemo(() => {
         if (!animalsData) return [];
-        const start = (page - 1) * animalsData?.pagination.pageSize;
-        const end = start + animalsData?.pagination.pageSize;
+        const start = (page - 1) * animalsData.pagination.pageSize;
+        const end = start + animalsData.pagination.pageSize;
 
-        return animalsData?.items.slice(start, end);
-    }, [page, animalsData]) ?? [];
+        return animalsData.items.slice(start, end);
+    }, [page, animalsData]);
 
     console.log(animalsPageItems);
 
