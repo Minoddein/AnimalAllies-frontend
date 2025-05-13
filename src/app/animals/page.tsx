@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 
 import {AnimalItem} from "@/types/AnimalItem";
 import {MainCards} from "@/components/main-cards";
@@ -40,15 +40,24 @@ export default function AnimalsPage() {
             pagination: {
                 page,
                 pageSize: perPage,
-                totalItems: 12,
+                totalItems: 14,
                 totalPages: 2,
             },
         });
 
     }, [page]);
 
-    const animalsPageItems = animalsData?.items ?? [];
-    const totalAnimalsPages = animalsData?.pagination.page ?? 1;
+    const animalsPageItems = useMemo(() => {
+        if (!animalsData) return [];
+        const start = (page - 1) * animalsData?.pagination.pageSize;
+        const end = start + animalsData?.pagination.pageSize;
+
+        return animalsData?.items.slice(start, end);
+    }, [page, animalsData]) ?? [];
+
+    console.log(animalsPageItems);
+
+    const totalAnimalsPages = animalsData?.pagination.totalPages ?? 1;
 
     return (<>
         <Header activeTab={activeTab} setActiveTabAction={setActiveTab}/>
