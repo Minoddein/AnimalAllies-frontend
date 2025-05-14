@@ -1,6 +1,8 @@
 "use client";
 
 import { AxiosResponse } from "axios";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
 import { Mail, MapPin, Phone } from "lucide-react";
 
 import { useContext, useLayoutEffect, useState } from "react";
@@ -91,6 +93,7 @@ function ProfileTabs({ user }: PersonalInfoProps) {
                         <div className="space-y-4">
                             <Roles user={user} />
                             <PaymentDetails user={user} />
+                            <Certificates user={user} />
                         </div>
                     </Tab>
                 ) : null}
@@ -304,6 +307,40 @@ function SocialMedia({ user }: PersonalInfoProps) {
                             {socialNetwork.title}: {socialNetwork.url}
                         </Chip>
                     ))}
+                </div>
+            </CardBody>
+        </Card>
+    );
+}
+
+function Certificates({ user }: PersonalInfoProps) {
+    return (
+        <Card>
+            <CardHeader>
+                <h4 className="text-large font-medium text-white">Сертификаты</h4>
+            </CardHeader>
+            <Divider />
+            <CardBody className="space-y-4">
+                <div className="space-y-4">
+                    {user.volunteer?.certificates.map((certificate, index) => {
+                        const issueDate = new Date(certificate.issueDate);
+                        const expirationDate = new Date(certificate.expirationDate);
+
+                        return (
+                            <Card key={index}>
+                                <CardBody key={index} className="rounded-lg p-4">
+                                    <div className="font-medium">{certificate.title}</div>
+                                    <Divider />
+                                    <div className="font-small">{certificate.description}</div>
+                                    <div className="text-sm text-default-500">
+                                        {certificate.issuingOrganization} • Выдан:{" "}
+                                        {format(issueDate, "LLLL yyyy", { locale: ru })} • Действителен до:{" "}
+                                        {format(expirationDate, "LLLL yyyy", { locale: ru })}
+                                    </div>
+                                </CardBody>
+                            </Card>
+                        );
+                    })}
                 </div>
             </CardBody>
         </Card>
