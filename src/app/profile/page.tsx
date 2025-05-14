@@ -11,7 +11,7 @@ import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationS
 import { User } from "@/models/user";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Chip } from "@heroui/chip";
-import { Avatar, Button, Divider, Skeleton, Switch, Tab, Tabs } from "@heroui/react";
+import { Avatar, Button, Divider, Input, Skeleton, Switch, Tab, Tabs } from "@heroui/react";
 
 interface PersonalInfoProps {
     user: User;
@@ -81,7 +81,7 @@ function ProfileTabs({ user }: PersonalInfoProps) {
                         {user.roles.some((r) => r === "Volunteer") ? (
                             <div className="space-y-4">
                                 <ContactInfo user={user} />
-                                <SocialMedia />
+                                <SocialMedia user={user} />
                             </div>
                         ) : null}
                     </div>
@@ -90,6 +90,7 @@ function ProfileTabs({ user }: PersonalInfoProps) {
                     <Tab key="prof" title="Профессиональная" className="flex-1 py-4 text-center">
                         <div className="space-y-4">
                             <Roles user={user} />
+                            <PaymentDetails user={user} />
                         </div>
                     </Tab>
                 ) : null}
@@ -281,7 +282,7 @@ function ContactInfo({ user }: PersonalInfoProps) {
                     </div>
                     <div className="flex items-center gap-2">
                         <Phone className="text-muted-foreground h-4 w-4" />
-                        <p className="text-medium font-medium text-white">{user.phoneNumber}</p>
+                        <p className="text-medium font-medium text-white">{user.firstName}</p>
                     </div>
                 </div>
             </CardBody>
@@ -289,30 +290,20 @@ function ContactInfo({ user }: PersonalInfoProps) {
     );
 }
 
-function SocialMedia() {
+function SocialMedia({ user }: PersonalInfoProps) {
     return (
         <Card>
             <CardHeader>
-                <h4 className="text-large font-medium text-white">Контактная информация</h4>
+                <h4 className="text-large font-medium text-white">Социальные сети</h4>
             </CardHeader>
             <Divider className="bg-white/20" />
             <CardBody className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div className="flex items-center gap-2">
-                        <p className="text-medium font-medium text-white">@ivanov_petr</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <p className="text-medium font-medium text-white">facebook.com/ivanov.petr</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <p className="text-medium font-medium text-white">@ivanov_petr</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <p className="text-medium font-medium text-white">linkedin.com/in/ivanov-petr</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <p className="text-medium font-medium text-white">github.com/ivanov-petr</p>
-                    </div>
+                <div className="grid gap-4 md:grid-cols-1">
+                    {user.socialNetworks.map((socialNetwork, index) => (
+                        <Chip key={index} className="px-4 py-2" color="default" variant="flat">
+                            {socialNetwork.title}: {socialNetwork.url}
+                        </Chip>
+                    ))}
                 </div>
             </CardBody>
         </Card>
@@ -339,8 +330,7 @@ function Roles({ user }: PersonalInfoProps) {
     );
 }
 
-/*
-function PaymentDetails() {
+function PaymentDetails({ user }: PersonalInfoProps) {
     return (
         <Card>
             <CardHeader>
@@ -348,28 +338,18 @@ function PaymentDetails() {
             </CardHeader>
             <Divider className="bg-white/20" />
             <CardBody className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                        <Label htmlFor="bankName">Название банка</Label>
-                        <Input id="bankName" defaultValue="Сбербанк" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="accountNumber">Номер счета</Label>
-                        <Input id="accountNumber" defaultValue="40817810099910004312" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="bik">БИК</Label>
-                        <Input id="bik" defaultValue="044525225" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="inn">ИНН</Label>
-                        <Input id="inn" defaultValue="7707083893" />
-                    </div>
+                <div className="grid gap-4 md:grid-cols-1">
+                    {user.volunteer?.requisites.map((requisite, index) => (
+                        <div key={index} className="mb-6 flex w-full flex-wrap gap-4 md:mb-0 md:flex-nowrap">
+                            <Input label="Название" type="title" defaultValue={requisite.title} />
+                            <Input label="Описание" type="description" defaultValue={requisite.description} />
+                        </div>
+                    ))}
                 </div>
             </CardBody>
         </Card>
     );
-}*/
+}
 
 function ProfileSkeleton() {
     return (

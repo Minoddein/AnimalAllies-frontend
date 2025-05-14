@@ -42,6 +42,15 @@ export const AuthProvider = ({ children }: Props) => {
             patronymic: response.patronymic,
             roles: response.roles,
             permissions: response.permissions,
+            socialNetworks: response.socialNetworks,
+            volunteer: response.volunteerAccount
+                ? {
+                      id: response.volunteerAccount.id,
+                      certificates: response.volunteerAccount.certificates,
+                      requisites: response.volunteerAccount.requisites,
+                      experience: response.volunteerAccount.experience,
+                  }
+                : null,
         };
         setUser(user);
     };
