@@ -22,9 +22,9 @@ export function MainCards<T>({
                                  renderCardsAction,
                              }: MainCardsProps<T>) {
     return (
-        <div className="container mx-auto w-full flex-1 px-4 py-8 sm:w-3/4">
+        <div className="container mx-auto w-full flex-1 px-1 py-8 ">
             {pageItems.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     {isLoading ? <CircularProgress aria-label="Loading..." size="lg"/> : renderCardsAction(pageItems)}
                 </div>
             ) : (

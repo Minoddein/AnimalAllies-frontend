@@ -27,7 +27,7 @@ export default function AnimalsPage() {
     const [page, setPage] = useState(1);
     const [searchParamsState, setSearchParamsState] = useState<SearchAnimalsParams>();
 
-    const perPage = 12;
+    const perPage = 8;
 
     useEffect(() => {
         setAnimalsData({
