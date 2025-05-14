@@ -38,7 +38,7 @@ export function SearchCardOrDrawer({onSearchAction, tabType}: Props) {
 
 function SearchCard({onSearchAction, tabType}: { onSearchAction: Props["onSearchAction"]; tabType: Tab }) {
     return (
-        <div className="w-full p-4 sm:w-1/4">
+        <div className="w-full p-2 sm:w-1/4">
             <Card className="sticky top-20">
                 <CardHeader className="text-xl">Поиск</CardHeader>
                 <CardBody>

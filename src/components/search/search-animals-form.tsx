@@ -94,8 +94,8 @@ export function SearchAnimalsForm({onSubmitAction, tabType}: SearchFormProps) {
         const selectedName = items.find((i) => i.key === selectedKey)?.name ?? "Выберите...";
 
         return (
-            <div className="mb-4">
-                <label className="mb-2 block text-sm font-medium">{label}</label>
+            <div className="mb-1">
+                <label className="mb-1 block text-sm font-medium">{label}</label>
                 <Dropdown className="w-full">
                     <DropdownTrigger>
                         <Button variant="bordered" className="w-full justify-between text-left">
@@ -128,19 +128,17 @@ export function SearchAnimalsForm({onSubmitAction, tabType}: SearchFormProps) {
     return (
         <Form onSubmit={handleSubmit}>
             <div className="grid w-full grid-cols-1 gap-4">
-                <h3 className="m-1">Поиск по имени</h3>
-                <div className="col-span-full">
-                    <Input
-                        label="Имя животного"
-                        variant="bordered"
-                        fullWidth
-                        value={name}
-                        onChange={(e) => {
-                            setName(e.target.value);
-                        }}
-                    />
-                </div>
-                <h3 className="mt-2">Сортировка</h3>
+                <h3 className="mt-1">Поиск по имени</h3>
+                <Input
+                    label="Имя животного"
+                    variant="bordered"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => {
+                        setName(e.target.value);
+                    }}
+                />
+                <h3 className="mt-1">Сортировка</h3>
                 {renderDropdown(
                     "Пол",
                     genders.map((g) => ({key: g.key, name: g.name})),
