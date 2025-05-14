@@ -54,6 +54,7 @@ export default function AnimalsPage() {
     // Обработчик поиска
     const handleSearch = (params: SearchAnimalsParams) => {
         setSearchParamsState(params);
+        console.log(searchParamsState);
         setPage(1);
     };
 
@@ -70,7 +71,7 @@ export default function AnimalsPage() {
     return (<>
         <Header activeTab={activeTab} setActiveTabAction={setActiveTab}/>
         <div className="flex min-h-[100vh] w-full">
-            <SearchCardOrDrawer onSearchAction={handleSearch} tabType={activeTab}/>
+            <SearchCardOrDrawer onSearchAction={handleSearch}/>
             <div className="flex-1 p-4">
                 <MainCards<AnimalItem>
                     isLoading={isLoading}

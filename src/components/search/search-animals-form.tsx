@@ -1,8 +1,6 @@
 "use client";
 
 import React, {useState} from "react";
-
-import {Tab} from "@/types/tabs";
 import {SearchAnimalsParams} from "@/types/search";
 import {
     Button,
@@ -17,7 +15,6 @@ import {
 
 interface SearchFormProps {
     onSubmitAction: (params: SearchAnimalsParams) => void;
-    tabType: Tab;
 }
 
 interface DropdownItem {
@@ -52,7 +49,7 @@ const others: DropdownItem[] = [
     {key: "Other", name: "Другое"},
 ] as DropdownItem[];
 
-export function SearchAnimalsForm({onSubmitAction, tabType}: SearchFormProps) {
+export function SearchAnimalsForm({onSubmitAction}: SearchFormProps) {
     const [name, setName] = useState("");
     const [selectedGender, setSelectedGender] = React.useState<string>();
     const [selectedHealth, setSelectedHealth] = React.useState<string>();
@@ -64,7 +61,7 @@ export function SearchAnimalsForm({onSubmitAction, tabType}: SearchFormProps) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        let searchParams: SearchAnimalsParams = {
+        const searchParams: SearchAnimalsParams = {
             name: name,
             gender: selectedGender,
             coloring: selectedColoring,

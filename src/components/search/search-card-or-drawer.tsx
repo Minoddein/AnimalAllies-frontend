@@ -3,7 +3,6 @@
 import * as React from "react";
 
 import {useMediaQuery} from "@/hooks/use-media-query";
-import {Tab} from "@/types/tabs";
 import type {SearchAnimalsParams} from "@/types/search";
 import {
     Button,
@@ -24,26 +23,25 @@ import {SearchAnimalsForm} from "./search-animals-form";
 
 interface Props {
     onSearchAction: (params: SearchAnimalsParams) => void;
-    tabType: Tab;
 }
 
-export function SearchCardOrDrawer({onSearchAction, tabType}: Props) {
+export function SearchCardOrDrawer({onSearchAction}: Props) {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
     return isDesktop
-        ? SearchCard({onSearchAction, tabType})
-        : SearchDrawer({isOpen, onOpen, onOpenChange, onSearchAction, tabType});
+        ? SearchCard({onSearchAction})
+        : SearchDrawer({isOpen, onOpen, onOpenChange, onSearchAction});
 }
 
-function SearchCard({onSearchAction, tabType}: { onSearchAction: Props["onSearchAction"]; tabType: Tab }) {
+function SearchCard({onSearchAction}: { onSearchAction: Props["onSearchAction"] }) {
     return (
         <div className="w-full p-2 sm:w-1/4">
             <Card className="sticky top-20">
                 <CardHeader className="text-xl">Поиск</CardHeader>
                 <CardBody>
                     <div className="max-h-[70vh] overflow-y-auto pr-2">
-                        <SearchAnimalsForm onSubmitAction={onSearchAction} tabType={tabType}/>
+                        <SearchAnimalsForm onSubmitAction={onSearchAction}/>
                     </div>
                 </CardBody>
             </Card>
@@ -55,10 +53,9 @@ interface DrawerProps extends Props {
     isOpen: boolean;
     onOpen: React.Dispatch<React.SetStateAction<boolean>>;
     onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
-    tabType: Tab;
 }
 
-function SearchDrawer({isOpen, onOpen, onOpenChange, onSearchAction, tabType}: DrawerProps) {
+function SearchDrawer({isOpen, onOpen, onOpenChange, onSearchAction}: DrawerProps) {
     return (
         <>
             <Button
@@ -76,7 +73,7 @@ function SearchDrawer({isOpen, onOpen, onOpenChange, onSearchAction, tabType}: D
                 <DrawerContent className="p-4">
                     <DrawerHeader className="text-center text-2xl">Поиск</DrawerHeader>
                     <DrawerBody>
-                        <SearchAnimalsForm onSubmitAction={onSearchAction} tabType={tabType}/>
+                        <SearchAnimalsForm onSubmitAction={onSearchAction}/>
                     </DrawerBody>
                 </DrawerContent>
             </Drawer>
