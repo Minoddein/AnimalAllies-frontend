@@ -59,8 +59,6 @@ export function SearchAnimalsForm({onSubmitAction, tabType}: SearchFormProps) {
     const [selectedPlace, setSelectedPlace] = React.useState<string>();
     const [selectedColoring, setSelectedColoring] = React.useState<string>();
     const [selectedOther, setSelectedOther] = React.useState<string>();
-    const [disciplines, setDisciplines] = React.useState<{ id: string; name: string }[]>([]);
-    const [levels] = React.useState(Object.values(EventLevel));
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {

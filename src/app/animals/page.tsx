@@ -7,6 +7,8 @@ import {MainCards} from "@/components/main-cards";
 import Header from "@/components/header";
 import AnimalsCards from "@/app/animals/_components/animals-cards"
 import {Tab} from "@/types/tabs";
+import {SearchCardOrDrawer} from "@/components/search/search-card-or-drawer";
+import {SearchAnimalsParams} from "@/types/search";
 
 interface Paged<T> {
     items: T[];
@@ -23,6 +25,8 @@ export default function AnimalsPage() {
     const [isLoading] = useState(false);
     const [animalsData, setAnimalsData] = useState<Paged<AnimalItem> | null>(null);
     const [page, setPage] = useState(1);
+    const [searchParamsState, setSearchParamsState] = useState<SearchAnimalsParams>();
+
     const perPage = 12;
 
     useEffect(() => {
@@ -47,6 +51,12 @@ export default function AnimalsPage() {
 
     }, [page]);
 
+    // Обработчик поиска
+    const handleSearch = (params: SearchAnimalsParams) => {
+        setSearchParamsState(params);
+        setPage(1);
+    };
+
     const animalsPageItems = useMemo(() => {
         if (!animalsData) return [];
         const start = (page - 1) * animalsData.pagination.pageSize;
@@ -55,20 +65,23 @@ export default function AnimalsPage() {
         return animalsData.items.slice(start, end);
     }, [page, animalsData]);
 
-    console.log(animalsPageItems);
-
     const totalAnimalsPages = animalsData?.pagination.totalPages ?? 1;
 
     return (<>
         <Header activeTab={activeTab} setActiveTabAction={setActiveTab}/>
-        <MainCards<AnimalItem>
-            isLoading={isLoading}
-            pageItems={animalsPageItems}
-            totalPages={totalAnimalsPages}
-            page={page}
-            setPageAction={setPage}
-            renderCardsAction={(items) => <AnimalsCards paginatedData={items}/>}
-        />
+        <div className="flex min-h-[100vh] w-full">
+            <SearchCardOrDrawer onSearchAction={handleSearch} tabType={activeTab}/>
+            <div className="flex-1 p-4">
+                <MainCards<AnimalItem>
+                    isLoading={isLoading}
+                    pageItems={animalsPageItems}
+                    totalPages={totalAnimalsPages}
+                    page={page}
+                    setPageAction={setPage}
+                    renderCardsAction={(items) => <AnimalsCards paginatedData={items}/>}
+                />
+            </div>
+        </div>
     </>)
 }
 
