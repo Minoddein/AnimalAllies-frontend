@@ -55,20 +55,21 @@ export const ThemeSwitcher = () => {
     const dropDownItems = Object.entries(THEME_CONFIG).map(([themeKey, themeConf]) => (
         <DropdownItem
             key={themeKey}
-            startContent={React.createElement(Icon, { icon: themeConf.icon, className: "text-md" })}
+            startContent={React.createElement(Icon, { icon: themeConf.icon, className: "text-lg" })}
         >
             {themeConf.name}
         </DropdownItem>
     ));
 
     return (
-        <Dropdown>
+        <Dropdown shouldBlockScroll={false}>
             <DropdownTrigger>
                 <Button
+                    className="rounded-4xl"
                     variant="flat"
                     startContent={React.createElement(Icon, {
                         icon: THEME_CONFIG[currentTheme].icon,
-                        className: "text-md",
+                        className: "text-lg",
                     })}
                     isIconOnly
                 ></Button>

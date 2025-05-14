@@ -9,8 +9,8 @@ import Link from "next/link";
 import AuthForm from "@/app/_components/auth/auth-form";
 import ModalOrDrawer from "@/components/modal-or-drawer";
 import { Providers } from "@/components/providres";
-import { AuthContext, AuthProvider } from "@/contexts/auth/AuthContext";
-import "@/styles/globals.css";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { AuthContext } from "@/contexts/auth/AuthContext";
 import {
     Avatar,
     Button,
@@ -26,6 +26,8 @@ import {
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
+import "../globals.css";
+
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
 export default function RootLayout({
@@ -36,12 +38,10 @@ export default function RootLayout({
     return (
         <html lang="ru" suppressHydrationWarning>
             <body className={inter.className}>
-                <AuthProvider>
-                    <Providers>
-                        <Header />
-                        {children}
-                    </Providers>
-                </AuthProvider>
+                <Providers>
+                    <Header />
+                    {children}
+                </Providers>
             </body>
         </html>
     );
@@ -143,6 +143,7 @@ const Header = () => {
                         </ModalOrDrawer>
                     </NavbarItem>
                 )}
+                <ThemeSwitcher />
             </NavbarContent>
         </Navbar>
     );
