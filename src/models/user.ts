@@ -1,3 +1,5 @@
+import { SocialNetwork } from "@/models/socialNetwork";
+
 export interface User {
     id: string;
     userName: string;
@@ -8,4 +10,5 @@ export interface User {
     patronymic: string | null | undefined;
     roles: string[];
     permissions: string[];
+    socialNetworks: SocialNetwork[];
 }
