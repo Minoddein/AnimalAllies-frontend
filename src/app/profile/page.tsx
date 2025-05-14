@@ -4,7 +4,7 @@ import { AxiosResponse } from "axios";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 
-import { useContext, useLayoutEffect, useState } from "react";
+import React, { useContext, useLayoutEffect, useState } from "react";
 
 import { getNotificationSettings, setNotificationSettings } from "@/api/accounts";
 import { AuthContext } from "@/contexts/auth/AuthContext";
@@ -12,7 +12,22 @@ import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationS
 import { User } from "@/models/user";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Chip } from "@heroui/chip";
-import { Avatar, Button, Divider, Input, Skeleton, Switch, Tab, Tabs } from "@heroui/react";
+import {
+    Avatar,
+    Button,
+    Divider,
+    Input,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    Skeleton,
+    Switch,
+    Tab,
+    Tabs,
+    useDisclosure,
+} from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 interface PersonalInfoProps {
@@ -48,9 +63,7 @@ export default function ProfilePage() {
                                 )}
                                 <p className="text-muted-foreground pt-2 text-sm">@{user.userName}</p>
                             </div>
-                            <Button color="primary" variant="solid" className="h-[30px]" radius={"sm"}>
-                                Редактировать
-                            </Button>
+                            <EditProfileModal user={user} />
                         </CardBody>
                     </Card>
                 </div>
@@ -430,5 +443,43 @@ function ProfileSkeleton() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function EditProfileModal({ user }: PersonalInfoProps) {
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+    return (
+        <>
+            <Button color="primary" onPress={onOpen} variant="solid" className="h-[30px]" radius={"sm"}>
+                Редактировать
+            </Button>
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">Редактирование</ModalHeader>
+                            <ModalBody>
+                                <Input label="Имя" type="text" variant="bordered" />
+                                <Input label="Фамилия" type="text" variant="bordered" />
+                                <Input label="Отчество" type="text" variant="bordered" />
+                                <Input label="Адрес" type="text" variant="bordered" />
+                                {user.volunteer ? (
+                                    <Input label="Номер телефона" type="text" variant="bordered" />
+                                ) : null}
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button color="danger" variant="light" onPress={onClose}>
+                                    Закрыть
+                                </Button>
+                                <Button color="primary" onPress={onClose}>
+                                    Сохранить
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
     );
 }
