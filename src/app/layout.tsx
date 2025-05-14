@@ -1,13 +1,10 @@
 "use client";
 
-import { PawPrintIcon as Paw } from "lucide-react";
-
 import * as React from "react";
 import { useContext } from "react";
 
 import { Inter } from "next/font/google";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import AuthForm from "@/app/_components/auth/auth-form";
 import ModalOrDrawer from "@/components/modal-or-drawer";
@@ -27,6 +24,7 @@ import {
     NavbarItem,
     useDisclosure,
 } from "@heroui/react";
+import { Icon } from "@iconify/react";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -52,7 +50,7 @@ export default function RootLayout({
 const AnimalAlliesLogo = () => {
     return (
         <div className="flex items-center gap-1">
-            <Paw size={28} className="text-primary" />
+            <Icon icon="lucide:paw-print" width={28} height={28} className="text-primary" />
         </div>
     );
 };
@@ -60,7 +58,6 @@ const AnimalAlliesLogo = () => {
 const Header = () => {
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const { accessToken, user, handleLogout } = useContext(AuthContext)!;
-    const router = useRouter();
 
     console.log(user);
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { AxiosResponse } from "axios";
-import { Mail, MapPin, Phone } from "lucide-react";
 
 import { useContext, useLayoutEffect, useState } from "react";
 
@@ -12,6 +11,7 @@ import { User } from "@/models/user";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { Avatar, Button, Divider, Input, Skeleton, Switch, Tab, Tabs } from "@heroui/react";
+import { Icon } from "@iconify/react";
 
 interface PersonalInfoProps {
     user: User;
@@ -249,7 +249,7 @@ function PersonalInfo({ user }: PersonalInfoProps) {
                     <div className="space-y-1">
                         <p className="text-sm text-white/60">Электронная почта</p>
                         <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-white/60" />
+                            <Icon icon="luicide:mail" className="h-4 w-4 text-white/60" />
                             <p className="text-medium font-medium text-white">{user.email}</p>
                         </div>
                     </div>
@@ -257,7 +257,7 @@ function PersonalInfo({ user }: PersonalInfoProps) {
                         <div className="space-y-1">
                             <p className="text-sm text-white/60">Местоположение</p>
                             <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-white/60" />
+                                <Icon icon="luicide:map-pin" className="h-4 w-4 text-white/60" />
                                 <p className="text-medium font-medium text-white">Москва, Россия</p>
                             </div>
                         </div>
@@ -281,7 +281,7 @@ function ContactInfo({ user }: PersonalInfoProps) {
                         <p className="text-sm text-white/60">Номер телефона</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Phone className="text-muted-foreground h-4 w-4" />
+                        <Icon icon="luicide:phone" className="text-muted-foreground h-4 w-4" />
                         <p className="text-medium font-medium text-white">{user.firstName}</p>
                     </div>
                 </div>
