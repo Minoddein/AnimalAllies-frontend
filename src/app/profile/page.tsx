@@ -303,10 +303,20 @@ function SocialMedia({ user }: PersonalInfoProps) {
             <CardBody className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-1">
                     {user.socialNetworks.map((socialNetwork, index) => (
-                        <Chip key={index} className="px-4 py-2" color="default" variant="flat">
-                            {socialNetwork.title}: {socialNetwork.url}
-                        </Chip>
+                        <div key={index} className="flex items-center gap-2">
+                            <Button isIconOnly size="sm" color="danger" variant="light" className="h-6 w-6 min-w-6">
+                                <Icon icon="material-symbols:remove-rounded" width={16} height={16} />
+                            </Button>
+                            <Chip className="flex-1 px-3 py-1" color="default" variant="flat">
+                                {socialNetwork.title}: {socialNetwork.url}
+                            </Chip>
+                        </div>
                     ))}
+                </div>
+                <div className="w-48">
+                    <Button color="primary" size="sm" startContent={<Icon icon="ri:add-fill" />} variant="flat">
+                        Добавить
+                    </Button>
                 </div>
             </CardBody>
         </Card>
@@ -327,10 +337,19 @@ function Certificates({ user }: PersonalInfoProps) {
                         const expirationDate = new Date(certificate.expirationDate);
 
                         return (
-                            <Card key={index}>
-                                <CardBody key={index} className="rounded-lg p-4">
-                                    <div className="font-medium">{certificate.title}</div>
-                                    <Divider />
+                            <Card key={index} className="relative">
+                                {" "}
+                                <Button
+                                    isIconOnly
+                                    size="sm"
+                                    color="danger"
+                                    variant="light"
+                                    className="absolute top-2 right-2 z-10 h-6 w-6 min-w-6"
+                                >
+                                    <Icon icon="material-symbols:close" width={16} height={16} />
+                                </Button>
+                                <CardBody className="rounded-lg p-4">
+                                    <div className="pr-6 font-medium">{certificate.title}</div> <Divider />
                                     <div className="font-small">{certificate.description}</div>
                                     <div className="text-default-500 text-sm">
                                         {certificate.issuingOrganization} • Выдан:{" "}
@@ -341,6 +360,11 @@ function Certificates({ user }: PersonalInfoProps) {
                             </Card>
                         );
                     })}
+                </div>
+                <div className="w-48">
+                    <Button color="primary" size="sm" startContent={<Icon icon="ri:add-fill" />} variant="flat">
+                        Добавить
+                    </Button>
                 </div>
             </CardBody>
         </Card>
@@ -382,6 +406,11 @@ function PaymentDetails({ user }: PersonalInfoProps) {
                             <Input label="Описание" type="description" defaultValue={requisite.description} />
                         </div>
                     ))}
+                </div>
+                <div className="w-48">
+                    <Button color="primary" size="sm" startContent={<Icon icon="ri:add-fill" />} variant="flat">
+                        Добавить
+                    </Button>
                 </div>
             </CardBody>
         </Card>
