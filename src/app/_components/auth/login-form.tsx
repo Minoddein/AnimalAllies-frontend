@@ -1,16 +1,16 @@
 "use client";
 
-import {z} from "zod";
+import { z } from "zod";
 
-import React, {useEffect, useState} from "react";
-import {SubmitHandler, useForm} from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
 
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import PasswordInput from "@/components/password-input";
-import {useAuth} from "@/hooks/useAuth";
-import {Button, Input} from "@heroui/react";
-import {zodResolver} from "@hookform/resolvers/zod";
+import { useAuth } from "@/hooks/useAuth";
+import { Button, Input } from "@heroui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const formSchema = z.object({
     email: z.string().min(1, "Email обязателен").email("Некорректный email"),
@@ -26,12 +26,12 @@ export default function LoginForm() {
     const [, setIsError] = useState(false);
     const router = useRouter();
 
-    const {handleLogin, accessToken} = useAuth();
+    const { handleLogin, accessToken } = useAuth();
 
     const {
         register,
         handleSubmit,
-        formState: {errors},
+        formState: { errors },
     } = useForm({
         resolver: zodResolver(formSchema),
     });
@@ -40,7 +40,6 @@ export default function LoginForm() {
         try {
             setIsLoading(true);
             await handleLogin(data.email, data.password);
-
         } catch (error) {
             console.error(error);
             setIsLoading(false);
