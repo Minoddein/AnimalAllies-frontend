@@ -1,15 +1,17 @@
 "use client";
 
-import React, {useState} from "react";
-import {SubmitHandler, useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {z} from "zod";
-import {RegisterProps} from "@/models/requests/RegisterProps";
-import {register} from "@/api/accounts";
-import {addToast, Button, Input} from "@heroui/react";
+import { z } from "zod";
+
+import React, { useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+
+import { register } from "@/api/accounts";
 import PasswordInput from "@/components/password-input";
-import {Alert} from "@heroui/alert";
-import {baseRegistrationSchema} from "@/schemas/base-registration-schema";
+import { RegisterProps } from "@/models/requests/RegisterProps";
+import { baseRegistrationSchema } from "@/schemas/base-registration-schema";
+import { Button, Input, addToast } from "@heroui/react";
+import { Alert } from "@heroui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function UserForm() {
     const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +21,7 @@ export default function UserForm() {
     const {
         register: registerValidator,
         handleSubmit,
-        formState: {errors},
+        formState: { errors },
     } = useForm({
         resolver: zodResolver(baseRegistrationSchema),
     });
@@ -52,7 +54,7 @@ export default function UserForm() {
                     description: "Мы отправили Вам письмо с подтверждением на почту",
                     color: "success",
                     timeout: 5000,
-                    shouldShowTimeoutProgress: true
+                    shouldShowTimeoutProgress: true,
                 });
             }
         } catch (error) {
@@ -123,7 +125,7 @@ export default function UserForm() {
                     isInvalid={!!errors.passwordRepeat}
                     errorMessage={errors.passwordRepeat?.message}
                 />
-                {message && <Alert color={"danger"} title={message}/>}
+                {message && <Alert color={"danger"} title={message} />}
                 <Button type="submit" color="success" isLoading={isLoading} fullWidth className="mt-6">
                     Регистрация
                 </Button>

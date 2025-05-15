@@ -1,3 +1,6 @@
+import { SocialNetwork } from "@/models/socialNetwork";
+import { Volunteer } from "@/models/volunteer";
+
 export interface User {
     id: string;
     userName: string;
@@ -7,4 +10,6 @@ export interface User {
     patronymic: string | null | undefined;
     roles: string[];
     permissions: string[];
+    socialNetworks: SocialNetwork[];
+    volunteer: Volunteer | null;
 }

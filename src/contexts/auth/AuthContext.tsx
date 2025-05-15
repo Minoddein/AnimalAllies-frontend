@@ -16,6 +16,7 @@ interface AuthContextType {
     handleLogout: () => Promise<void>;
     hasRole: (role: string) => boolean | undefined;
     hasPermission: (permission: string) => boolean | undefined;
+    updateUserData: (response: LoginResponse) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,6 +34,8 @@ export const AuthProvider = ({ children }: Props) => {
     const initData = (response: LoginResponse) => {
         setAccessToken(response.accessToken);
 
+        console.log(response);
+
         const user: User = {
             id: response.userId,
             email: response.email,
@@ -42,6 +45,16 @@ export const AuthProvider = ({ children }: Props) => {
             patronymic: response.patronymic,
             roles: response.roles,
             permissions: response.permissions,
+            socialNetworks: response.socialNetworks,
+            volunteer: response.volunteerAccount
+                ? {
+                      id: response.volunteerAccount.id,
+                      certificates: response.volunteerAccount.certificates,
+                      requisites: response.volunteerAccount.requisites,
+                      experience: response.volunteerAccount.experience,
+                      phone: response.volunteerAccount.phone,
+                  }
+                : null,
         };
         setUser(user);
     };
@@ -115,6 +128,10 @@ export const AuthProvider = ({ children }: Props) => {
         }
     };
 
+    const updateUserData = (response: LoginResponse) => {
+        initData(response);
+    };
+
     const handleLogin = async (email: string, password: string) => {
         try {
             setIsLoading(true);
@@ -149,6 +166,7 @@ export const AuthProvider = ({ children }: Props) => {
                 handleLogout,
                 hasRole,
                 hasPermission,
+                updateUserData,
             }}
         >
             {children}
