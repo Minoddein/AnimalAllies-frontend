@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 
+import { Certificate } from "@/models/certificate";
 import { Envelope } from "@/models/envelope";
 import { RegisterProps } from "@/models/requests/RegisterProps";
 import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationSettingsProps";
@@ -72,5 +73,22 @@ export async function updateProfile(data: UpdateProfileProps): Promise<AxiosResp
         secondName: data.secondName,
         patronymic: data.patronymic,
         phone: data.phone,
+    });
+}
+
+export async function updateCertificates(
+    data: (
+        | Certificate
+        | {
+              title: string;
+              description: string;
+              issuingOrganization: string;
+              issueDate: string;
+              expirationDate: string;
+          }
+    )[],
+): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<Result>>(`${API_URL}Account/certificates-to-user`, {
+        certificates: data,
     });
 }

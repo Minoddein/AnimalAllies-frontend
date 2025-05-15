@@ -3,6 +3,7 @@ import { ru } from "date-fns/locale";
 
 import React from "react";
 
+import { AddCertificateModal } from "@/app/profile/Components/PersonalInfo/addCertificatesModal";
 import { PersonalInfoProps } from "@/app/profile/page";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button, Divider } from "@heroui/react";
@@ -48,9 +49,7 @@ export function Certificates({ user }: PersonalInfoProps) {
                     })}
                 </div>
                 <div className="w-48">
-                    <Button color="primary" size="sm" startContent={<Icon icon="ri:add-fill" />} variant="flat">
-                        Добавить
-                    </Button>
+                    <AddCertificateModal />
                 </div>
             </CardBody>
         </Card>
