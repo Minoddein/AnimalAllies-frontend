@@ -71,7 +71,7 @@ const Header = () => {
     };
 
     return (
-        <Navbar isBordered isBlurred={false} maxWidth="full" className="px-4">
+        <Navbar isBordered isBlurred={true} maxWidth="full" className="px-4">
             <NavbarBrand className="flex justify-normal gap-2">
                 <Link href="/" className="flex justify-normal gap-2">
                     <AnimalAlliesLogo />
