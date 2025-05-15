@@ -11,6 +11,7 @@ import { Icon } from "@iconify/react";
 export function SocialMedia() {
     const user = useContext(AuthContext)!.user!;
     const [socialNetworks, setSocialNetworks] = useState(user.socialNetworks);
+    const updateUserData = useContext(AuthContext)!.updateUserData;
 
     const onDeleteSocialMedia = async (index: number) => {
         const updatedNetworks = socialNetworks.filter((_, i) => i !== index);
@@ -18,7 +19,10 @@ export function SocialMedia() {
         try {
             await updateSocialNetworks(updatedNetworks);
             setSocialNetworks(updatedNetworks);
-            await refresh();
+            const response = await refresh();
+            if (response.status === 200) {
+                updateUserData(response.data.result!);
+            }
         } catch (error) {
             console.error("Failed to update social networks:", error);
         }

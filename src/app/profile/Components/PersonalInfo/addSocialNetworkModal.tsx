@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react";
 
 export function AddSocialNetworkModal() {
     const user = useContext(AuthContext)!.user!;
+    const updateUserData = useContext(AuthContext)!.updateUserData;
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [socialNetwork, setSocialNetwork] = useState({
         title: "",
@@ -15,13 +16,17 @@ export function AddSocialNetworkModal() {
 
     const onAddSocialMedia = async () => {
         try {
-            const updatedNetworks = [...user.socialNetworks, { title: socialNetwork.title, url: socialNetwork.url }];
+            const updatedNetworks = [...user.socialNetworks, socialNetwork];
 
             await updateSocialNetworks(updatedNetworks);
-            await refresh();
+            const response = await refresh();
+            if (response.status === 200) {
+                updateUserData(response.data.result!);
+            }
+
             onOpenChange();
         } catch (error) {
-            console.error("Failed to update social networks:", error);
+            console.error("Failed to add social network:", error);
         }
     };
 

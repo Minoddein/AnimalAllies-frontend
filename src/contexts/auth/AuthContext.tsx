@@ -16,6 +16,7 @@ interface AuthContextType {
     handleLogout: () => Promise<void>;
     hasRole: (role: string) => boolean | undefined;
     hasPermission: (permission: string) => boolean | undefined;
+    updateUserData: (response: LoginResponse) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -124,6 +125,10 @@ export const AuthProvider = ({ children }: Props) => {
         }
     };
 
+    const updateUserData = (response: LoginResponse) => {
+        initData(response);
+    };
+
     const handleLogin = async (email: string, password: string) => {
         try {
             setIsLoading(true);
@@ -158,6 +163,7 @@ export const AuthProvider = ({ children }: Props) => {
                 handleLogout,
                 hasRole,
                 hasPermission,
+                updateUserData,
             }}
         >
             {children}
