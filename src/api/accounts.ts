@@ -5,6 +5,7 @@ import { RegisterProps } from "@/models/requests/RegisterProps";
 import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationSettingsProps";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { Result } from "@/models/result";
+import { SocialNetwork } from "@/models/socialNetwork";
 
 import { API_URL, NOTIFICATION_URL, api, notificationApi } from "./api";
 
@@ -56,4 +57,10 @@ export async function getNotificationSettings(userId: string) {
         telegramNotifications: boolean;
         webNotifications: boolean;
     }>(`${NOTIFICATION_URL}Notifications/user-notification-settings/${userId}`, {});
+}
+
+export async function updateSocialNetworks(socialNetworks: SocialNetwork[]) {
+    return api.post(`${API_URL}Account/social-networks-to-user`, {
+        socialNetworkRequests: socialNetworks.map(({ title, url }) => ({ title, url })),
+    });
 }
