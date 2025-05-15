@@ -16,15 +16,17 @@ export function PersonalInfo({ user }: PersonalInfoProps) {
                 <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-1">
                         <p className="text-sm text-white/60">ФИО</p>
-                        <p className="text-medium font-medium text-white">
+                        <div>
                             {user.patronymic === undefined ? (
-                                <h2 className="text-xl font-bold">{user.secondName + " " + user.firstName}</h2>
+                                <h2 className="text-l m-0 font-bold text-white">
+                                    {user.secondName + " " + user.firstName}
+                                </h2>
                             ) : (
-                                <h2 className="text-xl font-bold">
+                                <h2 className="text-l m-0 font-bold text-white">
                                     {user.secondName + " " + user.firstName + " " + user.patronymic!}
                                 </h2>
                             )}
-                        </p>
+                        </div>
                     </div>
 
                     <div className="space-y-1">

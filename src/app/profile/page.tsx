@@ -1,25 +1,39 @@
 "use client";
 
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { EditProfileModal } from "@/app/profile/Components/PersonalInfo/editProfileModal";
 import { ProfileHeader } from "@/app/profile/Components/PersonalInfo/profileHeader";
 import { ProfileTabs } from "@/app/profile/Components/PersonalInfo/profileTabs";
+import { ProfileSkeleton } from "@/app/profile/Components/skeleton";
 import { AuthContext } from "@/contexts/auth/AuthContext";
 import { User } from "@/models/user";
 import { Card, CardBody } from "@heroui/card";
-import { Avatar, Skeleton } from "@heroui/react";
+import { Avatar } from "@heroui/react";
 
 export interface PersonalInfoProps {
     user: User;
 }
 
 export default function ProfilePage() {
-    const user = useContext(AuthContext)!.user;
+    const { user } = useContext(AuthContext)!;
+    const [isLoading, setIsLoading] = useState(true);
 
     console.log(user);
 
-    if (!user) {
+    useEffect(() => {
+        if (user) {
+            const timer = setTimeout(() => {
+                setIsLoading(false);
+            }, 500);
+
+            return () => {
+                clearTimeout(timer);
+            };
+        }
+    }, [user]);
+
+    if (isLoading || !user) {
         return <ProfileSkeleton />;
     }
 
@@ -51,22 +65,6 @@ export default function ProfilePage() {
                     <ProfileHeader />
                     <div className="max-w-full">
                         <ProfileTabs user={user} />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-export function ProfileSkeleton() {
-    return (
-        <div className="container mx-auto py-6">
-            <div className="grid gap-6 md:grid-cols-[240px_1fr]">
-                <div className="flex flex-col items-center">
-                    <Skeleton className="h-[136px] w-[136px] rounded-full" />
-                    <div className="w-full pt-2 text-center">
-                        <Skeleton className="mx-auto my-2 h-6 w-48" />
-                        <Skeleton className="mx-auto h-4 w-32" />
                     </div>
                 </div>
             </div>
