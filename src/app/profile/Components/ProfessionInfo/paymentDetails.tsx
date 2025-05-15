@@ -1,9 +1,9 @@
 import React from "react";
 
+import { AddRequisitesModal } from "@/app/profile/Components/ProfessionInfo/addRequisitesModal";
 import { PersonalInfoProps } from "@/app/profile/page";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Button, Divider, Input } from "@heroui/react";
-import { Icon } from "@iconify/react";
+import { Divider, Input } from "@heroui/react";
 
 export function PaymentDetails({ user }: PersonalInfoProps) {
     return (
@@ -22,9 +22,7 @@ export function PaymentDetails({ user }: PersonalInfoProps) {
                     ))}
                 </div>
                 <div className="w-48">
-                    <Button color="primary" size="sm" startContent={<Icon icon="ri:add-fill" />} variant="flat">
-                        Добавить
-                    </Button>
+                    <AddRequisitesModal />
                 </div>
             </CardBody>
         </Card>

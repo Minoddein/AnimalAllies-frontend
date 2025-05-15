@@ -5,6 +5,7 @@ import { Envelope } from "@/models/envelope";
 import { RegisterProps } from "@/models/requests/RegisterProps";
 import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationSettingsProps";
 import { UpdateProfileProps } from "@/models/requests/UpdateProfileProps";
+import { Requisite } from "@/models/requisite";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { Result } from "@/models/result";
 import { SocialNetwork } from "@/models/socialNetwork";
@@ -90,5 +91,11 @@ export async function updateCertificates(
 ): Promise<AxiosResponse<Envelope<Result>>> {
     return api.post<Envelope<Result>>(`${API_URL}Account/certificates-to-user`, {
         certificates: data,
+    });
+}
+
+export async function updateRequisites(data: Requisite[]): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<Result>>(`${API_URL}Account/requisite-to-user`, {
+        requisites: data,
     });
 }
