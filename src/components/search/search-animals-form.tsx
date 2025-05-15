@@ -3,6 +3,8 @@
 import React, {useState} from "react";
 import {SearchAnimalsParams} from "@/types/search";
 import {
+    Accordion,
+    AccordionItem,
     Button,
     Dropdown,
     DropdownItem,
@@ -91,8 +93,8 @@ export function SearchAnimalsForm({onSubmitAction}: SearchFormProps) {
         const selectedName = items.find((i) => i.key === selectedKey)?.name ?? "Выберите...";
 
         return (
-            <div className="mb-1">
-                <label className="mb-1 block text-sm font-medium">{label}</label>
+            <div className="mb-3">
+                <label className="mb-2 block text-sm font-medium">{label}</label>
                 <Dropdown className="w-full">
                     <DropdownTrigger>
                         <Button variant="bordered" className="w-full justify-between text-left">
@@ -135,52 +137,55 @@ export function SearchAnimalsForm({onSubmitAction}: SearchFormProps) {
                         setName(e.target.value);
                     }}
                 />
-                <h3 className="mt-1">Сортировка</h3>
-                {renderDropdown(
-                    "Пол",
-                    genders.map((g) => ({key: g.key, name: g.name})),
-                    selectedGender,
-                    (keys) => {
-                        handleSelectionChange(keys, setSelectedGender);
-                    },
-                    true,
-                )}
-                {renderDropdown(
-                    "Окрас",
-                    colorings.map((c) => ({key: c.key, name: c.name})),
-                    selectedColoring,
-                    (keys) => {
-                        handleSelectionChange(keys, setSelectedColoring);
-                    },
-                    true,
-                )}
-                {renderDropdown(
-                    "Место",
-                    places.map((p) => ({key: p.key, name: p.name})),
-                    selectedPlace,
-                    (keys) => {
-                        handleSelectionChange(keys, setSelectedPlace);
-                    },
-                    true,
-                )}
-                {renderDropdown(
-                    "Здоровье",
-                    healths.map((h) => ({key: h.key, name: h.name})),
-                    selectedHealth,
-                    (keys) => {
-                        handleSelectionChange(keys, setSelectedHealth);
-                    },
-                    true,
-                )}
-                {renderDropdown(
-                    "Другое",
-                    others.map((o) => ({key: o.key, name: o.name})),
-                    selectedOther,
-                    (keys) => {
-                        handleSelectionChange(keys, setSelectedOther);
-                    },
-                    true,
-                )}
+                <Accordion variant="splitted" className="mb-2">
+                    <AccordionItem key="1" aria-label="Sorting" title="Сортировка">
+                        {renderDropdown(
+                            "Пол",
+                            genders.map((g) => ({key: g.key, name: g.name})),
+                            selectedGender,
+                            (keys) => {
+                                handleSelectionChange(keys, setSelectedGender);
+                            },
+                            true,
+                        )}
+                        {renderDropdown(
+                            "Окрас",
+                            colorings.map((c) => ({key: c.key, name: c.name})),
+                            selectedColoring,
+                            (keys) => {
+                                handleSelectionChange(keys, setSelectedColoring);
+                            },
+                            true,
+                        )}
+                        {renderDropdown(
+                            "Место",
+                            places.map((p) => ({key: p.key, name: p.name})),
+                            selectedPlace,
+                            (keys) => {
+                                handleSelectionChange(keys, setSelectedPlace);
+                            },
+                            true,
+                        )}
+                        {renderDropdown(
+                            "Здоровье",
+                            healths.map((h) => ({key: h.key, name: h.name})),
+                            selectedHealth,
+                            (keys) => {
+                                handleSelectionChange(keys, setSelectedHealth);
+                            },
+                            true,
+                        )}
+                        {renderDropdown(
+                            "Другое",
+                            others.map((o) => ({key: o.key, name: o.name})),
+                            selectedOther,
+                            (keys) => {
+                                handleSelectionChange(keys, setSelectedOther);
+                            },
+                            true,
+                        )}
+                    </AccordionItem>
+                </Accordion>
             </div>
             <div className="flex justify-end gap-2">
                 <Button variant="flat" onPress={handleReset}>
