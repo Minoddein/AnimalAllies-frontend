@@ -3,6 +3,7 @@ import axios, { AxiosResponse } from "axios";
 import { Envelope } from "@/models/envelope";
 import { RegisterProps } from "@/models/requests/RegisterProps";
 import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationSettingsProps";
+import { UpdateProfileProps } from "@/models/requests/UpdateProfileProps";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { Result } from "@/models/result";
 import { SocialNetwork } from "@/models/socialNetwork";
@@ -62,5 +63,14 @@ export async function getNotificationSettings(userId: string) {
 export async function updateSocialNetworks(socialNetworks: SocialNetwork[]) {
     return api.post(`${API_URL}Account/social-networks-to-user`, {
         socialNetworkRequests: socialNetworks.map(({ title, url }) => ({ title, url })),
+    });
+}
+
+export async function updateProfile(data: UpdateProfileProps): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<Result>>(`${API_URL}Account/updating-info`, {
+        firstName: data.firstName,
+        secondName: data.secondName,
+        patronymic: data.patronymic,
+        phone: data.phone,
     });
 }

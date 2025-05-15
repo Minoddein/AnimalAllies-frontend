@@ -19,7 +19,7 @@ export function ContactInfo({ user }: PersonalInfoProps) {
                     </div>
                     <div className="flex items-center gap-2">
                         <Icon icon="luicide:phone" className="text-muted-foreground h-4 w-4" />
-                        <p className="text-medium font-medium text-white">{user.firstName}</p>
+                        <p className="text-medium font-medium text-white">{user.volunteer?.phone}</p>
                     </div>
                 </div>
             </CardBody>

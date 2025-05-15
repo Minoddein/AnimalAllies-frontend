@@ -6,4 +6,5 @@ export interface VolunteerAccountResponse {
     certificates: Certificate[];
     requisites: Requisite[];
     experience: number;
+    phone: string;
 }

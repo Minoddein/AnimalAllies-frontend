@@ -34,6 +34,8 @@ export const AuthProvider = ({ children }: Props) => {
     const initData = (response: LoginResponse) => {
         setAccessToken(response.accessToken);
 
+        console.log(response);
+
         const user: User = {
             id: response.userId,
             email: response.email,
@@ -50,6 +52,7 @@ export const AuthProvider = ({ children }: Props) => {
                       certificates: response.volunteerAccount.certificates,
                       requisites: response.volunteerAccount.requisites,
                       experience: response.volunteerAccount.experience,
+                      phone: response.volunteerAccount.phone,
                   }
                 : null,
         };
