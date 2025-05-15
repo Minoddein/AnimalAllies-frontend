@@ -12,11 +12,45 @@ import { Icon } from "@iconify/react";
 
 export function PaymentDetails({ user }: PersonalInfoProps) {
     const [requisites, setRequisites] = useState(user.volunteer?.requisites ?? []);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [editForm, setEditForm] = useState({ title: "", description: "" });
     const updateUserData = useContext(AuthContext)!.updateUserData;
 
     const onDeleteRequisite = async (index: number) => {
         const updatedRequisites = requisites.filter((_, i) => i !== index);
+        await updateAndRefresh(updatedRequisites);
+    };
 
+    const startEditing = (index: number) => {
+        setEditingIndex(index);
+        setEditForm({
+            title: requisites[index].title,
+            description: requisites[index].description,
+        });
+    };
+
+    const cancelEditing = () => {
+        setEditingIndex(null);
+    };
+
+    const handleEditChange = (field: keyof typeof editForm) => (value: string) => {
+        setEditForm((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const saveEditing = async () => {
+        if (editingIndex === null) return;
+
+        const updatedRequisites = [...requisites];
+        updatedRequisites[editingIndex] = {
+            ...updatedRequisites[editingIndex],
+            ...editForm,
+        };
+
+        await updateAndRefresh(updatedRequisites);
+        setEditingIndex(null);
+    };
+
+    const updateAndRefresh = async (updatedRequisites: typeof requisites) => {
         try {
             await updateRequisites(updatedRequisites);
             setRequisites(updatedRequisites);
@@ -25,7 +59,7 @@ export function PaymentDetails({ user }: PersonalInfoProps) {
                 updateUserData(response.data.result!);
             }
         } catch (error) {
-            console.error("Failed to delete requisite:", error);
+            console.error("Failed to update requisites:", error);
         }
     };
 
@@ -40,27 +74,90 @@ export function PaymentDetails({ user }: PersonalInfoProps) {
             </CardHeader>
             <Divider className="bg-white/20" />
             <CardBody className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-1">
+                <div className="flex flex-col gap-4">
                     {requisites.map((requisite, index) => (
-                        <div
-                            key={`${index}_${requisite.title}`}
-                            className="group relative mb-6 flex w-full flex-wrap gap-4 md:mb-0 md:flex-nowrap"
-                        >
-                            <Button
-                                isIconOnly
-                                size="sm"
-                                color="danger"
-                                variant="light"
-                                className="absolute -top-2 -right-2 z-10 h-6 w-6 min-w-6 opacity-0 transition-opacity group-hover:opacity-100"
-                                onPress={() => {
-                                    void onDeleteRequisite(index);
-                                }}
-                            >
-                                <Icon icon="material-symbols:close" width={16} height={16} />
-                            </Button>
+                        <div key={`${index}_${requisite.title}`} className="relative">
+                            <div className="absolute top-0 right-0 flex gap-1">
+                                {editingIndex === index ? (
+                                    <>
+                                        <Button
+                                            isIconOnly
+                                            size="sm"
+                                            color="success"
+                                            variant="light"
+                                            className="h-6 w-6 min-w-6"
+                                            onPress={() => {
+                                                void saveEditing();
+                                            }}
+                                        >
+                                            <Icon icon="material-symbols:check" width={16} height={16} />
+                                        </Button>
+                                        <Button
+                                            isIconOnly
+                                            size="sm"
+                                            color="danger"
+                                            variant="light"
+                                            className="h-6 w-6 min-w-6"
+                                            onPress={cancelEditing}
+                                        >
+                                            <Icon icon="material-symbols:close" width={16} height={16} />
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Button
+                                            isIconOnly
+                                            size="sm"
+                                            color="primary"
+                                            variant="light"
+                                            className="h-6 w-6 min-w-6"
+                                            onPress={() => {
+                                                startEditing(index);
+                                            }}
+                                        >
+                                            <Icon icon="material-symbols:edit" width={16} height={16} />
+                                        </Button>
+                                        <Button
+                                            isIconOnly
+                                            size="sm"
+                                            color="danger"
+                                            variant="light"
+                                            className="h-6 w-6 min-w-6"
+                                            onPress={() => void onDeleteRequisite(index)}
+                                        >
+                                            <Icon icon="material-symbols:close" width={16} height={16} />
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
 
-                            <Input label="Название" type="title" defaultValue={requisite.title} readOnly />
-                            <Input label="Описание" type="description" defaultValue={requisite.description} readOnly />
+                            {editingIndex === index ? (
+                                <div className="flex flex-col gap-3 pt-6">
+                                    <Input
+                                        label="Название"
+                                        type="text"
+                                        value={editForm.title}
+                                        onChange={(e) => {
+                                            handleEditChange("title")(e.target.value);
+                                        }}
+                                        size="sm"
+                                    />
+                                    <Input
+                                        label="Описание"
+                                        type="text"
+                                        value={editForm.description}
+                                        onChange={(e) => {
+                                            handleEditChange("description")(e.target.value);
+                                        }}
+                                        size="sm"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-1 pt-6">
+                                    <p className="text-medium font-medium">{requisite.title}</p>
+                                    <p className="text-small text-default-500">{requisite.description}</p>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
