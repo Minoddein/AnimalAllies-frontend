@@ -4,7 +4,7 @@ import { ru } from "date-fns/locale";
 import React, { useContext, useEffect, useState } from "react";
 
 import { refresh, updateCertificates } from "@/api/accounts";
-import { AddCertificateModal } from "@/app/profile/Components/PersonalInfo/addCertificatesModal";
+import { AddCertificateModal } from "@/app/profile/Components/ProfessionInfo/addCertificatesModal";
 import { PersonalInfoProps } from "@/app/profile/page";
 import { AuthContext } from "@/contexts/auth/AuthContext";
 import { Card, CardBody, CardHeader } from "@heroui/card";
