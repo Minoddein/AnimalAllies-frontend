@@ -1,6 +1,9 @@
-import { RegisterProps } from "@/models/requests/RegisterProps";
-
-export interface RegisterVolunteerProps extends RegisterProps {
+export interface RegisterVolunteerProps {
+    email: string;
+    userName: string;
+    firstName: string;
+    secondName: string;
+    patronymic: string | null;
     phoneNumber: string;
     workExperience: number;
     volunteerDescription: string;
