@@ -9,9 +9,13 @@ import { register } from "@/api/accounts";
 import PasswordInput from "@/components/password-input";
 import { RegisterProps } from "@/models/requests/RegisterProps";
 import { baseRegistrationSchema } from "@/schemas/base-registration-schema";
-import { Button, Input, addToast } from "@heroui/react";
-import { Alert } from "@heroui/react";
+import { Alert, Button, Input, addToast } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+
+const userSchema = baseRegistrationSchema.refine((data) => data.password === data.passwordRepeat, {
+    message: "Пароли не совпадают",
+    path: ["passwordRepeat"],
+});
 
 export default function UserForm() {
     const [isLoading, setIsLoading] = useState(false);
@@ -23,10 +27,10 @@ export default function UserForm() {
         handleSubmit,
         formState: { errors },
     } = useForm({
-        resolver: zodResolver(baseRegistrationSchema),
+        resolver: zodResolver(userSchema),
     });
 
-    const onSubmit: SubmitHandler<z.infer<typeof baseRegistrationSchema>> = async (data) => {
+    const onSubmit: SubmitHandler<z.infer<typeof userSchema>> = async (data) => {
         try {
             setIsLoading(true);
             setMessage(null);
