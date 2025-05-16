@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import {useMediaQuery} from "@/hooks/use-media-query";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import {
     Drawer,
     DrawerBody,
@@ -11,7 +11,7 @@ import {
     Modal,
     ModalBody,
     ModalContent,
-    ModalHeader
+    ModalHeader,
 } from "@heroui/react";
 
 interface Props {
@@ -23,15 +23,15 @@ interface Props {
     contentClassName?: string;
 }
 
-export default function ModalOrDrawer({label, isOpen, onOpenChangeAction, children, size, contentClassName}: Props) {
+export default function ModalOrDrawer({ label, isOpen, onOpenChangeAction, children, size, contentClassName }: Props) {
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
     return isDesktop
-        ? ShowDialog({label, isOpen, onOpenChangeAction, children, size, contentClassName})
-        : ShowDrawer({label, isOpen, onOpenChangeAction, children, size, contentClassName});
+        ? ShowDialog({ label, isOpen, onOpenChangeAction, children, size, contentClassName })
+        : ShowDrawer({ label, isOpen, onOpenChangeAction, children, size, contentClassName });
 }
 
-function ShowDialog({label, isOpen, onOpenChangeAction, children, size = "md", contentClassName}: Props) {
+function ShowDialog({ label, isOpen, onOpenChangeAction, children, size = "md", contentClassName }: Props) {
     return (
         <Modal
             backdrop="blur"
@@ -49,7 +49,7 @@ function ShowDialog({label, isOpen, onOpenChangeAction, children, size = "md", c
     );
 }
 
-function ShowDrawer({label, isOpen, onOpenChangeAction, children, size = "full", contentClassName}: Props) {
+function ShowDrawer({ label, isOpen, onOpenChangeAction, children, size = "full", contentClassName }: Props) {
     return (
         <Drawer
             placement="bottom"

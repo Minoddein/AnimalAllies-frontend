@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
+
 import UserForm from "@/app/_components/auth/user-form";
-import {Button, Dropdown, DropdownItem, DropdownMenu, DropdownMenuProps, DropdownTrigger} from "@heroui/react";
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownMenuProps, DropdownTrigger } from "@heroui/react";
 
 export default function RegistrationFrom() {
     const roles = ["Пользователь", "Волонтёр", "Животное"];
@@ -40,16 +41,13 @@ export default function RegistrationFrom() {
                         variant="flat"
                         onSelectionChange={handleSelectionChange}
                     >
-                        {roles.map(role => {
-                            return <DropdownItem key={role}>
-                                {role}
-                            </DropdownItem>
+                        {roles.map((role) => {
+                            return <DropdownItem key={role}>{role}</DropdownItem>;
                         })}
                     </DropdownMenu>
                 </Dropdown>
             </div>
-            {selectedValue === "Пользователь" ? <UserForm/> : <p>Форма находиться в разработке</p>}
+            {selectedValue === "Пользователь" ? <UserForm /> : <p>Форма находиться в разработке</p>}
         </>
     );
 }
-
