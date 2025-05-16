@@ -40,8 +40,6 @@ export default function Header({ activeTab, setActiveTabAction }: NavbarProps) {
     const { accessToken, user, handleLogout } = useContext(AuthContext)!;
     const tabs: Tab[] = ["animals", "volunteers", "requests", "events"];
 
-    console.log(user);
-
     const handleNavigation = (e: PressEvent, tab: Tab) => {
         setActiveTabAction(tab);
     };
