@@ -1,11 +1,15 @@
 "use client";
 
+import * as React from "react";
+import Header from "@/components/header";
+import {Tab} from "@/types/tabs";
 import { useEffect, useState } from "react";
 
 import { Badge, Button, Card, CardBody, Divider } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export default function App() {
+    const [activeTab, setActiveTab] = useState<Tab>("main");
     const [currentSlide, setCurrentSlide] = useState(0);
     const [autoplay, setAutoplay] = useState(true);
 
@@ -57,6 +61,7 @@ export default function App() {
 
     return (
         <main className="min-h-screen bg-black text-white">
+            <Header activeTab={activeTab} setActiveTabAction={setActiveTab}/>
             {/* Hero Section */}
             <section className="relative h-[80vh] overflow-hidden">
                 {/* Carousel */}
