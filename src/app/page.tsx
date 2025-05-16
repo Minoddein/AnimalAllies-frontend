@@ -1,17 +1,20 @@
 "use client";
 
 import * as React from "react";
-import Header from "@/components/header";
-import {Tab} from "@/types/tabs";
 import { useEffect, useState } from "react";
 
-import { Badge, Button, Card, CardBody, Divider } from "@heroui/react";
+import VolunteerForm from "@/app/_components/auth/volunteer-register-form";
+import Header from "@/components/header";
+import ModalOrDrawer from "@/components/modal-or-drawer";
+import { Tab } from "@/types/tabs";
+import { Badge, Button, Card, CardBody, Divider, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export default function App() {
     const [activeTab, setActiveTab] = useState<Tab>("main");
     const [currentSlide, setCurrentSlide] = useState(0);
     const [autoplay, setAutoplay] = useState(true);
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     const carouselItems = [
         {
@@ -61,7 +64,7 @@ export default function App() {
 
     return (
         <main className="min-h-screen bg-black text-white">
-            <Header activeTab={activeTab} setActiveTabAction={setActiveTab}/>
+            <Header activeTab={activeTab} setActiveTabAction={setActiveTab} />
             {/* Hero Section */}
             <section className="relative h-[80vh] overflow-hidden">
                 {/* Carousel */}
@@ -154,9 +157,17 @@ export default function App() {
                         </p>
                         <div className="flex flex-wrap justify-center gap-4">
                             <Button color="success">Найти питомца</Button>
-                            <Button variant="bordered" color="success">
+                            <Button variant="bordered" color="success" onPress={onOpen}>
                                 Стать волонтёром
                             </Button>
+                            <ModalOrDrawer
+                                label="Стать волонтёром"
+                                isOpen={isOpen}
+                                onOpenChangeAction={onOpenChange}
+                                size="2xl"
+                            >
+                                <VolunteerForm />
+                            </ModalOrDrawer>
                         </div>
                     </div>
                 </div>
