@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import VolunteerForm from "@/app/_components/auth/volunteer-register-form";
 import Header from "@/components/header";
 import ModalOrDrawer from "@/components/modal-or-drawer";
+import { AuthContext } from "@/contexts/auth/AuthContext";
 import { Tab } from "@/types/tabs";
-import { Badge, Button, Card, CardBody, Divider, useDisclosure } from "@heroui/react";
+import { Badge, Button, Card, CardBody, Divider, addToast, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [autoplay, setAutoplay] = useState(true);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const { accessToken } = useContext(AuthContext)!;
 
     const carouselItems = [
         {
@@ -157,7 +159,21 @@ export default function App() {
                         </p>
                         <div className="flex flex-wrap justify-center gap-4">
                             <Button color="success">Найти питомца</Button>
-                            <Button variant="bordered" color="success" onPress={onOpen}>
+                            <Button
+                                variant="bordered"
+                                color="success"
+                                onPress={() => {
+                                    if (!accessToken)
+                                        addToast({
+                                            title: "Не авторизован",
+                                            description: "Для начала нужно авторизоваться как пользователь",
+                                            color: "danger",
+                                            timeout: 5000,
+                                            shouldShowTimeoutProgress: true,
+                                        });
+                                    else onOpen();
+                                }}
+                            >
                                 Стать волонтёром
                             </Button>
                             <ModalOrDrawer

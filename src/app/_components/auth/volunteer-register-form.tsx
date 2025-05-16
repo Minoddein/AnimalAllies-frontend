@@ -5,26 +5,20 @@ import { z } from "zod";
 import React, { useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
-import PasswordInput from "@/components/password-input";
 import { RegisterVolunteerProps } from "@/models/requests/RegisterVolunteerProps";
 import { baseRegistrationSchema } from "@/schemas/base-registration-schema";
 import { Textarea } from "@heroui/input";
 import { Alert, Button, Input, NumberInput, addToast } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const volunteerSchema = baseRegistrationSchema
-    .extend({
-        phoneNumber: z
-            .string()
-            .min(1, "Телефон обязателен")
-            .regex(/^7\d{10}$/, "Введите корректный российский номер (7XXXXXXXXXX)"),
-        workExperience: z.number().min(0).max(100),
-        volunteerDescription: z.string().min(1, "Добавьте немного информации о себе"),
-    })
-    .refine((data) => data.password === data.passwordRepeat, {
-        message: "Пароли не совпадают",
-        path: ["passwordRepeat"],
-    });
+const volunteerSchema = baseRegistrationSchema.extend({
+    phoneNumber: z
+        .string()
+        .min(1, "Телефон обязателен")
+        .regex(/^7\d{10}$/, "Введите корректный российский номер (7XXXXXXXXXX)"),
+    workExperience: z.coerce.number().min(0).max(100),
+    volunteerDescription: z.string().min(1, "Добавьте немного информации о себе"),
+});
 
 export default function VolunteerForm() {
     const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +36,7 @@ export default function VolunteerForm() {
 
     const onSubmit: SubmitHandler<z.infer<typeof volunteerSchema>> = async (data) => {
         try {
+            console.log("ТУТТТТТТТТТТТТТ!!!!!!!");
             setIsLoading(true);
             setMessage(null);
             setMessageType(null);
@@ -54,7 +49,6 @@ export default function VolunteerForm() {
                 firstName: data.firstname,
                 secondName: data.secondname,
                 patronymic: data.patronymic || null,
-                password: data.password,
                 phoneNumber: data.phoneNumber,
                 workExperience: data.workExperience,
                 volunteerDescription: data.volunteerDescription,
@@ -69,8 +63,8 @@ export default function VolunteerForm() {
                 setMessageType("error");
             } else {*/
             addToast({
-                title: "Подтверждение почты",
-                description: "Мы отправили Вам письмо с подтверждением на почту",
+                title: "Отправление заявки",
+                description: "Мы отправили заявку на регистрацию Вас как волонтёра",
                 color: "success",
                 timeout: 5000,
                 shouldShowTimeoutProgress: true,
@@ -149,6 +143,7 @@ export default function VolunteerForm() {
                         <NumberInput
                             label="Волонтёрский опыт"
                             variant="bordered"
+                            type="number"
                             minValue={0}
                             maxValue={100}
                             value={field.value}
@@ -165,20 +160,9 @@ export default function VolunteerForm() {
                     isInvalid={!!errors.volunteerDescription}
                     errorMessage={errors.volunteerDescription?.message}
                 />
-                <PasswordInput
-                    {...registerValidator("password")}
-                    isInvalid={!!errors.password}
-                    errorMessage={errors.password?.message}
-                />
-                <PasswordInput
-                    label="Повторите пароль"
-                    {...registerValidator("passwordRepeat")}
-                    isInvalid={!!errors.passwordRepeat}
-                    errorMessage={errors.passwordRepeat?.message}
-                />
                 {message && <Alert color={"danger"} title={message} />}
                 <Button type="submit" color="success" isLoading={isLoading} fullWidth className="mt-6">
-                    Регистрация
+                    Подать заявку
                 </Button>
             </div>
         </form>
