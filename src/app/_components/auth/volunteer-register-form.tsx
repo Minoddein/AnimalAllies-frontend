@@ -3,7 +3,7 @@
 import { z } from "zod";
 
 import React, { useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
 import PasswordInput from "@/components/password-input";
 import { RegisterVolunteerProps } from "@/models/requests/RegisterVolunteerProps";
@@ -32,6 +32,7 @@ export default function VolunteerForm() {
     const [, setMessageType] = useState<"success" | "error" | null>(null);
 
     const {
+        control,
         register: registerValidator,
         handleSubmit,
         formState: { errors },
@@ -141,13 +142,21 @@ export default function VolunteerForm() {
                     isInvalid={!!errors.phoneNumber}
                     errorMessage={errors.phoneNumber?.message}
                 />
-                <NumberInput
-                    label="Волонтёрский опыт"
-                    variant="bordered"
+                <Controller
                     name="workExperience"
-                    {...registerValidator("workExperience")}
-                    isInvalid={!!errors.workExperience}
-                    errorMessage={errors.workExperience?.message}
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <NumberInput
+                            label="Волонтёрский опыт"
+                            variant="bordered"
+                            minValue={0}
+                            maxValue={100}
+                            value={field.value}
+                            onChange={field.onChange}
+                            isInvalid={!!fieldState.error}
+                            errorMessage={fieldState.error?.message}
+                        />
+                    )}
                 />
                 <Textarea
                     label="О себе"
