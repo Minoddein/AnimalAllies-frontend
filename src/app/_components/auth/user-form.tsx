@@ -12,10 +12,20 @@ import { baseRegistrationSchema } from "@/schemas/base-registration-schema";
 import { Alert, Button, Input, addToast } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const userSchema = baseRegistrationSchema.refine((data) => data.password === data.passwordRepeat, {
-    message: "Пароли не совпадают",
-    path: ["passwordRepeat"],
-});
+const userSchema = baseRegistrationSchema
+    .extend({
+        password: z
+            .string()
+            .min(8, "Пароль должен содержать минимум 8 символов")
+            .regex(/[A-ZА-ЯЁ]/, "Пароль должен содержать хотя бы одну заглавную букву")
+            .regex(/[a-zа-яё]/, "Пароль должен содержать хотя бы одну строчную букву")
+            .regex(/[0-9]/, "Пароль должен содержать хотя бы одну цифру"),
+        passwordRepeat: z.string(),
+    })
+    .refine((data) => data.password === data.passwordRepeat, {
+        message: "Пароли не совпадают",
+        path: ["passwordRepeat"],
+    });
 
 export default function UserForm() {
     const [isLoading, setIsLoading] = useState(false);
