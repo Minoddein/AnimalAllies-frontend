@@ -1,4 +1,10 @@
-import {PawPrintIcon as Paw} from "lucide-react";
+import * as React from "react";
+import { useContext } from "react";
+
+import AuthForm from "@/app/_components/auth/auth-form";
+import ModalOrDrawer from "@/components/modal-or-drawer";
+import { AuthContext } from "@/contexts/auth/AuthContext";
+import { Tab } from "@/types/tabs";
 import {
     Avatar,
     Button,
@@ -12,19 +18,14 @@ import {
     NavbarContent,
     NavbarItem,
     PressEvent,
-    useDisclosure
+    useDisclosure,
 } from "@heroui/react";
-import * as React from "react";
-import {useContext} from "react";
-import {AuthContext} from "@/contexts/auth/AuthContext";
-import ModalOrDrawer from "@/components/modal-or-drawer";
-import AuthForm from "@/app/_components/auth/auth-form";
-import {Tab} from "@/types/tabs";
+import { Icon } from "@iconify/react";
 
 const AnimalAlliesLogo = () => {
     return (
         <div className="flex items-center gap-1">
-            <Paw size={28} className="text-primary"/>
+            <Icon icon="lucide:paw-print" width={28} height={28} className="text-primary" />
         </div>
     );
 };
@@ -34,9 +35,9 @@ interface NavbarProps {
     setActiveTabAction: React.Dispatch<React.SetStateAction<Tab>>;
 }
 
-export default function Header({activeTab, setActiveTabAction}: NavbarProps) {
-    const {isOpen, onOpen, onOpenChange, onClose} = useDisclosure();
-    const {accessToken, user, handleLogout} = useContext(AuthContext)!;
+export default function Header({ activeTab, setActiveTabAction }: NavbarProps) {
+    const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+    const { accessToken, user, handleLogout } = useContext(AuthContext)!;
     const tabs: Tab[] = ["animals", "volunteers", "requests", "events"];
 
     console.log(user);
@@ -68,7 +69,7 @@ export default function Header({activeTab, setActiveTabAction}: NavbarProps) {
     return (
         <Navbar isBordered isBlurred={false} maxWidth="full" className="px-4">
             <NavbarBrand className="flex justify-normal gap-2">
-                <AnimalAlliesLogo/>
+                <AnimalAlliesLogo />
                 <p className="font-bold text-inherit">AnimalAllies</p>
             </NavbarBrand>
             <NavbarContent className="hidden gap-4 sm:flex" justify="center">
@@ -109,9 +110,13 @@ export default function Header({activeTab, setActiveTabAction}: NavbarProps) {
                             <DropdownItem key="settings">Настройки</DropdownItem>
                             <DropdownItem key="statistic">Статистика</DropdownItem>
                             <DropdownItem key="help_and_feedback">Помощь</DropdownItem>
-                            <DropdownItem key="logout" color="danger" onPressEnd={() => {
-                                void handleOnClickLogout()
-                            }}>
+                            <DropdownItem
+                                key="logout"
+                                color="danger"
+                                onPressEnd={() => {
+                                    void handleOnClickLogout();
+                                }}
+                            >
                                 Выйти
                             </DropdownItem>
                         </DropdownMenu>
@@ -121,13 +126,12 @@ export default function Header({activeTab, setActiveTabAction}: NavbarProps) {
                         <Button variant="light" onPressEnd={onOpen}>
                             Войти
                         </Button>
-                        <ModalOrDrawer label="Вход" isOpen={isOpen}
-                                       onOpenChangeAction={onOpenChange}>
-                            <AuthForm/>
+                        <ModalOrDrawer label="Вход" isOpen={isOpen} onOpenChangeAction={onOpenChange}>
+                            <AuthForm />
                         </ModalOrDrawer>
                     </NavbarItem>
                 )}
             </NavbarContent>
         </Navbar>
     );
-};
+}
