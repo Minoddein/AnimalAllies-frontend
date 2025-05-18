@@ -102,7 +102,7 @@ export default function Header({ activeTab, setActiveTabAction }: NavbarProps) {
                             />
                         </DropdownTrigger>
                         <DropdownMenu aria-label="Profile Actions" variant="flat">
-                            <DropdownItem key="profile" className="h-14 gap-2">
+                            <DropdownItem key="profile" className="h-14 gap-2" href="/profile">
                                 <p className="font-semibold">{user!.userName}</p>
                             </DropdownItem>
                             <DropdownItem key="settings">Настройки</DropdownItem>

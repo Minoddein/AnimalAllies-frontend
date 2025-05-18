@@ -4,6 +4,7 @@ import { ContactInfo } from "@/app/profile/Components/PersonalInfo/contactInfo";
 import { PersonalInfo } from "@/app/profile/Components/PersonalInfo/personalInfo";
 import { SocialMedia } from "@/app/profile/Components/PersonalInfo/socialMedia";
 import { Certificates } from "@/app/profile/Components/ProfessionInfo/certificates";
+import { ExperienceDetails } from "@/app/profile/Components/ProfessionInfo/experienceDetails";
 import { PaymentDetails } from "@/app/profile/Components/ProfessionInfo/paymentDetails";
 import { Roles } from "@/app/profile/Components/ProfessionInfo/roles";
 import { Settings } from "@/app/profile/Components/Settings/settings";
@@ -31,6 +32,7 @@ export function ProfileTabs({ user }: PersonalInfoProps) {
                             <Roles user={user} />
                             <PaymentDetails user={user} />
                             <Certificates user={user} />
+                            <ExperienceDetails user={user} />
                         </div>
                     </Tab>
                 ) : null}
