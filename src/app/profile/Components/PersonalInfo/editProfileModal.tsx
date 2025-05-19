@@ -10,10 +10,11 @@ export function EditProfileModal({ user }: PersonalInfoProps) {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const updateUserData = useContext(AuthContext)!.updateUserData;
     const [formData, setFormData] = useState({
-        firstName: user.firstName || undefined,
-        secondName: user.secondName || undefined,
+        firstName: user.firstName || "",
+        secondName: user.secondName || "",
         patronymic: user.patronymic ?? undefined,
         phone: user.volunteer?.phone ?? undefined,
+        experience: user.volunteer?.experience ?? undefined,
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,16 +24,13 @@ export function EditProfileModal({ user }: PersonalInfoProps) {
 
     const handleSubmit = async (onClose: () => void) => {
         try {
-            console.log(formData);
-
             const data: UpdateProfileProps = {
                 firstName: formData.firstName,
                 secondName: formData.secondName,
                 patronymic: formData.patronymic,
                 phone: formData.phone,
+                experience: formData.experience,
             };
-
-            console.log(data);
 
             const responseUpdateProfile = await updateProfile(data);
             if (responseUpdateProfile.status === 200) {
@@ -81,14 +79,24 @@ export function EditProfileModal({ user }: PersonalInfoProps) {
                                     onChange={handleInputChange}
                                 />
                                 {user.volunteer && (
-                                    <Input
-                                        name="phone"
-                                        label="Номер телефона"
-                                        type="text"
-                                        variant="bordered"
-                                        value={formData.phone}
-                                        onChange={handleInputChange}
-                                    />
+                                    <div className="flex flex-col gap-3">
+                                        <Input
+                                            name="phone"
+                                            label="Номер телефона"
+                                            type="text"
+                                            variant="bordered"
+                                            value={formData.phone}
+                                            onChange={handleInputChange}
+                                        />
+                                        <Input
+                                            name="experience"
+                                            label="Опыт работы"
+                                            variant="bordered"
+                                            type="number"
+                                            value={formData.experience?.toString()}
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
                                 )}
                             </ModalBody>
                             <ModalFooter>

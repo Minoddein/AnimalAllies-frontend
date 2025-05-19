@@ -7,7 +7,8 @@ import { SetNotificationSettingsProps } from "@/models/requests/SetNotificationS
 import { UpdateProfileProps } from "@/models/requests/UpdateProfileProps";
 import { Requisite } from "@/models/requisite";
 import { LoginResponse } from "@/models/responses/loginResponse";
-import { Result } from "@/models/result";
+import { UploadUrlResponse } from "@/models/responses/uploadUrlResponse";
+import { Result, ResultWithValue } from "@/models/result";
 import { SocialNetwork } from "@/models/socialNetwork";
 
 import { API_URL, NOTIFICATION_URL, api, notificationApi } from "./api";
@@ -74,6 +75,7 @@ export async function updateProfile(data: UpdateProfileProps): Promise<AxiosResp
         secondName: data.secondName,
         patronymic: data.patronymic,
         phone: data.phone,
+        experience: data.experience,
     });
 }
 
@@ -97,5 +99,18 @@ export async function updateCertificates(
 export async function updateRequisites(data: Requisite[]): Promise<AxiosResponse<Envelope<Result>>> {
     return api.post<Envelope<Result>>(`${API_URL}Account/requisite-to-user`, {
         requisites: data,
+    });
+}
+
+export async function uploadAvatar(
+    fileName: string,
+    contentType: string,
+): Promise<AxiosResponse<Envelope<ResultWithValue<UploadUrlResponse>>>> {
+    return api.post<Envelope<ResultWithValue<UploadUrlResponse>>>(`${API_URL}Account/avatar`, {
+        uploadFileDto: {
+            bucketName: "photos",
+            fileName: fileName,
+            contentType: contentType,
+        },
     });
 }

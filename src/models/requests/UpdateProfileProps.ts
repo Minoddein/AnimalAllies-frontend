@@ -3,4 +3,5 @@ export interface UpdateProfileProps {
     secondName: string | undefined;
     patronymic: string | undefined;
     phone: string | undefined;
+    experience: number | undefined;
 }

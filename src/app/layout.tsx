@@ -1,8 +1,5 @@
-import React, { Suspense } from "react";
-
 import { Inter } from "next/font/google";
 
-import Loading from "@/app/loading";
 import { Providers } from "@/components/providres";
 import { AuthProvider } from "@/contexts/auth/AuthContext";
 import "@/globals.css";
@@ -18,9 +15,7 @@ export default function RootLayout({
         <html lang="ru" suppressHydrationWarning>
             <body className={inter.className}>
                 <AuthProvider>
-                    <Suspense fallback={<Loading />}>
-                        <Providers>{children}</Providers>
-                    </Suspense>
+                    <Providers>{children}</Providers>
                 </AuthProvider>
             </body>
         </html>

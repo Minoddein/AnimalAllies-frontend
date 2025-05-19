@@ -2,6 +2,7 @@
 
 import React, { useContext, useEffect, useState } from "react";
 
+import { UploadAvatarModal } from "@/app/profile/Components/PersonalInfo/UploadAvatarModal";
 import { EditProfileModal } from "@/app/profile/Components/PersonalInfo/editProfileModal";
 import { ProfileHeader } from "@/app/profile/Components/PersonalInfo/profileHeader";
 import { ProfileTabs } from "@/app/profile/Components/PersonalInfo/profileTabs";
@@ -9,7 +10,6 @@ import { ProfileSkeleton } from "@/app/profile/Components/skeleton";
 import { AuthContext } from "@/contexts/auth/AuthContext";
 import { User } from "@/models/user";
 import { Card, CardBody } from "@heroui/card";
-import { Avatar } from "@heroui/react";
 
 export interface PersonalInfoProps {
     user: User;
@@ -43,10 +43,7 @@ export default function ProfilePage() {
                 <div className="flex flex-col items-center">
                     <Card>
                         <CardBody className="flex flex-col items-center space-y-4 p-6">
-                            <Avatar
-                                className="text-large h-32 w-32"
-                                src="https://i.pravatar.cc/150?u=a04258114e29026708c"
-                            />
+                            <UploadAvatarModal />
                             <div className="pt-2 text-center">
                                 {user.patronymic === undefined ? (
                                     <h2 className="text-xl font-bold">{user.secondName + " " + user.firstName}</h2>
