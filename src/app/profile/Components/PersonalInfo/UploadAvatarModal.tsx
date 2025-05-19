@@ -1,6 +1,8 @@
 import { ChangeEvent, useRef, useState } from "react";
 
 import { uploadAvatar } from "@/api/accounts";
+import { getDownloadPresignedUrl } from "@/api/files";
+import { useAuth } from "@/hooks/useAuth";
 import {
     Button,
     Image,
@@ -14,8 +16,6 @@ import {
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-// Импортируем ваш метод
-
 export function UploadAvatarModal() {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -23,6 +23,7 @@ export function UploadAvatarModal() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { user, updateUserAvatar } = useAuth();
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -36,7 +37,7 @@ export function UploadAvatarModal() {
         }
     };
 
-    /*const uploadFileToS3 = async (presignedUrl: string, file: File) => {
+    const uploadFileToS3 = async (presignedUrl: string, file: File) => {
         return fetch(presignedUrl, {
             method: "PUT",
             headers: {
@@ -44,7 +45,7 @@ export function UploadAvatarModal() {
             },
             body: file,
         });
-    };*/
+    };
 
     const handleUpload = async () => {
         if (!selectedFile) return;
@@ -53,21 +54,47 @@ export function UploadAvatarModal() {
         setUploadProgress(0);
 
         try {
-            // 1. Получаем presigned URL
             console.log(selectedFile.type);
             const response = await uploadAvatar(selectedFile.name, selectedFile.type);
-            console.log(response.data.result!.Value);
+            if (!response.data.result) {
+                throw new Error("Failed to upload");
+            }
+            const uploadResponse = await uploadFileToS3(response.data.result.value!.uploadAvatarUrl, selectedFile);
+            if (!uploadResponse.ok) {
+                throw new Error("Failed to upload");
+            }
 
-            //const uploadResponse = await uploadFileToS3(response.data.result.Value.uploadAvatarUrl, selectedFile);
+            const uploadUrl = response.data.result.value!.uploadAvatarUrl;
 
-            // 3. Обновляем аватар в профиле (если нужно)
-            // await updateProfileAvatar(response.data.result.key);
+            const { fileId, extension } = extractFileInfoFromUrl(uploadUrl);
+            const urlResponse = await getDownloadPresignedUrl(fileId, extension);
+
+            console.log(urlResponse.data.downloadUrl);
+            updateUserAvatar(urlResponse.data.downloadUrl);
         } catch (error) {
             console.error("Upload failed:", error);
-            // Показываем пользователю ошибку
         } finally {
             setIsUploading(false);
             onClose();
+        }
+    };
+
+    const extractFileInfoFromUrl = (url: string) => {
+        try {
+            const cleanUrl = url.split("?")[0];
+
+            const parts = cleanUrl.split("/");
+
+            const fullFilename = parts[parts.length - 1];
+
+            const lastDotIndex = fullFilename.lastIndexOf(".");
+            const fileId = fullFilename.substring(0, lastDotIndex);
+            const extension = fullFilename.substring(lastDotIndex + 1);
+
+            return { fileId, extension };
+        } catch (error) {
+            console.error("Error parsing URL:", error);
+            return { fileId: "", extension: "" };
         }
     };
 
@@ -79,7 +106,7 @@ export function UploadAvatarModal() {
         <>
             <div className="relative cursor-pointer" onClick={onOpen} title="Сменить аватар">
                 <Image
-                    src={previewUrl ?? "https://i.pravatar.cc/150?u=a04258114e29026708c"}
+                    src={user?.avatarUrl ?? "https://i.pravatar.cc/150?u=a04258114e29026708c"}
                     alt="User avatar"
                     className="h-32 w-32 rounded-full border-2 border-gray-200 transition-opacity hover:opacity-80"
                 />

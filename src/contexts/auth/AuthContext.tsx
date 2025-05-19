@@ -17,6 +17,7 @@ interface AuthContextType {
     hasRole: (role: string) => boolean | undefined;
     hasPermission: (permission: string) => boolean | undefined;
     updateUserData: (response: LoginResponse) => void;
+    updateUserAvatar: (avatarUrl: string) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,6 +36,8 @@ export const AuthProvider = ({ children }: Props) => {
         setAccessToken(response.accessToken);
 
         console.log(response);
+
+        const savedAvatarUrl = typeof window !== "undefined" ? localStorage.getItem("avatarUrl") : null;
 
         const user: User = {
             id: response.userId,
@@ -55,8 +58,23 @@ export const AuthProvider = ({ children }: Props) => {
                       phone: response.volunteerAccount.phone,
                   }
                 : null,
+            avatarUrl: savedAvatarUrl ?? undefined,
+            avatarLastUpdated: new Date().toISOString(),
         };
         setUser(user);
+    };
+
+    const updateUserAvatar = (avatarUrl: string) => {
+        if (!user) return;
+
+        setUser({
+            ...user,
+            avatarUrl: avatarUrl,
+            avatarLastUpdated: new Date().toISOString(),
+        });
+        console.log(avatarUrl);
+        localStorage.setItem("avatarUrl", avatarUrl);
+        localStorage.setItem("avatarLastUpdated", user.avatarLastUpdated!);
     };
 
     const hasRole = (role: string) => {
@@ -167,6 +185,7 @@ export const AuthProvider = ({ children }: Props) => {
                 hasRole,
                 hasPermission,
                 updateUserData,
+                updateUserAvatar,
             }}
         >
             {children}

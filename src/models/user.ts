@@ -12,4 +12,6 @@ export interface User {
     permissions: string[];
     socialNetworks: SocialNetwork[];
     volunteer: Volunteer | null;
+    avatarUrl: string | undefined;
+    avatarLastUpdated: string | undefined;
 }

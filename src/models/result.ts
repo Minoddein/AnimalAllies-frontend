@@ -6,6 +6,9 @@ export interface Result {
     IsFailure: boolean;
 }
 
-export interface ResultWithValue<T> extends Result {
-    Value: T;
+export interface ResultWith<T> {
+    Errors: ErrorList;
+    isSuccess: boolean;
+    IsFailure: boolean;
+    value?: T;
 }

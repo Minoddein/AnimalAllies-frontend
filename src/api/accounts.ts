@@ -8,7 +8,7 @@ import { UpdateProfileProps } from "@/models/requests/UpdateProfileProps";
 import { Requisite } from "@/models/requisite";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { UploadUrlResponse } from "@/models/responses/uploadUrlResponse";
-import { Result, ResultWithValue } from "@/models/result";
+import { Result, ResultWith } from "@/models/result";
 import { SocialNetwork } from "@/models/socialNetwork";
 
 import { API_URL, NOTIFICATION_URL, api, notificationApi } from "./api";
@@ -105,8 +105,8 @@ export async function updateRequisites(data: Requisite[]): Promise<AxiosResponse
 export async function uploadAvatar(
     fileName: string,
     contentType: string,
-): Promise<AxiosResponse<Envelope<ResultWithValue<UploadUrlResponse>>>> {
-    return api.post<Envelope<ResultWithValue<UploadUrlResponse>>>(`${API_URL}Account/avatar`, {
+): Promise<AxiosResponse<Envelope<ResultWith<UploadUrlResponse>>>> {
+    return api.post<Envelope<ResultWith<UploadUrlResponse>>>(`${API_URL}Account/avatar`, {
         uploadFileDto: {
             bucketName: "photos",
             fileName: fileName,
