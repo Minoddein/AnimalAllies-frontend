@@ -4,15 +4,12 @@ import * as React from "react";
 import { useContext, useEffect, useState } from "react";
 
 import VolunteerForm from "@/app/_components/auth/volunteer-register-form";
-import Header from "@/components/header";
 import ModalOrDrawer from "@/components/modal-or-drawer";
 import { AuthContext } from "@/contexts/auth/AuthContext";
-import { Tab } from "@/types/tabs";
 import { Badge, Button, Card, CardBody, Divider, addToast, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export default function App() {
-    const [activeTab, setActiveTab] = useState<Tab>("main");
     const [currentSlide, setCurrentSlide] = useState(0);
     const [autoplay, setAutoplay] = useState(true);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -66,7 +63,6 @@ export default function App() {
 
     return (
         <main className="min-h-screen bg-black text-white">
-            <Header activeTab={activeTab} setActiveTabAction={setActiveTab} />
             {/* Hero Section */}
             <section className="relative h-[80vh] overflow-hidden">
                 {/* Carousel */}
@@ -272,31 +268,6 @@ export default function App() {
                                     <Icon icon="lucide:youtube" width={20} height={20} />
                                 </a>
                             </div>
-                        </div>
-                        <div>
-                            <h3 className="mb-4 font-bold">Навигация</h3>
-                            <ul className="space-y-2 text-gray-400">
-                                <li>
-                                    <a href="#" className="transition-colors hover:text-emerald-500">
-                                        Главная
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" className="transition-colors hover:text-emerald-500">
-                                        Животные
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" className="transition-colors hover:text-emerald-500">
-                                        Волонтёры
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" className="transition-colors hover:text-emerald-500">
-                                        События
-                                    </a>
-                                </li>
-                            </ul>
                         </div>
                         <div>
                             <h3 className="mb-4 font-bold">Помощь</h3>
