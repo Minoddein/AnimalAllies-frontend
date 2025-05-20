@@ -89,11 +89,13 @@ const Header = () => {
                         Волонтёры
                     </Link>
                 </NavbarItem>
-                <NavbarItem>
-                    <Link color="foreground" href="#">
-                        Заявки
-                    </Link>
-                </NavbarItem>
+                {!user?.roles.includes("Admin") ? null : (
+                    <NavbarItem>
+                        <Link color="foreground" href="#">
+                            Заявки
+                        </Link>
+                    </NavbarItem>
+                )}
                 <NavbarItem>
                     <Link color="foreground" href="#">
                         События
