@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }: Props) => {
 
         console.log(response);
 
-        const savedAvatarUrl = typeof window !== "undefined" ? localStorage.getItem("avatarUrl") : null;
+        const savedAvatarUrl = typeof window !== "undefined" ? localStorage.getItem(`avatar_${response.userId}`) : null;
 
         const user: User = {
             id: response.userId,
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: Props) => {
             avatarLastUpdated: new Date().toISOString(),
         });
         console.log(avatarUrl);
-        localStorage.setItem("avatarUrl", avatarUrl);
+        localStorage.setItem(`avatar_${user.id}`, avatarUrl);
         localStorage.setItem("avatarLastUpdated", user.avatarLastUpdated!);
     };
 

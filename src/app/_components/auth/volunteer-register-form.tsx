@@ -2,9 +2,11 @@
 
 import { z } from "zod";
 
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
+import { createVolunteerRequest } from "@/api/requests";
+import { AuthContext } from "@/contexts/auth/AuthContext";
 import { RegisterVolunteerProps } from "@/models/requests/RegisterVolunteerProps";
 import { baseRegistrationSchema } from "@/schemas/base-registration-schema";
 import { Textarea } from "@heroui/input";
@@ -15,7 +17,7 @@ const volunteerSchema = baseRegistrationSchema.extend({
     phoneNumber: z
         .string()
         .min(1, "Телефон обязателен")
-        .regex(/^7\d{10}$/, "Введите корректный российский номер (7XXXXXXXXXX)"),
+        .regex(/^\+7\d{10}$/, "Введите корректный российский номер (+7XXXXXXXXXX)"),
     workExperience: z.coerce.number().min(0).max(100),
     volunteerDescription: z.string().min(1, "Добавьте немного информации о себе"),
 });
@@ -23,25 +25,42 @@ const volunteerSchema = baseRegistrationSchema.extend({
 export default function VolunteerForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
-    const [, setMessageType] = useState<"success" | "error" | null>(null);
+    const { user } = useContext(AuthContext)!;
+    const [defaultValues, setDefaultValues] = useState<Partial<z.infer<typeof volunteerSchema>>>({});
 
     const {
         control,
         register: registerValidator,
         handleSubmit,
         formState: { errors },
-    } = useForm({
+        reset,
+    } = useForm<z.infer<typeof volunteerSchema>>({
         resolver: zodResolver(volunteerSchema),
+        defaultValues,
     });
+
+    // Автозаполнение формы при изменении пользователя
+    useEffect(() => {
+        if (user) {
+            const values: Partial<z.infer<typeof volunteerSchema>> = {
+                email: user.email || "",
+                nickname: user.userName || "",
+                firstname: user.firstName || "",
+                secondname: user.secondName || "",
+                patronymic: user.patronymic ?? undefined,
+                phoneNumber: user.volunteer?.phone ?? "",
+                workExperience: user.volunteer?.experience ?? 0,
+                volunteerDescription: "",
+            };
+            setDefaultValues(values);
+            reset(values);
+        }
+    }, [user, reset]);
 
     const onSubmit: SubmitHandler<z.infer<typeof volunteerSchema>> = async (data) => {
         try {
-            console.log("ТУТТТТТТТТТТТТТ!!!!!!!");
             setIsLoading(true);
             setMessage(null);
-            setMessageType(null);
-
-            console.log(data);
 
             const registerData: RegisterVolunteerProps = {
                 email: data.email,
@@ -53,15 +72,10 @@ export default function VolunteerForm() {
                 workExperience: data.workExperience,
                 volunteerDescription: data.volunteerDescription,
             };
-            console.log(registerData);
 
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            // const response = await register(registerData);
+            console.log("Отправка данных:", registerData);
+            await createVolunteerRequest(registerData);
 
-            /*if (!response.data.result) {
-                setMessage(response.data.errors.map((e) => e.errorMessage).join(",") || "Ошибка регистрации");
-                setMessageType("error");
-            } else {*/
             addToast({
                 title: "Отправление заявки",
                 description: "Мы отправили заявку на регистрацию Вас как волонтёра",
@@ -69,11 +83,9 @@ export default function VolunteerForm() {
                 timeout: 5000,
                 shouldShowTimeoutProgress: true,
             });
-            //}
         } catch (error) {
-            console.log(error);
-            setMessage("Не получилось");
-            setMessageType("error");
+            console.error(error);
+            setMessage("Не получилось отправить заявку");
         } finally {
             setIsLoading(false);
         }
@@ -94,7 +106,9 @@ export default function VolunteerForm() {
                     {...registerValidator("email")}
                     isInvalid={!!errors.email}
                     errorMessage={errors.email?.message}
+                    isDisabled={!!user?.email}
                 />
+
                 <Input
                     label="Никнейм"
                     type="text"
@@ -102,7 +116,9 @@ export default function VolunteerForm() {
                     {...registerValidator("nickname")}
                     isInvalid={!!errors.nickname}
                     errorMessage={errors.nickname?.message}
+                    isDisabled={!!user?.userName}
                 />
+
                 <Input
                     label="Имя"
                     type="text"
@@ -110,7 +126,9 @@ export default function VolunteerForm() {
                     {...registerValidator("firstname")}
                     isInvalid={!!errors.firstname}
                     errorMessage={errors.firstname?.message}
+                    isDisabled={!!user?.firstName}
                 />
+
                 <Input
                     label="Фамилия"
                     type="text"
@@ -118,7 +136,9 @@ export default function VolunteerForm() {
                     {...registerValidator("secondname")}
                     isInvalid={!!errors.secondname}
                     errorMessage={errors.secondname?.message}
+                    isDisabled={!!user?.secondName}
                 />
+
                 <Input
                     label="Отчество"
                     type="text"
@@ -126,33 +146,38 @@ export default function VolunteerForm() {
                     {...registerValidator("patronymic")}
                     isInvalid={!!errors.patronymic}
                     errorMessage={errors.patronymic?.message}
+                    isDisabled={!!user?.patronymic}
                 />
+
                 <Input
                     label="Телефон"
-                    type="number"
+                    type="tel"
                     variant="bordered"
                     inputMode="tel"
                     {...registerValidator("phoneNumber")}
                     isInvalid={!!errors.phoneNumber}
                     errorMessage={errors.phoneNumber?.message}
+                    isDisabled={!!user?.volunteer?.phone}
                 />
+
                 <Controller
                     name="workExperience"
                     control={control}
                     render={({ field, fieldState }) => (
                         <NumberInput
-                            label="Волонтёрский опыт"
+                            label="Волонтёрский опыт (лет)"
                             variant="bordered"
-                            type="number"
                             minValue={0}
                             maxValue={100}
                             value={field.value}
                             onChange={field.onChange}
                             isInvalid={!!fieldState.error}
+                            isDisabled={!!user?.volunteer?.experience}
                             errorMessage={fieldState.error?.message}
                         />
                     )}
                 />
+
                 <Textarea
                     label="О себе"
                     variant="bordered"
@@ -160,9 +185,11 @@ export default function VolunteerForm() {
                     isInvalid={!!errors.volunteerDescription}
                     errorMessage={errors.volunteerDescription?.message}
                 />
-                {message && <Alert color={"danger"} title={message} />}
+
+                {message && <Alert color="danger" title={message} />}
+
                 <Button type="submit" color="success" isLoading={isLoading} fullWidth className="mt-6">
-                    Подать заявку
+                    {user?.volunteer ? "Обновить данные" : "Подать заявку"}
                 </Button>
             </div>
         </form>
