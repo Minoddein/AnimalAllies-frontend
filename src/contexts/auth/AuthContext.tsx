@@ -6,7 +6,7 @@ import { createContext, useEffect, useLayoutEffect, useState } from "react";
 
 import { login, logout, refresh } from "@/api/accounts";
 import { api } from "@/api/api";
-import { getDeletePresignedUrl } from "@/api/files";
+import { getDeletePresignedUrl, getDownloadPresignedUrl } from "@/api/files";
 import { extractFileInfoFromUrl } from "@/app/profile/Components/PersonalInfo/UploadAvatarModal";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { User } from "@/models/user";
@@ -91,6 +91,29 @@ export const AuthProvider = ({ children }: Props) => {
         localStorage.setItem("avatarUrl", avatarUrl);
         localStorage.setItem("avatarLastUpdated", user.avatarLastUpdated!);
     };
+
+    useEffect(() => {
+        const checkAndRefreshAvatar = async () => {
+            if (!user?.avatarUrl) return;
+
+            const lastUpdated = localStorage.getItem("avatarLastUpdated") ?? new Date(Date.now());
+            const expiryDate = new Date(lastUpdated);
+            expiryDate.setDate(expiryDate.getDate() + 30);
+
+            if (new Date() > expiryDate) {
+                const { fileId, extension } = extractFileInfoFromUrl(user.avatarUrl);
+                const urlResponse = await getDownloadPresignedUrl(fileId, extension);
+                await updateUserAvatar(urlResponse.data.downloadUrl);
+            }
+        };
+
+        void checkAndRefreshAvatar();
+        const interval = setInterval(() => checkAndRefreshAvatar, 3600000);
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, [updateUserAvatar, user]);
 
     const hasRole = (role: string) => {
         return user?.roles.includes(role);
