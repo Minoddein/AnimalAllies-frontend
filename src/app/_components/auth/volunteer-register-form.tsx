@@ -13,6 +13,10 @@ import { Textarea } from "@heroui/input";
 import { Alert, Button, Input, NumberInput, addToast } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+interface VolunteerFormProps {
+    onSuccess?: () => void;
+}
+
 const volunteerSchema = baseRegistrationSchema.extend({
     phoneNumber: z
         .string()
@@ -22,7 +26,7 @@ const volunteerSchema = baseRegistrationSchema.extend({
     volunteerDescription: z.string().min(1, "Добавьте немного информации о себе"),
 });
 
-export default function VolunteerForm() {
+export default function VolunteerForm({ onSuccess }: VolunteerFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const { user } = useContext(AuthContext)!;
@@ -83,6 +87,10 @@ export default function VolunteerForm() {
                 timeout: 5000,
                 shouldShowTimeoutProgress: true,
             });
+
+            if (onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             console.error(error);
             setMessage("Не получилось отправить заявку");

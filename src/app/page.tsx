@@ -13,7 +13,7 @@ export default function App() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [autoplay, setAutoplay] = useState(true);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
-    const { accessToken } = useContext(AuthContext)!;
+    const { user, accessToken } = useContext(AuthContext)!;
 
     const carouselItems = [
         {
@@ -167,7 +167,15 @@ export default function App() {
                                             timeout: 5000,
                                             shouldShowTimeoutProgress: true,
                                         });
-                                    else onOpen();
+                                    else if (user?.volunteer) {
+                                        addToast({
+                                            title: "Уже волонтёр",
+                                            description: "Вы уже волонтёр",
+                                            color: "danger",
+                                            timeout: 5000,
+                                            shouldShowTimeoutProgress: true,
+                                        });
+                                    } else onOpen();
                                 }}
                             >
                                 Стать волонтёром
@@ -178,7 +186,11 @@ export default function App() {
                                 onOpenChangeAction={onOpenChange}
                                 size="2xl"
                             >
-                                <VolunteerForm />
+                                <VolunteerForm
+                                    onSuccess={() => {
+                                        onOpenChange();
+                                    }}
+                                />
                             </ModalOrDrawer>
                         </div>
                     </div>
