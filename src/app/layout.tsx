@@ -91,7 +91,7 @@ const Header = () => {
                 </NavbarItem>
                 {!user?.roles.includes("Admin") ? null : (
                     <NavbarItem>
-                        <Link color="foreground" href="#">
+                        <Link color="foreground" href="/requests">
                             Заявки
                         </Link>
                     </NavbarItem>
