@@ -12,3 +12,15 @@ export async function getDownloadPresignedUrl(
         extension: extension,
     });
 }
+
+export async function getDeletePresignedUrl(data: DeleteRequest[]): Promise<AxiosResponse<{ deleteUrl: string }>> {
+    return filesApi.post(`${FILES_URL}files/presigned-for-deletion`, {
+        requests: data,
+    });
+}
+
+export interface DeleteRequest {
+    bucketName: string;
+    fileId: string;
+    extension: string;
+}

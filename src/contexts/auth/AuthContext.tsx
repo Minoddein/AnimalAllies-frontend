@@ -6,6 +6,8 @@ import { createContext, useEffect, useLayoutEffect, useState } from "react";
 
 import { login, logout, refresh } from "@/api/accounts";
 import { api } from "@/api/api";
+import { getDeletePresignedUrl } from "@/api/files";
+import { extractFileInfoFromUrl } from "@/app/profile/Components/PersonalInfo/UploadAvatarModal";
 import { LoginResponse } from "@/models/responses/loginResponse";
 import { User } from "@/models/user";
 
@@ -17,7 +19,7 @@ interface AuthContextType {
     hasRole: (role: string) => boolean | undefined;
     hasPermission: (permission: string) => boolean | undefined;
     updateUserData: (response: LoginResponse) => void;
-    updateUserAvatar: (avatarUrl: string) => void;
+    updateUserAvatar: (avatarUrl: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,8 +66,21 @@ export const AuthProvider = ({ children }: Props) => {
         setUser(user);
     };
 
-    const updateUserAvatar = (avatarUrl: string) => {
+    const updateUserAvatar = async (avatarUrl: string) => {
         if (!user) return;
+
+        if (user.avatarUrl) {
+            const { fileId, extension } = extractFileInfoFromUrl(user.avatarUrl);
+            const deleteResponse = await getDeletePresignedUrl([
+                { bucketName: "photos", fileId: fileId, extension: `.${extension}` },
+            ]);
+
+            console.log(deleteResponse);
+
+            await fetch(deleteResponse.data.deleteUrl, {
+                method: "DELETE",
+            });
+        }
 
         setUser({
             ...user,

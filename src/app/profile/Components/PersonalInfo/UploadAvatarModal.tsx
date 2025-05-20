@@ -70,31 +70,12 @@ export function UploadAvatarModal() {
             const urlResponse = await getDownloadPresignedUrl(fileId, extension);
 
             console.log(urlResponse.data.downloadUrl);
-            updateUserAvatar(urlResponse.data.downloadUrl);
+            await updateUserAvatar(urlResponse.data.downloadUrl);
         } catch (error) {
             console.error("Upload failed:", error);
         } finally {
             setIsUploading(false);
             onClose();
-        }
-    };
-
-    const extractFileInfoFromUrl = (url: string) => {
-        try {
-            const cleanUrl = url.split("?")[0];
-
-            const parts = cleanUrl.split("/");
-
-            const fullFilename = parts[parts.length - 1];
-
-            const lastDotIndex = fullFilename.lastIndexOf(".");
-            const fileId = fullFilename.substring(0, lastDotIndex);
-            const extension = fullFilename.substring(lastDotIndex + 1);
-
-            return { fileId, extension };
-        } catch (error) {
-            console.error("Error parsing URL:", error);
-            return { fileId: "", extension: "" };
         }
     };
 
@@ -184,3 +165,22 @@ export function UploadAvatarModal() {
         </>
     );
 }
+
+export const extractFileInfoFromUrl = (url: string) => {
+    try {
+        const cleanUrl = url.split("?")[0];
+
+        const parts = cleanUrl.split("/");
+
+        const fullFilename = parts[parts.length - 1];
+
+        const lastDotIndex = fullFilename.lastIndexOf(".");
+        const fileId = fullFilename.substring(0, lastDotIndex);
+        const extension = fullFilename.substring(lastDotIndex + 1);
+
+        return { fileId, extension };
+    } catch (error) {
+        console.error("Error parsing URL:", error);
+        return { fileId: "", extension: "" };
+    }
+};

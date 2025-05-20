@@ -1,14 +1,12 @@
 "use client";
 
-import React, {useEffect, useMemo, useState} from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-import {AnimalItem} from "@/types/AnimalItem";
-import {MainCards} from "@/components/main-cards";
-import Header from "@/components/header";
-import AnimalsCards from "@/app/animals/_components/animals-cards"
-import {Tab} from "@/types/tabs";
-import {SearchCardOrDrawer} from "@/components/search/search-card-or-drawer";
-import {SearchAnimalsParams} from "@/types/search";
+import AnimalsCards from "@/app/animals/_components/animals-cards";
+import { MainCards } from "@/components/main-cards";
+import { SearchCardOrDrawer } from "@/components/search/search-card-or-drawer";
+import { AnimalItem } from "@/types/AnimalItem";
+import { SearchAnimalsParams } from "@/types/search";
 
 interface Paged<T> {
     items: T[];
@@ -21,7 +19,6 @@ interface Paged<T> {
 }
 
 export default function AnimalsPage() {
-    const [activeTab, setActiveTab] = useState<Tab>("animals");
     const [isLoading] = useState(false);
     const [animalsData, setAnimalsData] = useState<Paged<AnimalItem> | null>(null);
     const [page, setPage] = useState(1);
@@ -31,15 +28,15 @@ export default function AnimalsPage() {
 
     useEffect(() => {
         setAnimalsData({
-            items: Array.from({length: 14}, (_, index) => ({
+            items: Array.from({ length: 14 }, (_, index) => ({
                 id: `id-${index}`,
                 name: `Барсик-${index + 1}`,
                 image: `https://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA1ueISv.img?w=1280&h=857&m=4&q=91`,
                 age: `${index + 1} лет 2 месяца`,
                 isVaccinated: index % 2 === 0,
-                humanAttitude: 'Хорошее',
-                animalsAttitude: 'Хорошее',
-                hashtags: ['#м', '#пушистый', '#домашний']
+                humanAttitude: "Хорошее",
+                animalsAttitude: "Хорошее",
+                hashtags: ["#м", "#пушистый", "#домашний"],
             })),
             pagination: {
                 page,
@@ -48,7 +45,6 @@ export default function AnimalsPage() {
                 totalPages: 2,
             },
         });
-
     }, [page]);
 
     // Обработчик поиска
@@ -68,22 +64,21 @@ export default function AnimalsPage() {
 
     const totalAnimalsPages = animalsData?.pagination.totalPages ?? 1;
 
-    return (<>
-        <Header activeTab={activeTab} setActiveTabAction={setActiveTab}/>
-        <div className="flex min-h-[100vh] w-full">
-            <SearchCardOrDrawer onSearchAction={handleSearch}/>
-            <div className="flex-1 p-4">
-                <MainCards<AnimalItem>
-                    isLoading={isLoading}
-                    pageItems={animalsPageItems}
-                    totalPages={totalAnimalsPages}
-                    page={page}
-                    setPageAction={setPage}
-                    renderCardsAction={(items) => <AnimalsCards paginatedData={items}/>}
-                />
+    return (
+        <>
+            <div className="flex min-h-[100vh] w-full">
+                <SearchCardOrDrawer onSearchAction={handleSearch} />
+                <div className="flex-1 p-4">
+                    <MainCards<AnimalItem>
+                        isLoading={isLoading}
+                        pageItems={animalsPageItems}
+                        totalPages={totalAnimalsPages}
+                        page={page}
+                        setPageAction={setPage}
+                        renderCardsAction={(items) => <AnimalsCards paginatedData={items} />}
+                    />
+                </div>
             </div>
-        </div>
-    </>)
+        </>
+    );
 }
-
-
