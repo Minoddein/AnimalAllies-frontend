@@ -2,8 +2,10 @@
 
 import { Check, RefreshCw, Search, X } from "lucide-react";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { getVolunteerRequests } from "@/api/requests";
+import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Chip } from "@heroui/chip";
 import { Textarea } from "@heroui/input";
 import {
@@ -23,135 +25,6 @@ import {
     SelectItem,
 } from "@heroui/react";
 
-// Типы данных на основе предоставленной модели
-interface VolunteerInfo {
-    fullName: {
-        firstName: string;
-        secondName: string;
-        patronymic: string;
-    };
-    email: string;
-    phoneNumber: string;
-    volunteerDescription: string;
-    workExperience: string;
-}
-
-interface VolunteerRequest {
-    id: string;
-    createdAt: string;
-    requestStatus: "Waiting" | "Submitted" | "Rejected" | "RevisionRequired" | "Approved";
-    volunteerInfo: VolunteerInfo;
-    adminId: string;
-    userId: string;
-    discussionId: string;
-    rejectionComment: string;
-}
-
-// Моковые данные для демонстрации
-const mockRequests: VolunteerRequest[] = [
-    {
-        id: "1",
-        createdAt: "2025-05-15T10:30:00",
-        requestStatus: "Waiting",
-        volunteerInfo: {
-            fullName: {
-                firstName: "Анна",
-                secondName: "Иванова",
-                patronymic: "Сергеевна",
-            },
-            email: "anna@example.com",
-            phoneNumber: "+7 (900) 123-45-67",
-            volunteerDescription: "Хочу помогать животным, есть опыт работы с собаками и кошками.",
-            workExperience: "Работала волонтером в приюте 'Лапки' 1 год.",
-        },
-        adminId: "",
-        userId: "user1",
-        discussionId: "",
-        rejectionComment: "",
-    },
-    {
-        id: "2",
-        createdAt: "2025-05-14T14:20:00",
-        requestStatus: "Submitted",
-        volunteerInfo: {
-            fullName: {
-                firstName: "Петр",
-                secondName: "Смирнов",
-                patronymic: "Александрович",
-            },
-            email: "petr@example.com",
-            phoneNumber: "+7 (900) 987-65-43",
-            volunteerDescription: "Имею ветеринарное образование, хочу помогать в лечении животных.",
-            workExperience: "Ветеринарный врач, стаж 3 года.",
-        },
-        adminId: "admin1",
-        userId: "user2",
-        discussionId: "disc1",
-        rejectionComment: "",
-    },
-    {
-        id: "3",
-        createdAt: "2025-05-13T09:15:00",
-        requestStatus: "Approved",
-        volunteerInfo: {
-            fullName: {
-                firstName: "Мария",
-                secondName: "Козлова",
-                patronymic: "Дмитриевна",
-            },
-            email: "maria@example.com",
-            phoneNumber: "+7 (900) 555-55-55",
-            volunteerDescription: "Люблю животных, готова помогать в уходе и социализации.",
-            workExperience: "Опыт работы с животными 5 лет.",
-        },
-        adminId: "admin2",
-        userId: "user3",
-        discussionId: "disc2",
-        rejectionComment: "",
-    },
-    {
-        id: "4",
-        createdAt: "2025-05-12T16:40:00",
-        requestStatus: "Rejected",
-        volunteerInfo: {
-            fullName: {
-                firstName: "Алексей",
-                secondName: "Петров",
-                patronymic: "Иванович",
-            },
-            email: "alex@example.com",
-            phoneNumber: "+7 (900) 111-22-33",
-            volunteerDescription: "Хочу помогать в организации мероприятий.",
-            workExperience: "Нет опыта работы с животными.",
-        },
-        adminId: "admin1",
-        userId: "user4",
-        discussionId: "disc3",
-        rejectionComment: "Недостаточный опыт работы с животными для текущих вакансий.",
-    },
-    {
-        id: "5",
-        createdAt: "2025-05-11T11:25:00",
-        requestStatus: "RevisionRequired",
-        volunteerInfo: {
-            fullName: {
-                firstName: "Екатерина",
-                secondName: "Соколова",
-                patronymic: "Андреевна",
-            },
-            email: "kate@example.com",
-            phoneNumber: "+7 (900) 444-33-22",
-            volunteerDescription: "Готова помогать в выходные дни.",
-            workExperience: "Работала в зоомагазине 2 года.",
-        },
-        adminId: "admin3",
-        userId: "user5",
-        discussionId: "disc4",
-        rejectionComment: "Пожалуйста, укажите более подробную информацию о вашем опыте работы с животными.",
-    },
-];
-
-// Компонент для отображения статуса заявки
 const RequestStatusBadge = ({ status }: { status: VolunteerRequest["requestStatus"] }) => {
     switch (status) {
         case "Waiting":
@@ -197,25 +70,56 @@ export default function VolunteerRequestsPage() {
     const [commentText, setCommentText] = useState("");
     const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
     const [commentAction, setCommentAction] = useState<"reject" | "revision">("reject");
-
-    // Фильтрация заявок
-    const filteredRequests = mockRequests.filter((request) => {
-        const matchesSearch =
-            request.volunteerInfo.fullName.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            request.volunteerInfo.fullName.secondName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            request.volunteerInfo.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-        const matchesStatus = statusFilter === "all" || request.requestStatus === statusFilter;
-
-        return matchesSearch && matchesStatus;
-    });
-
-    // Пагинация
+    const [requests, setRequests] = useState<VolunteerRequest[]>([]);
+    const [totalCount, setTotalCount] = useState(0);
+    const [, setIsLoading] = useState(false);
     const itemsPerPage = 4;
-    const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
-    const paginatedRequests = filteredRequests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    // Обработчики действий
+    const fetchRequests = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const response = await getVolunteerRequests(
+                currentPage,
+                itemsPerPage,
+                statusFilter === "all" ? undefined : statusFilter,
+            );
+
+            if (!response.data.result?.value) {
+                console.error("No data received");
+                return;
+            }
+
+            const validatedRequests = response.data.result.value.items.map((item) => ({
+                ...item,
+                volunteerInfo: {
+                    firstName: item.firstName || "",
+                    secondName: item.secondName || "",
+                    patronymic: item.patronymic || "",
+                    email: item.email || "",
+                    phoneNumber: item.phoneNumber || "",
+                    volunteerDescription: item.volunteerDescription || "",
+                    workExperience: item.workExperience || "",
+                },
+            }));
+
+            setRequests(validatedRequests);
+            setTotalCount(response.data.result.value.totalCount);
+        } catch (error) {
+            console.error("Error fetching requests:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [currentPage, statusFilter, itemsPerPage]);
+
+    const paginatedRequests = requests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    // Функция для загрузки данных
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+    useEffect(() => {
+        void fetchRequests();
+    }, [fetchRequests, currentPage, itemsPerPage, statusFilter]);
+
     const handleApprove = (request: VolunteerRequest) => {
         console.log("Approve request:", request.id);
     };
@@ -299,9 +203,7 @@ export default function VolunteerRequestsPage() {
                                         <div className="truncate text-xl">
                                             {" "}
                                             {/* Добавлен truncate для длинных имен */}
-                                            {request.volunteerInfo.fullName.secondName}{" "}
-                                            {request.volunteerInfo.fullName.firstName}{" "}
-                                            {request.volunteerInfo.fullName.patronymic}
+                                            {request.secondName} {request.firstName} {request.patronymic}
                                         </div>
                                         <div className="text-muted-foreground mt-1 text-sm">
                                             {new Date(request.createdAt).toLocaleDateString("ru-RU", {
@@ -323,17 +225,17 @@ export default function VolunteerRequestsPage() {
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div>
                                         <div className="text-muted-foreground mb-1 text-sm">Контактная информация:</div>
-                                        <div className="mb-1 text-sm">Email: {request.volunteerInfo.email}</div>
-                                        <div className="text-sm">Телефон: {request.volunteerInfo.phoneNumber}</div>
+                                        <div className="mb-1 text-sm">Email: {request.email}</div>
+                                        <div className="text-sm">Телефон: {request.phoneNumber}</div>
                                     </div>
                                     <div>
                                         <div className="text-muted-foreground mb-1 text-sm">Опыт работы:</div>
-                                        <div className="text-sm">{request.volunteerInfo.workExperience}</div>
+                                        <div className="text-sm">{request.workExperience}</div>
                                     </div>
                                 </div>
                                 <div className="mt-4">
                                     <div className="text-muted-foreground mb-1 text-sm">О себе:</div>
-                                    <div className="text-sm">{request.volunteerInfo.volunteerDescription}</div>
+                                    <div className="text-sm">{request.volunteerDescription}</div>
                                 </div>
                                 {(request.requestStatus === "Rejected" ||
                                     request.requestStatus === "RevisionRequired") &&
@@ -400,7 +302,7 @@ export default function VolunteerRequestsPage() {
             </div>
 
             {/* Пагинация */}
-            {filteredRequests.length > 0 && (
+            {requests.length > 0 && (
                 <Pagination
                     className="mt-6 flex justify-center"
                     initialPage={currentPage}
