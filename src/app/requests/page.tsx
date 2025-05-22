@@ -4,7 +4,7 @@ import { Check, RefreshCw, Search, X } from "lucide-react";
 
 import { useCallback, useEffect, useState } from "react";
 
-import { getVolunteerRequests } from "@/api/requests";
+import { getVolunteerRequests, getVolunteerRequestsByAdminId, takeForASubmit } from "@/api/requests";
 import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Chip } from "@heroui/chip";
 import { Textarea } from "@heroui/input";
@@ -65,6 +65,7 @@ const RequestStatusBadge = ({ status }: { status: VolunteerRequest["requestStatu
 export default function VolunteerRequestsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
+    const [requestTypeFilter, setRequestTypeFilter] = useState<"all" | "my">("all");
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedRequest, setSelectedRequest] = useState<VolunteerRequest | null>(null);
     const [commentText, setCommentText] = useState("");
@@ -82,11 +83,23 @@ export default function VolunteerRequestsPage() {
     const fetchRequests = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await getVolunteerRequests(
-                currentPage,
-                itemsPerPage,
-                statusFilter === "all" ? undefined : statusFilter,
-            );
+            let response;
+
+            if (requestTypeFilter === "all") {
+                // Запрос для всех ожидающих заявок
+                response = await getVolunteerRequests(
+                    currentPage,
+                    itemsPerPage,
+                    statusFilter === "all" ? undefined : statusFilter,
+                );
+            } else {
+                // Запрос для заявок текущего админа
+                response = await getVolunteerRequestsByAdminId(
+                    currentPage,
+                    itemsPerPage,
+                    statusFilter === "all" ? undefined : statusFilter,
+                );
+            }
 
             if (!response.data.result?.value) {
                 console.error("No data received");
@@ -117,7 +130,7 @@ export default function VolunteerRequestsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [currentPage, statusFilter, itemsPerPage]);
+    }, [currentPage, statusFilter, itemsPerPage, requestTypeFilter]);
     requests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const totalPages = Math.ceil(totalCount / itemsPerPage);
@@ -147,7 +160,6 @@ export default function VolunteerRequestsPage() {
     const submitComment = () => {
         if (!selectedRequest || !commentText.trim()) return;
 
-        // В реальном приложении здесь будет API-запрос
         console.log(
             commentAction === "reject" ? "Reject request:" : "Request revision:",
             selectedRequest.id,
@@ -157,6 +169,10 @@ export default function VolunteerRequestsPage() {
 
         setIsCommentDialogOpen(false);
     };
+
+    async function handleTakeForASubmit(id: string) {
+        await takeForASubmit(id);
+    }
 
     return (
         <div className="container mx-auto max-w-7xl py-8">
@@ -175,20 +191,44 @@ export default function VolunteerRequestsPage() {
                         className="pl-10"
                     />
                 </div>
+
+                {/* Фильтр по типу заявок */}
                 <Select
-                    placeholder="Фильтр по статусу"
-                    selectedKeys={statusFilter ? [statusFilter] : []}
+                    placeholder="Тип заявок"
+                    selectedKeys={[requestTypeFilter]}
                     onSelectionChange={(keys) => {
-                        setStatusFilter(Array.from(keys)[0] as string);
+                        const newFilter = Array.from(keys)[0] as "all" | "my";
+                        setRequestTypeFilter(newFilter);
+                        setStatusFilter(newFilter === "all" ? "Waiting" : "all");
+                        setCurrentPage(1);
                     }}
                     className="w-full md:w-[200px]"
                 >
-                    <SelectItem key="all">Все статусы</SelectItem>
-                    <SelectItem key="Waiting">Ожидает</SelectItem>
-                    <SelectItem key="Submitted">На рассмотрении</SelectItem>
-                    <SelectItem key="Approved">Одобрено</SelectItem>
-                    <SelectItem key="Rejected">Отклонено</SelectItem>
-                    <SelectItem key="RevisionRequired">Требует доработки</SelectItem>
+                    <SelectItem key="all">Все заявки</SelectItem>
+                    <SelectItem key="my">Мои заявки</SelectItem>
+                </Select>
+
+                {/* Фильтр по статусу */}
+                <Select
+                    placeholder="Статус"
+                    selectedKeys={[statusFilter]}
+                    onSelectionChange={(keys) => {
+                        setStatusFilter(Array.from(keys)[0] as string);
+                        setCurrentPage(1);
+                    }}
+                    className="w-full md:w-[200px]"
+                >
+                    {requestTypeFilter === "all" ? (
+                        <SelectItem key="Waiting">Ожидают рассмотрения</SelectItem>
+                    ) : (
+                        <>
+                            <SelectItem key="all">Все статусы</SelectItem>
+                            <SelectItem key="Submitted">На рассмотрении</SelectItem>
+                            <SelectItem key="Approved">Одобрено</SelectItem>
+                            <SelectItem key="Rejected">Отклонено</SelectItem>
+                            <SelectItem key="RevisionRequired">Требует доработки</SelectItem>
+                        </>
+                    )}
                 </Select>
             </div>
 
@@ -260,6 +300,9 @@ export default function VolunteerRequestsPage() {
                                         <Button
                                             variant="flat"
                                             className="border-blue-500/20 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                                            onPress={() => {
+                                                void handleTakeForASubmit(request.id);
+                                            }}
                                         >
                                             Взять в работу
                                         </Button>

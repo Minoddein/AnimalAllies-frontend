@@ -46,3 +46,28 @@ export async function getVolunteerRequests(
         },
     );
 }
+
+export async function takeForASubmit(id: string): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<Result>>(`${API_URL}VolunteerRequests/${id}/taking-request-for-submitting`);
+}
+
+export async function getVolunteerRequestsByAdminId(
+    page: number,
+    pageSize: number,
+    status?: string,
+    sortBy?: string,
+    sortDirection?: string,
+): Promise<AxiosResponse<Envelope<ResultWith<PagedResponse<VolunteerRequest>>>>> {
+    return api.get<Envelope<ResultWith<PagedResponse<VolunteerRequest>>>>(
+        `${API_URL}VolunteerRequests/filtered-volunteer-requests-by-admin-id-with-pagination`,
+        {
+            params: {
+                requestStatus: status,
+                sortBy: sortBy,
+                sortDirection: sortDirection,
+                page: page,
+                pageSize: pageSize,
+            },
+        },
+    );
+}
