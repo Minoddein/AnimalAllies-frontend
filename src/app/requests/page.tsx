@@ -71,6 +71,10 @@ export default function VolunteerRequestsPage() {
     const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
     const [commentAction, setCommentAction] = useState<"reject" | "revision">("reject");
     const [requests, setRequests] = useState<VolunteerRequest[]>([]);
+    const [pagedData, setPagedData] = useState<{
+        items: VolunteerRequest[];
+        totalCount: number;
+    }>({ items: [], totalCount: 0 });
     const [totalCount, setTotalCount] = useState(0);
     const [, setIsLoading] = useState(false);
     const itemsPerPage = 4;
@@ -103,6 +107,10 @@ export default function VolunteerRequestsPage() {
             }));
 
             setRequests(validatedRequests);
+            setPagedData({
+                items: validatedRequests,
+                totalCount: response.data.result.value.totalCount,
+            });
             setTotalCount(response.data.result.value.totalCount);
         } catch (error) {
             console.error("Error fetching requests:", error);
@@ -110,10 +118,8 @@ export default function VolunteerRequestsPage() {
             setIsLoading(false);
         }
     }, [currentPage, statusFilter, itemsPerPage]);
+    requests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    const paginatedRequests = requests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-    // Функция для загрузки данных
     const totalPages = Math.ceil(totalCount / itemsPerPage);
 
     useEffect(() => {
@@ -188,8 +194,8 @@ export default function VolunteerRequestsPage() {
 
             {/* Список заявок */}
             <div className="grid gap-4">
-                {paginatedRequests.length > 0 ? (
-                    paginatedRequests.map((request) => (
+                {pagedData.items.length > 0 ? (
+                    pagedData.items.map((request) => (
                         <Card
                             shadow="md"
                             key={request.id}
