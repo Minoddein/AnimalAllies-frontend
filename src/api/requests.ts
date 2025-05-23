@@ -81,3 +81,9 @@ export async function getVolunteerRequestsByAdminId(
         },
     );
 }
+
+export async function approveVolunteerRequest(volunteerRequestId: string): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<ResultWith<PagedResponse<VolunteerRequest>>>>(
+        `${API_URL}VolunteerRequests/${volunteerRequestId}approving-request`,
+    );
+}

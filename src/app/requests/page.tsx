@@ -4,7 +4,13 @@ import { Check, RefreshCw, Search, X } from "lucide-react";
 
 import { useCallback, useEffect, useState } from "react";
 
-import { getVolunteerRequests, getVolunteerRequestsByAdminId, rejectRequest, takeForASubmit } from "@/api/requests";
+import {
+    approveVolunteerRequest,
+    getVolunteerRequests,
+    getVolunteerRequestsByAdminId,
+    rejectRequest,
+    takeForASubmit,
+} from "@/api/requests";
 import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Chip } from "@heroui/chip";
 import { Textarea } from "@heroui/input";
@@ -150,8 +156,10 @@ export default function VolunteerRequestsPage() {
         }
     }, [needsRefresh, fetchRequests]);
 
-    const handleApprove = (request: VolunteerRequest) => {
+    const handleApprove = async (request: VolunteerRequest) => {
         console.log("Approve request:", request.id);
+        await approveVolunteerRequest(request.id);
+        setNeedsRefresh(true);
     };
 
     const handleReject = (request: VolunteerRequest) => {
@@ -335,7 +343,7 @@ export default function VolunteerRequestsPage() {
                                                 variant="flat"
                                                 className="border-green-500/20 bg-green-500/10 text-green-500 hover:bg-green-500/20"
                                                 onPress={() => {
-                                                    handleApprove(request);
+                                                    void handleApprove(request);
                                                 }}
                                             >
                                                 <Check className="mr-2 h-4 w-4" />
