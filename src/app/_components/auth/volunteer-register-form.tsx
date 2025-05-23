@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "axios";
 import { z } from "zod";
 
 import React, { useContext, useEffect, useState } from "react";
@@ -78,7 +79,8 @@ export default function VolunteerForm({ onSuccess }: VolunteerFormProps) {
             };
 
             console.log("Отправка данных:", registerData);
-            await createVolunteerRequest(registerData);
+            const response = await createVolunteerRequest(registerData);
+            console.log(response.data.errors);
 
             addToast({
                 title: "Отправление заявки",
@@ -92,7 +94,38 @@ export default function VolunteerForm({ onSuccess }: VolunteerFormProps) {
                 onSuccess();
             }
         } catch (error) {
-            console.error(error);
+            if (axios.isAxiosError(error)) {
+                interface ApiErrorResponse {
+                    errors?: {
+                        errorCode: string;
+                        message: string;
+                    }[];
+                }
+
+                const errorData = error.response?.data as ApiErrorResponse | undefined;
+
+                if (errorData?.errors) {
+                    const prohibitedError = errorData.errors.find(
+                        (e) => e.errorCode === "access.denied.request.prohibited",
+                    );
+
+                    if (prohibitedError) {
+                        setMessage("Вам наложен запрет на создание заявок сроком 7 дней.");
+                        return;
+                    }
+
+                    const otherErrors = errorData.errors
+                        .filter((e) => e.errorCode !== "access.denied.request.prohibited")
+                        .map((e) => e.message)
+                        .join(", ");
+
+                    if (otherErrors) {
+                        setMessage(otherErrors);
+                        return;
+                    }
+                }
+            }
+
             setMessage("Не получилось отправить заявку");
         } finally {
             setIsLoading(false);

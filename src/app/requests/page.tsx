@@ -175,10 +175,14 @@ export default function VolunteerRequestsPage() {
         }
 
         setIsCommentDialogOpen(false);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        await fetchRequests();
     };
 
     async function handleTakeForASubmit(id: string) {
         await takeForASubmit(id);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        await fetchRequests();
     }
 
     return (
