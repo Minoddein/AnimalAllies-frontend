@@ -51,6 +51,16 @@ export async function takeForASubmit(id: string): Promise<AxiosResponse<Envelope
     return api.post<Envelope<Result>>(`${API_URL}VolunteerRequests/${id}/taking-request-for-submitting`);
 }
 
+export async function rejectRequest(id: string, rejectComment: string): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<ResultWith<PagedResponse<VolunteerRequest>>>>(
+        `${API_URL}VolunteerRequests/rejecting-request`,
+        {
+            volunteerRequestId: id,
+            rejectComment: rejectComment,
+        },
+    );
+}
+
 export async function getVolunteerRequestsByAdminId(
     page: number,
     pageSize: number,

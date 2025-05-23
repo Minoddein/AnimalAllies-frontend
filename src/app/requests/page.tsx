@@ -4,7 +4,7 @@ import { Check, RefreshCw, Search, X } from "lucide-react";
 
 import { useCallback, useEffect, useState } from "react";
 
-import { getVolunteerRequests, getVolunteerRequestsByAdminId, takeForASubmit } from "@/api/requests";
+import { getVolunteerRequests, getVolunteerRequestsByAdminId, rejectRequest, takeForASubmit } from "@/api/requests";
 import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Chip } from "@heroui/chip";
 import { Textarea } from "@heroui/input";
@@ -157,7 +157,7 @@ export default function VolunteerRequestsPage() {
         setIsCommentDialogOpen(true);
     };
 
-    const submitComment = () => {
+    const submitComment = async () => {
         if (!selectedRequest || !commentText.trim()) return;
 
         console.log(
@@ -166,6 +166,13 @@ export default function VolunteerRequestsPage() {
             "Comment:",
             commentText,
         );
+
+        if (commentAction === "reject") {
+            await rejectRequest(selectedRequest.id, commentText);
+        } else {
+            // Логика для отправки на доработку
+            console.log("Request revision:", selectedRequest.id, "Comment:", commentText);
+        }
 
         setIsCommentDialogOpen(false);
     };
@@ -406,7 +413,12 @@ export default function VolunteerRequestsPage() {
                         >
                             Отмена
                         </Button>
-                        <Button onPress={submitComment} color={commentAction === "reject" ? "danger" : "warning"}>
+                        <Button
+                            onPress={() => {
+                                void submitComment();
+                            }}
+                            color={commentAction === "reject" ? "danger" : "warning"}
+                        >
                             {commentAction === "reject" ? "Отклонить" : "Отправить на доработку"}
                         </Button>
                     </ModalFooter>
