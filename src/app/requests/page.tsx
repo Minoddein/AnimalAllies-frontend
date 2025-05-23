@@ -78,6 +78,7 @@ export default function VolunteerRequestsPage() {
     }>({ items: [], totalCount: 0 });
     const [totalCount, setTotalCount] = useState(0);
     const [, setIsLoading] = useState(false);
+    const [needsRefresh, setNeedsRefresh] = useState(false);
     const itemsPerPage = 4;
 
     const fetchRequests = useCallback(async () => {
@@ -139,6 +140,16 @@ export default function VolunteerRequestsPage() {
         void fetchRequests();
     }, [fetchRequests, currentPage, itemsPerPage, statusFilter]);
 
+    useEffect(() => {
+        if (needsRefresh) {
+            const refreshData = async () => {
+                await fetchRequests();
+                setNeedsRefresh(false);
+            };
+            void refreshData();
+        }
+    }, [needsRefresh, fetchRequests]);
+
     const handleApprove = (request: VolunteerRequest) => {
         console.log("Approve request:", request.id);
     };
@@ -176,13 +187,13 @@ export default function VolunteerRequestsPage() {
 
         setIsCommentDialogOpen(false);
         await new Promise((resolve) => setTimeout(resolve, 300));
-        await fetchRequests();
+        setNeedsRefresh(true);
     };
 
     async function handleTakeForASubmit(id: string) {
         await takeForASubmit(id);
         await new Promise((resolve) => setTimeout(resolve, 300));
-        await fetchRequests();
+        setNeedsRefresh(true);
     }
 
     return (
