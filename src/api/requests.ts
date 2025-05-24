@@ -82,6 +82,27 @@ export async function getVolunteerRequestsByAdminId(
     );
 }
 
+export async function getVolunteerRequestsByUserId(
+    page: number,
+    pageSize: number,
+    status?: string,
+    sortBy?: string,
+    sortDirection?: string,
+): Promise<AxiosResponse<Envelope<ResultWith<PagedResponse<VolunteerRequest>>>>> {
+    return api.get<Envelope<ResultWith<PagedResponse<VolunteerRequest>>>>(
+        `${API_URL}VolunteerRequests/filtered-volunteer-requests-by-user-id-with-pagination`,
+        {
+            params: {
+                requestStatus: status,
+                sortBy: sortBy,
+                sortDirection: sortDirection,
+                page: page,
+                pageSize: pageSize,
+            },
+        },
+    );
+}
+
 export async function approveVolunteerRequest(volunteerRequestId: string): Promise<AxiosResponse<Envelope<Result>>> {
     return api.post<Envelope<ResultWith<PagedResponse<VolunteerRequest>>>>(
         `${API_URL}VolunteerRequests/${volunteerRequestId}approving-request`,

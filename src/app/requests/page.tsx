@@ -8,10 +8,12 @@ import {
     approveVolunteerRequest,
     getVolunteerRequests,
     getVolunteerRequestsByAdminId,
+    getVolunteerRequestsByUserId,
     rejectRequest,
     sendForRevision,
     takeForASubmit,
 } from "@/api/requests";
+import { useAuth } from "@/hooks/useAuth";
 import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Chip } from "@heroui/chip";
 import { Textarea } from "@heroui/input";
@@ -70,6 +72,8 @@ const RequestStatusBadge = ({ status }: { status: VolunteerRequest["requestStatu
 };
 
 export default function VolunteerRequestsPage() {
+    const { user } = useAuth();
+    const isAdmin = user?.roles.includes("Admin");
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [requestTypeFilter, setRequestTypeFilter] = useState<"all" | "my">("all");
@@ -91,18 +95,26 @@ export default function VolunteerRequestsPage() {
         setIsLoading(true);
         try {
             let response;
-            if (requestTypeFilter === "all") {
-                response = await getVolunteerRequests(
-                    page,
-                    itemsPerPage,
-                    statusFilter === "all" ? undefined : statusFilter,
-                );
+            if (isAdmin) {
+                response =
+                    requestTypeFilter === "all"
+                        ? await getVolunteerRequests(
+                              page,
+                              itemsPerPage,
+                              statusFilter === "all" ? undefined : statusFilter,
+                          )
+                        : await getVolunteerRequestsByAdminId(
+                              page,
+                              itemsPerPage,
+                              statusFilter === "all" ? undefined : statusFilter,
+                          );
             } else {
-                response = await getVolunteerRequestsByAdminId(
+                response = await getVolunteerRequestsByUserId(
                     page,
                     itemsPerPage,
                     statusFilter === "all" ? undefined : statusFilter,
                 );
+                setRequestTypeFilter("my");
             }
 
             const validatedRequests =
@@ -200,20 +212,22 @@ export default function VolunteerRequestsPage() {
                 </div>
 
                 {/* Фильтр по типу заявок */}
-                <Select
-                    placeholder="Тип заявок"
-                    selectedKeys={[requestTypeFilter]}
-                    onSelectionChange={(keys) => {
-                        const newFilter = Array.from(keys)[0] as "all" | "my";
-                        setRequestTypeFilter(newFilter);
-                        setStatusFilter(newFilter === "all" ? "Waiting" : "all");
-                        setCurrentPage(1);
-                    }}
-                    className="w-full md:w-[200px]"
-                >
-                    <SelectItem key="all">Все заявки</SelectItem>
-                    <SelectItem key="my">Мои заявки</SelectItem>
-                </Select>
+                {isAdmin ? (
+                    <Select
+                        placeholder="Тип заявок"
+                        selectedKeys={[requestTypeFilter]}
+                        onSelectionChange={(keys) => {
+                            const newFilter = Array.from(keys)[0] as "all" | "my";
+                            setRequestTypeFilter(newFilter);
+                            setStatusFilter(newFilter === "all" ? "Waiting" : "all");
+                            setCurrentPage(1);
+                        }}
+                        className="w-full md:w-[200px]"
+                    >
+                        <SelectItem key="all">Все заявки</SelectItem>
+                        <SelectItem key="my">Мои заявки</SelectItem>
+                    </Select>
+                ) : null}
 
                 {/* Фильтр по статусу */}
                 <Select
@@ -316,51 +330,55 @@ export default function VolunteerRequestsPage() {
                             </CardBody>
                             <CardFooter className="pt-2">
                                 <div className="flex w-full flex-wrap justify-end gap-2">
-                                    {request.requestStatus === "Waiting" && (
-                                        <Button
-                                            variant="flat"
-                                            className="border-blue-500/20 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
-                                            onPress={() => {
-                                                void handleTakeForASubmit(request.id);
-                                            }}
-                                        >
-                                            Взять в работу
-                                        </Button>
-                                    )}
-                                    {request.requestStatus === "Submitted" && (
-                                        <>
-                                            <Button
-                                                variant="flat"
-                                                className="border-green-500/20 bg-green-500/10 text-green-500 hover:bg-green-500/20"
-                                                onPress={() => {
-                                                    void handleApprove(request);
-                                                }}
-                                            >
-                                                <Check className="mr-2 h-4 w-4" />
-                                                Одобрить
-                                            </Button>
-                                            <Button
-                                                variant="flat"
-                                                className="border-orange-500/20 bg-orange-500/10 text-orange-500 hover:bg-orange-500/20"
-                                                onPress={() => {
-                                                    handleRevision(request);
-                                                }}
-                                            >
-                                                <RefreshCw className="mr-2 h-4 w-4" />
-                                                На доработку
-                                            </Button>
-                                            <Button
-                                                variant="flat"
-                                                className="border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
-                                                onPress={() => {
-                                                    handleReject(request);
-                                                }}
-                                            >
-                                                <X className="mr-2 h-4 w-4" />
-                                                Отклонить
-                                            </Button>
-                                        </>
-                                    )}
+                                    {isAdmin ? (
+                                        <div>
+                                            {request.requestStatus === "Waiting" && (
+                                                <Button
+                                                    variant="flat"
+                                                    className="border-blue-500/20 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                                                    onPress={() => {
+                                                        void handleTakeForASubmit(request.id);
+                                                    }}
+                                                >
+                                                    Взять в работу
+                                                </Button>
+                                            )}
+                                            {request.requestStatus === "Submitted" && (
+                                                <>
+                                                    <Button
+                                                        variant="flat"
+                                                        className="border-green-500/20 bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                                                        onPress={() => {
+                                                            void handleApprove(request);
+                                                        }}
+                                                    >
+                                                        <Check className="mr-2 h-4 w-4" />
+                                                        Одобрить
+                                                    </Button>
+                                                    <Button
+                                                        variant="flat"
+                                                        className="border-orange-500/20 bg-orange-500/10 text-orange-500 hover:bg-orange-500/20"
+                                                        onPress={() => {
+                                                            handleRevision(request);
+                                                        }}
+                                                    >
+                                                        <RefreshCw className="mr-2 h-4 w-4" />
+                                                        На доработку
+                                                    </Button>
+                                                    <Button
+                                                        variant="flat"
+                                                        className="border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                                                        onPress={() => {
+                                                            handleReject(request);
+                                                        }}
+                                                    >
+                                                        <X className="mr-2 h-4 w-4" />
+                                                        Отклонить
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </div>
+                                    ) : null}
                                 </div>
                             </CardFooter>
                         </Card>
