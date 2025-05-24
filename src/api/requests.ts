@@ -4,6 +4,7 @@ import { API_URL, api } from "@/api/api";
 import { Envelope } from "@/models/envelope";
 import { RegisterVolunteerProps } from "@/models/requests/RegisterVolunteerProps";
 import { Result, ResultWith } from "@/models/result";
+import { SocialNetwork } from "@/models/socialNetwork";
 import { VolunteerRequest } from "@/models/volunteerRequests";
 
 export interface PagedResponse<T> {
@@ -116,5 +117,24 @@ export async function sendForRevision(
     return api.post<Envelope<Result>>(`${API_URL}VolunteerRequests/sending-for-revision`, {
         volunteerRequestId,
         rejectComment,
+    });
+}
+
+export async function updateVolunteerRequest(
+    volunteerRequestId: string,
+    data: {
+        firstName?: string;
+        secondName?: string;
+        patronymic?: string;
+        email?: string;
+        phoneNumber?: string;
+        workExperience?: number;
+        volunteerDescription?: string;
+        socialNetworks?: SocialNetwork[];
+    },
+): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.put<Envelope<Result>>(`${API_URL}VolunteerRequests/update-volunteer-request`, {
+        volunteerRequestId: volunteerRequestId,
+        ...data,
     });
 }

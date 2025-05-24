@@ -12,6 +12,7 @@ import {
     rejectRequest,
     sendForRevision,
     takeForASubmit,
+    updateVolunteerRequest,
 } from "@/api/requests";
 import { useAuth } from "@/hooks/useAuth";
 import { VolunteerRequest } from "@/models/volunteerRequests";
@@ -210,11 +211,10 @@ export default function VolunteerRequestsPage() {
 
         try {
             setIsLoading(true);
-            // API вызов для сохранения изменений (без отправки на пересмотр)
-            /*await saveRequestEdits(editedRequest.id, {
+            await updateVolunteerRequest(editedRequest.id, {
                 volunteerDescription: editedDescription,
-                workExperience: editedExperience
-            });*/
+                workExperience: parseInt(editedExperience),
+            });
             await refreshAfterAction();
             setIsEditModalOpen(false);
         } catch (error) {
@@ -597,7 +597,12 @@ export default function VolunteerRequestsPage() {
                         >
                             Отмена
                         </Button>
-                        <Button onPress={() => handleSaveEdits} color="primary">
+                        <Button
+                            onPress={() => {
+                                void handleSaveEdits();
+                            }}
+                            color="primary"
+                        >
                             Сохранить изменения
                         </Button>
                     </ModalFooter>
