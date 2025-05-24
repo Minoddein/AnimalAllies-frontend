@@ -89,6 +89,11 @@ export default function VolunteerRequestsPage() {
     const [, setIsLoading] = useState(false);
     const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
     const [selectedDescription, setSelectedDescription] = useState("");
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isResubmitModalOpen, setIsResubmitModalOpen] = useState(false);
+    const [editedRequest, setEditedRequest] = useState<VolunteerRequest | null>(null);
+    const [editedDescription, setEditedDescription] = useState("");
+    const [editedExperience, setEditedExperience] = useState("");
     const itemsPerPage = 4;
 
     const fetchRequests = async (page: number) => {
@@ -191,6 +196,52 @@ export default function VolunteerRequestsPage() {
     const handleTakeForASubmit = async (id: string) => {
         await takeForASubmit(id);
         await refreshAfterAction();
+    };
+
+    const handleEditRequest = (request: VolunteerRequest) => {
+        setEditedRequest(request);
+        setEditedDescription(request.volunteerDescription);
+        setEditedExperience(request.workExperience);
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveEdits = async () => {
+        if (!editedRequest) return;
+
+        try {
+            setIsLoading(true);
+            // API вызов для сохранения изменений (без отправки на пересмотр)
+            /*await saveRequestEdits(editedRequest.id, {
+                volunteerDescription: editedDescription,
+                workExperience: editedExperience
+            });*/
+            await refreshAfterAction();
+            setIsEditModalOpen(false);
+        } catch (error) {
+            console.error("Failed to save edits:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResubmitRequest = (request: VolunteerRequest) => {
+        setSelectedRequest(request);
+        setIsResubmitModalOpen(true);
+    };
+
+    const submitRevisedRequest = async () => {
+        if (!selectedRequest) return;
+
+        try {
+            setIsLoading(true);
+            //await resubmitRevisedRequest(selectedRequest.id);
+            await refreshAfterAction();
+            setIsResubmitModalOpen(false);
+        } catch (error) {
+            console.error("Failed to resubmit request:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -378,7 +429,31 @@ export default function VolunteerRequestsPage() {
                                                 </>
                                             )}
                                         </div>
-                                    ) : null}
+                                    ) : (
+                                        request.requestStatus === "RevisionRequired" && (
+                                            <>
+                                                <Button
+                                                    variant="flat"
+                                                    className="border-yellow-500/20 bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 dark:text-yellow-400"
+                                                    onPress={() => {
+                                                        handleEditRequest(request);
+                                                    }}
+                                                >
+                                                    Редактировать
+                                                </Button>
+                                                <Button
+                                                    variant="flat"
+                                                    className="border-blue-500/20 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                                                    onPress={() => {
+                                                        handleResubmitRequest(request);
+                                                    }}
+                                                >
+                                                    <RefreshCw className="mr-2 h-4 w-4" />
+                                                    Отправить на пересмотр
+                                                </Button>
+                                            </>
+                                        )
+                                    )}
                                 </div>
                             </CardFooter>
                         </Card>
@@ -474,6 +549,92 @@ export default function VolunteerRequestsPage() {
                             }}
                         >
                             Закрыть
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            <Modal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                }}
+                size="lg"
+            >
+                <ModalContent>
+                    <ModalHeader className="text-lg font-semibold">Редактирование заявки</ModalHeader>
+                    <ModalBody>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-muted-foreground mb-1 block text-sm">О себе:</label>
+                                <Textarea
+                                    value={editedDescription}
+                                    onChange={(e) => {
+                                        setEditedDescription(e.target.value);
+                                    }}
+                                    className="min-h-[100px] w-full"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-muted-foreground mb-1 block text-sm">Опыт работы:</label>
+                                <Textarea
+                                    value={editedExperience}
+                                    onChange={(e) => {
+                                        setEditedExperience(e.target.value);
+                                    }}
+                                    className="min-h-[60px] w-full"
+                                />
+                            </div>
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button
+                            variant="flat"
+                            onPress={() => {
+                                setIsEditModalOpen(false);
+                            }}
+                            className="mr-2"
+                        >
+                            Отмена
+                        </Button>
+                        <Button onPress={() => handleSaveEdits} color="primary">
+                            Сохранить изменения
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            {/* Модалка подтверждения отправки */}
+            <Modal
+                isOpen={isResubmitModalOpen}
+                onClose={() => {
+                    setIsResubmitModalOpen(false);
+                }}
+                size="md"
+            >
+                <ModalContent>
+                    <ModalHeader className="text-lg font-semibold">Отправить на пересмотр</ModalHeader>
+                    <ModalBody>
+                        <p>Вы уверены, что хотите отправить заявку на повторное рассмотрение?</p>
+                        {selectedRequest?.rejectionComment && (
+                            <div className="mt-3 rounded-md bg-gray-100 p-3 dark:bg-gray-800">
+                                <p className="text-sm font-medium">Комментарий администратора:</p>
+                                <p className="text-sm">{selectedRequest.rejectionComment}</p>
+                            </div>
+                        )}
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button
+                            variant="flat"
+                            onPress={() => {
+                                setIsResubmitModalOpen(false);
+                            }}
+                            className="mr-2"
+                        >
+                            Отмена
+                        </Button>
+                        <Button onPress={() => submitRevisedRequest} color="primary">
+                            Отправить
                         </Button>
                     </ModalFooter>
                 </ModalContent>
