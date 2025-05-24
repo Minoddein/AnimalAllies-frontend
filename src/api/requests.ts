@@ -87,3 +87,13 @@ export async function approveVolunteerRequest(volunteerRequestId: string): Promi
         `${API_URL}VolunteerRequests/${volunteerRequestId}approving-request`,
     );
 }
+
+export async function sendForRevision(
+    volunteerRequestId: string,
+    rejectComment: string,
+): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<Result>>(`${API_URL}VolunteerRequests/sending-for-revision`, {
+        volunteerRequestId,
+        rejectComment,
+    });
+}

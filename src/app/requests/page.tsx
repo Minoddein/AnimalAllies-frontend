@@ -9,6 +9,7 @@ import {
     getVolunteerRequests,
     getVolunteerRequestsByAdminId,
     rejectRequest,
+    sendForRevision,
     takeForASubmit,
 } from "@/api/requests";
 import { VolunteerRequest } from "@/models/volunteerRequests";
@@ -168,7 +169,7 @@ export default function VolunteerRequestsPage() {
         if (commentAction === "reject") {
             await rejectRequest(selectedRequest.id, commentText);
         } else {
-            // TODO: handle revision logic here
+            await sendForRevision(selectedRequest.id, commentText);
         }
 
         setIsCommentDialogOpen(false);
