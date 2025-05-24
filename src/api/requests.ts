@@ -138,3 +138,7 @@ export async function updateVolunteerRequest(
         ...data,
     });
 }
+
+export async function resendVolunteerRequest(volunteerRequestId: string): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.put<Envelope<Result>>(`${API_URL}VolunteerRequests/${volunteerRequestId}/resending-volunteer-request`);
+}

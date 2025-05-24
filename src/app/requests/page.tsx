@@ -10,6 +10,7 @@ import {
     getVolunteerRequestsByAdminId,
     getVolunteerRequestsByUserId,
     rejectRequest,
+    resendVolunteerRequest,
     sendForRevision,
     takeForASubmit,
     updateVolunteerRequest,
@@ -234,7 +235,7 @@ export default function VolunteerRequestsPage() {
 
         try {
             setIsLoading(true);
-            //await resubmitRevisedRequest(selectedRequest.id);
+            await resendVolunteerRequest(selectedRequest.id);
             await refreshAfterAction();
             setIsResubmitModalOpen(false);
         } catch (error) {
@@ -396,61 +397,65 @@ export default function VolunteerRequestsPage() {
                                             )}
                                             {request.requestStatus === "Submitted" && (
                                                 <>
-                                                    <Button
-                                                        variant="flat"
-                                                        className="border-green-500/20 bg-green-500/10 text-green-500 hover:bg-green-500/20"
-                                                        onPress={() => {
-                                                            void handleApprove(request);
-                                                        }}
-                                                    >
-                                                        <Check className="mr-2 h-4 w-4" />
-                                                        Одобрить
-                                                    </Button>
-                                                    <Button
-                                                        variant="flat"
-                                                        className="border-orange-500/20 bg-orange-500/10 text-orange-500 hover:bg-orange-500/20"
-                                                        onPress={() => {
-                                                            handleRevision(request);
-                                                        }}
-                                                    >
-                                                        <RefreshCw className="mr-2 h-4 w-4" />
-                                                        На доработку
-                                                    </Button>
-                                                    <Button
-                                                        variant="flat"
-                                                        className="border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
-                                                        onPress={() => {
-                                                            handleReject(request);
-                                                        }}
-                                                    >
-                                                        <X className="mr-2 h-4 w-4" />
-                                                        Отклонить
-                                                    </Button>
+                                                    <div className="flex flex-row justify-between gap-2">
+                                                        <Button
+                                                            variant="flat"
+                                                            className="border-green-500/20 bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                                                            onPress={() => {
+                                                                void handleApprove(request);
+                                                            }}
+                                                        >
+                                                            <Check className="mr-2 h-4 w-4" />
+                                                            Одобрить
+                                                        </Button>
+                                                        <Button
+                                                            variant="flat"
+                                                            className="border-orange-500/20 bg-orange-500/10 text-orange-500 hover:bg-orange-500/20"
+                                                            onPress={() => {
+                                                                handleRevision(request);
+                                                            }}
+                                                        >
+                                                            <RefreshCw className="mr-2 h-4 w-4" />
+                                                            На доработку
+                                                        </Button>
+                                                        <Button
+                                                            variant="flat"
+                                                            className="border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                                                            onPress={() => {
+                                                                handleReject(request);
+                                                            }}
+                                                        >
+                                                            <X className="mr-2 h-4 w-4" />
+                                                            Отклонить
+                                                        </Button>
+                                                    </div>
                                                 </>
                                             )}
                                         </div>
                                     ) : (
                                         request.requestStatus === "RevisionRequired" && (
                                             <>
-                                                <Button
-                                                    variant="flat"
-                                                    className="border-yellow-500/20 bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 dark:text-yellow-400"
-                                                    onPress={() => {
-                                                        handleEditRequest(request);
-                                                    }}
-                                                >
-                                                    Редактировать
-                                                </Button>
-                                                <Button
-                                                    variant="flat"
-                                                    className="border-blue-500/20 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
-                                                    onPress={() => {
-                                                        handleResubmitRequest(request);
-                                                    }}
-                                                >
-                                                    <RefreshCw className="mr-2 h-4 w-4" />
-                                                    Отправить на пересмотр
-                                                </Button>
+                                                <div className="flex w-full flex-wrap justify-end gap-2">
+                                                    <Button
+                                                        variant="flat"
+                                                        className="border-yellow-500/20 bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 dark:text-yellow-400"
+                                                        onPress={() => {
+                                                            handleEditRequest(request);
+                                                        }}
+                                                    >
+                                                        Редактировать
+                                                    </Button>
+                                                    <Button
+                                                        variant="flat"
+                                                        className="border-blue-500/20 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                                                        onPress={() => {
+                                                            handleResubmitRequest(request);
+                                                        }}
+                                                    >
+                                                        <RefreshCw className="mr-2 h-4 w-4" />
+                                                        Отправить на пересмотр
+                                                    </Button>
+                                                </div>
                                             </>
                                         )
                                     )}
@@ -638,7 +643,12 @@ export default function VolunteerRequestsPage() {
                         >
                             Отмена
                         </Button>
-                        <Button onPress={() => submitRevisedRequest} color="primary">
+                        <Button
+                            onPress={() => {
+                                void submitRevisedRequest();
+                            }}
+                            color="primary"
+                        >
                             Отправить
                         </Button>
                     </ModalFooter>
