@@ -2,7 +2,7 @@
 
 import { Check, RefreshCw, Search, X } from "lucide-react";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
     approveVolunteerRequest,
@@ -77,89 +77,75 @@ export default function VolunteerRequestsPage() {
     const [commentText, setCommentText] = useState("");
     const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
     const [commentAction, setCommentAction] = useState<"reject" | "revision">("reject");
-    const [requests, setRequests] = useState<VolunteerRequest[]>([]);
-    const [pagedData, setPagedData] = useState<{
-        items: VolunteerRequest[];
-        totalCount: number;
-    }>({ items: [], totalCount: 0 });
-    const [totalCount, setTotalCount] = useState(0);
+    const [pagedData, setPagedData] = useState<{ items: VolunteerRequest[]; totalCount: number }>({
+        items: [],
+        totalCount: 0,
+    });
     const [, setIsLoading] = useState(false);
-    const [needsRefresh, setNeedsRefresh] = useState(false);
+    const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
+    const [selectedDescription, setSelectedDescription] = useState("");
     const itemsPerPage = 4;
 
-    const fetchRequests = useCallback(async () => {
+    const fetchRequests = async (page: number) => {
         setIsLoading(true);
         try {
             let response;
-
             if (requestTypeFilter === "all") {
-                // Запрос для всех ожидающих заявок
                 response = await getVolunteerRequests(
-                    currentPage,
+                    page,
                     itemsPerPage,
                     statusFilter === "all" ? undefined : statusFilter,
                 );
             } else {
-                // Запрос для заявок текущего админа
                 response = await getVolunteerRequestsByAdminId(
-                    currentPage,
+                    page,
                     itemsPerPage,
                     statusFilter === "all" ? undefined : statusFilter,
                 );
             }
 
-            if (!response.data.result?.value) {
-                console.error("No data received");
-                return;
-            }
+            const validatedRequests =
+                response.data.result?.value?.items.map((item) => ({
+                    ...item,
+                    volunteerInfo: {
+                        firstName: item.firstName || "",
+                        secondName: item.secondName || "",
+                        patronymic: item.patronymic || "",
+                        email: item.email || "",
+                        phoneNumber: item.phoneNumber || "",
+                        volunteerDescription: item.volunteerDescription || "",
+                        workExperience: item.workExperience || "",
+                    },
+                })) ?? [];
 
-            const validatedRequests = response.data.result.value.items.map((item) => ({
-                ...item,
-                volunteerInfo: {
-                    firstName: item.firstName || "",
-                    secondName: item.secondName || "",
-                    patronymic: item.patronymic || "",
-                    email: item.email || "",
-                    phoneNumber: item.phoneNumber || "",
-                    volunteerDescription: item.volunteerDescription || "",
-                    workExperience: item.workExperience || "",
-                },
-            }));
-
-            setRequests(validatedRequests);
             setPagedData({
                 items: validatedRequests,
-                totalCount: response.data.result.value.totalCount,
+                totalCount: response.data.result?.value?.totalCount ?? 0,
             });
-            setTotalCount(response.data.result.value.totalCount);
         } catch (error) {
             console.error("Error fetching requests:", error);
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const totalPages = Math.ceil(pagedData.totalCount / itemsPerPage);
+
+    useEffect(() => {
+        void fetchRequests(currentPage);
     }, [currentPage, statusFilter, itemsPerPage, requestTypeFilter]);
-    requests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    const totalPages = Math.ceil(totalCount / itemsPerPage);
-
-    useEffect(() => {
-        void fetchRequests();
-    }, [fetchRequests, currentPage, itemsPerPage, statusFilter]);
-
-    useEffect(() => {
-        if (needsRefresh) {
-            const refreshData = async () => {
-                await fetchRequests();
-                setNeedsRefresh(false);
-            };
-            void refreshData();
+    const refreshAfterAction = async () => {
+        if (pagedData.items.length === 1 && currentPage > 1) {
+            setCurrentPage((prev) => prev - 1); // это вызовет useEffect -> fetchRequests(newPage)
+        } else {
+            await fetchRequests(currentPage);
         }
-    }, [needsRefresh, fetchRequests]);
+    };
 
     const handleApprove = async (request: VolunteerRequest) => {
-        console.log("Approve request:", request.id);
         await approveVolunteerRequest(request.id);
-        setNeedsRefresh(true);
+        await refreshAfterAction();
     };
 
     const handleReject = (request: VolunteerRequest) => {
@@ -179,30 +165,20 @@ export default function VolunteerRequestsPage() {
     const submitComment = async () => {
         if (!selectedRequest || !commentText.trim()) return;
 
-        console.log(
-            commentAction === "reject" ? "Reject request:" : "Request revision:",
-            selectedRequest.id,
-            "Comment:",
-            commentText,
-        );
-
         if (commentAction === "reject") {
             await rejectRequest(selectedRequest.id, commentText);
         } else {
-            // Логика для отправки на доработку
-            console.log("Request revision:", selectedRequest.id, "Comment:", commentText);
+            // TODO: handle revision logic here
         }
 
         setIsCommentDialogOpen(false);
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        setNeedsRefresh(true);
+        await refreshAfterAction();
     };
 
-    async function handleTakeForASubmit(id: string) {
+    const handleTakeForASubmit = async (id: string) => {
         await takeForASubmit(id);
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        setNeedsRefresh(true);
-    }
+        await refreshAfterAction();
+    };
 
     return (
         <div className="container mx-auto max-w-7xl py-8">
@@ -311,7 +287,20 @@ export default function VolunteerRequestsPage() {
                                 </div>
                                 <div className="mt-4">
                                     <div className="text-muted-foreground mb-1 text-sm">О себе:</div>
-                                    <div className="text-sm">{request.volunteerDescription}</div>
+                                    <div
+                                        className="relative max-h-[4.5rem] cursor-pointer overflow-hidden text-sm hover:underline"
+                                        onClick={() => {
+                                            setSelectedDescription(request.volunteerDescription);
+                                            setDescriptionModalOpen(true);
+                                        }}
+                                    >
+                                        {request.volunteerDescription}
+                                        {request.volunteerDescription.length > 200 && (
+                                            <span className="absolute right-0 bottom-0 bg-gradient-to-t from-gray-900 to-transparent px-2 text-xs text-blue-400">
+                                                Читать полностью
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 {(request.requestStatus === "Rejected" ||
                                     request.requestStatus === "RevisionRequired") &&
@@ -381,7 +370,7 @@ export default function VolunteerRequestsPage() {
             </div>
 
             {/* Пагинация */}
-            {requests.length > 0 && (
+            {pagedData.items.length > 0 && (
                 <Pagination
                     className="mt-6 flex justify-center"
                     initialPage={currentPage}
@@ -443,6 +432,29 @@ export default function VolunteerRequestsPage() {
                             color={commentAction === "reject" ? "danger" : "warning"}
                         >
                             {commentAction === "reject" ? "Отклонить" : "Отправить на доработку"}
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+            <Modal
+                isOpen={descriptionModalOpen}
+                onClose={() => {
+                    setDescriptionModalOpen(false);
+                }}
+                size="lg"
+            >
+                <ModalContent>
+                    <ModalHeader className="text-lg font-semibold">Полное описание</ModalHeader>
+                    <ModalBody className="max-h-[400px] overflow-y-auto">
+                        <div className="text-sm whitespace-pre-wrap">{selectedDescription}</div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button
+                            onPress={() => {
+                                setDescriptionModalOpen(false);
+                            }}
+                        >
+                            Закрыть
                         </Button>
                     </ModalFooter>
                 </ModalContent>
