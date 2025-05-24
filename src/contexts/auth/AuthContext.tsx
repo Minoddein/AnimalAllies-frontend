@@ -2,7 +2,7 @@
 
 import { AxiosResponse } from "axios";
 
-import { createContext, useEffect, useLayoutEffect, useState } from "react";
+import { createContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { login, logout, refresh } from "@/api/accounts";
 import { api } from "@/api/api";
@@ -33,13 +33,11 @@ export const AuthProvider = ({ children }: Props) => {
     const [user, setUser] = useState<User | undefined>();
     const [, setIsLoading] = useState(false);
     const [, setIsError] = useState(false);
+    const didRun = useRef(false);
 
     const initData = (response: LoginResponse) => {
-        setAccessToken(response.accessToken);
-
-        console.log(response);
-
         const savedAvatarUrl = typeof window !== "undefined" ? localStorage.getItem(`avatar_${response.userId}`) : null;
+        const savedAvatarUpdated = localStorage.getItem("avatarLastUpdated");
 
         const user: User = {
             id: response.userId,
@@ -61,9 +59,14 @@ export const AuthProvider = ({ children }: Props) => {
                   }
                 : null,
             avatarUrl: savedAvatarUrl ?? undefined,
-            avatarLastUpdated: new Date().toISOString(),
+            avatarLastUpdated: savedAvatarUpdated ?? new Date().toISOString(),
         };
+
+        setAccessToken(response.accessToken);
         setUser(user);
+
+        sessionStorage.setItem("accessToken", response.accessToken);
+        sessionStorage.setItem("user", JSON.stringify(user));
     };
 
     const updateUserAvatar = async (avatarUrl: string) => {
@@ -72,31 +75,31 @@ export const AuthProvider = ({ children }: Props) => {
         if (user.avatarUrl) {
             const { fileId, extension } = extractFileInfoFromUrl(user.avatarUrl);
             const deleteResponse = await getDeletePresignedUrl([
-                { bucketName: "photos", fileId: fileId, extension: `.${extension}` },
+                { bucketName: "photos", fileId, extension: `.${extension}` },
             ]);
-
-            console.log(deleteResponse);
-
-            await fetch(deleteResponse.data.deleteUrl, {
-                method: "DELETE",
-            });
+            await fetch(deleteResponse.data.deleteUrl, { method: "DELETE" });
         }
 
-        setUser({
+        const updatedUser = {
             ...user,
-            avatarUrl: avatarUrl,
+            avatarUrl,
             avatarLastUpdated: new Date().toISOString(),
-        });
-        console.log(avatarUrl);
+        };
+
+        setUser(updatedUser);
         localStorage.setItem(`avatar_${user.id}`, avatarUrl);
-        localStorage.setItem("avatarLastUpdated", user.avatarLastUpdated!);
+        localStorage.setItem("avatarLastUpdated", updatedUser.avatarLastUpdated);
+        sessionStorage.setItem("user", JSON.stringify(updatedUser));
     };
+
+    const hasRole = (role: string) => user?.roles.includes(role);
+    const hasPermission = (permission: string) => user?.permissions.includes(permission);
 
     useEffect(() => {
         const checkAndRefreshAvatar = async () => {
             if (!user?.avatarUrl) return;
 
-            const lastUpdated = localStorage.getItem("avatarLastUpdated") ?? new Date(Date.now());
+            const lastUpdated = localStorage.getItem("avatarLastUpdated") ?? new Date(Date.now()).toISOString();
             const expiryDate = new Date(lastUpdated);
             expiryDate.setDate(expiryDate.getDate() + 30);
 
@@ -108,24 +111,28 @@ export const AuthProvider = ({ children }: Props) => {
         };
 
         void checkAndRefreshAvatar();
-        const interval = setInterval(() => checkAndRefreshAvatar, 3600000);
-
+        const interval = setInterval(() => {
+            void checkAndRefreshAvatar();
+        }, 3600000);
         return () => {
             clearInterval(interval);
         };
     }, [updateUserAvatar, user]);
 
-    const hasRole = (role: string) => {
-        return user?.roles.includes(role);
-    };
-
-    const hasPermission = (permission: string) => {
-        return user?.permissions.includes(permission);
-    };
-
     useEffect(() => {
+        if (didRun.current) return;
+        didRun.current = true;
+
         const initializeAuth = async () => {
             try {
+                const storedToken = sessionStorage.getItem("accessToken");
+                const storedUser = sessionStorage.getItem("user");
+
+                if (storedToken && storedUser) {
+                    setAccessToken(storedToken);
+                    setUser(JSON.parse(storedUser) as User);
+                }
+
                 const response = await refresh();
                 initData(response.data.result!);
             } catch {
@@ -139,12 +146,11 @@ export const AuthProvider = ({ children }: Props) => {
     useEffect(() => {
         const accessTokenInterceptor = api.interceptors.request.use((config) => {
             config.headers.Authorization = accessToken ? `Bearer ${accessToken}` : config.headers.Authorization;
-
             return config;
         });
 
         return () => {
-            api.interceptors.response.eject(accessTokenInterceptor);
+            api.interceptors.request.eject(accessTokenInterceptor);
         };
     }, [accessToken]);
 
@@ -158,14 +164,15 @@ export const AuthProvider = ({ children }: Props) => {
                     try {
                         const response = await refresh();
                         initData(response.data.result!);
-
                         originalRequest.headers.Authorization = `Bearer ${response.data.result!.accessToken}`;
                         return await api(originalRequest);
                     } catch {
                         setAccessToken(undefined);
                         setUser(undefined);
+                        sessionStorage.clear();
                     }
                 }
+
                 return Promise.reject(new Error("Unauthorized"));
             },
         );
@@ -177,10 +184,10 @@ export const AuthProvider = ({ children }: Props) => {
 
     const handleLogout = async () => {
         const response = await logout();
-        console.log(response);
         if (response.data.result?.isSuccess) {
             setAccessToken(undefined);
             setUser(undefined);
+            sessionStorage.clear();
         }
     };
 
@@ -191,25 +198,16 @@ export const AuthProvider = ({ children }: Props) => {
     const handleLogin = async (email: string, password: string) => {
         try {
             setIsLoading(true);
-
             const response = await login(email, password);
             setIsLoading(false);
 
-            if (!response.data.result) {
-                throw new Error("auth error");
-            } else {
-                initData(response.data.result);
+            if (!response.data.result) throw new Error("auth error");
 
-                setIsLoading(false);
-
-                console.log(response);
-            }
+            initData(response.data.result);
         } catch (error) {
             console.error(error);
             setIsLoading(false);
             setIsError(true);
-        } finally {
-            setIsLoading(false);
         }
     };
 
