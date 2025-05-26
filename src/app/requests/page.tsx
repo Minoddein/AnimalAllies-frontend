@@ -36,6 +36,8 @@ import {
     SelectItem,
 } from "@heroui/react";
 
+import { DiscussionList } from "../_components/discussion/discussionList";
+
 const RequestStatusBadge = ({ status }: { status: VolunteerRequest["requestStatus"] }) => {
     switch (status) {
         case "Waiting":
@@ -654,6 +656,7 @@ export default function VolunteerRequestsPage() {
                     </ModalFooter>
                 </ModalContent>
             </Modal>
+            <DiscussionList />
         </div>
     );
 }
