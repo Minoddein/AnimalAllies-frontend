@@ -43,13 +43,13 @@ export function DiscussionList() {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (isOpen && chats.length === 0) {
+            if (isOpen) {
                 await loadDiscussions();
             }
         };
 
         void fetchData();
-    }, [isOpen, chats.length]);
+    }, [isOpen]);
 
     const formatTime = (date: Date) => {
         const d = new Date(date);
@@ -136,6 +136,7 @@ export function DiscussionList() {
                     }}
                     onBack={() => {
                         setSelectedChat(null);
+                        void loadDiscussions();
                     }}
                 />
             ) : (
