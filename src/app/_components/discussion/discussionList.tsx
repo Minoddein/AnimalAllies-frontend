@@ -87,7 +87,6 @@ export function DiscussionList() {
 
     const handleChatSelect = (chat: Discussion) => {
         setSelectedChat(chat);
-        setIsOpen(false);
     };
 
     if (!isOpen) {
