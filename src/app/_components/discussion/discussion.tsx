@@ -110,7 +110,7 @@ const StatusChip = ({ status }: { status?: ChatUser["status"] }) => {
     }
 };
 
-export function Discussion({ chatPartner, onBack }: DiscussionProps) {
+export function OpenDiscussion({ chatPartner, onBack }: DiscussionProps) {
     const [messages, setMessages] = useState<Message[]>(mockMessages);
     const [newMessage, setNewMessage] = useState("");
     const [editingMessage, setEditingMessage] = useState<string | null>(null);
