@@ -168,19 +168,21 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
             <div className="fixed right-6 bottom-6 z-50 h-[500px] w-96">
                 <Card className="flex h-full flex-col border-green-900/20 bg-black/90 backdrop-blur-sm">
                     <CardHeader className="border-b border-green-900/20 pb-3">
-                        {/* Заголовок */}
-                        <div className="grid grid-cols-[auto_1fr_auto] items-center">
-                            {onBack && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onPress={onBack}
-                                    className="h-8 w-8 p-0 hover:bg-gray-500/20"
-                                >
-                                    <ArrowLeft className="h-4 w-4" />
-                                </Button>
-                            )}
-                            <div className="flex items-center gap-2 justify-self-start">
+                        <div className="grid grid-cols-3 items-center">
+                            <div className="justify-self-start">
+                                {onBack && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onPress={onBack}
+                                        className="h-8 w-8 p-0 hover:bg-gray-500/20"
+                                    >
+                                        <ArrowLeft className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-2 justify-self-center">
                                 <Avatar className="h-10 w-10" name={chatPartner.avatar || "?"} />
                                 <div className="flex flex-col gap-1">
                                     <span className="text-sm font-medium text-white">
@@ -189,14 +191,17 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
                                     <StatusChip status={chatPartner.status} />
                                 </div>
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onPress={onBack}
-                                className="h-8 w-8 justify-self-end p-0 hover:bg-red-500/20"
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
+
+                            <div className="justify-self-end">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onPress={onBack}
+                                    className="h-8 w-8 p-0 hover:bg-red-500/20"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardBody className="flex-1 space-y-4 overflow-y-auto p-4">
