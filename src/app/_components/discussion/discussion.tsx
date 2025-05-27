@@ -4,7 +4,7 @@ import { ArrowLeft, Check, Edit, Send, Trash2, X, XIcon } from "lucide-react";
 
 import { useEffect, useRef, useState } from "react";
 
-import { getMessagesFromDiscussion, markAsReadMessages } from "@/api/discussions";
+import { getMessagesFromDiscussion, markAsReadMessages, postMessage } from "@/api/discussions";
 import { Discussion } from "@/models/discussion";
 import { Message } from "@/models/message";
 import { CardBody, CardHeader } from "@heroui/card";
@@ -50,7 +50,7 @@ const StatusChip = ({ status }: { status?: DiscussionProps["chatPartner"]["statu
 };
 
 export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }: DiscussionProps) {
-    const [, setDiscussion] = useState<Discussion | null>(null);
+    const [discussion, setDiscussion] = useState<Discussion | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const [editingMessage, setEditingMessage] = useState<string | null>(null);
@@ -106,7 +106,7 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
         };
     }, [contextMenu]);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         if (!newMessage.trim()) return;
 
         const message: Message = {
@@ -118,6 +118,8 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
             firstName: currentUser.name,
         };
 
+        await postMessage(discussion!.id, message.text);
+
         setMessages([...messages, message]);
         setNewMessage("");
     };
@@ -125,7 +127,7 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            handleSendMessage();
+            void handleSendMessage();
         }
     };
 
@@ -338,7 +340,7 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
                                 className="flex-1 border-gray-700 bg-gray-800 focus:border-green-500"
                             />
                             <Button
-                                onPress={handleSendMessage}
+                                onPress={() => void handleSendMessage()}
                                 disabled={!newMessage.trim()}
                                 className="bg-green-500 hover:bg-green-600 disabled:opacity-50"
                             >

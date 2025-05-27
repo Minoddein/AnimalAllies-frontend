@@ -22,3 +22,10 @@ export async function markAsReadMessages(discussionId: string): Promise<AxiosRes
         DiscussionId: discussionId,
     });
 }
+
+export async function postMessage(discussionId: string, text: string): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<Result>>(`${API_URL}Discussion/posting-message`, {
+        DiscussionId: discussionId,
+        Text: text,
+    });
+}
