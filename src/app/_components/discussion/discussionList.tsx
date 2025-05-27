@@ -5,7 +5,8 @@ import { MessageCircle, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getDiscussionsByUserId } from "@/api/discussions";
-import { getVolunteerRequestsByAdminId } from "@/api/requests";
+import { getVolunteerRequestsByRelationUser } from "@/api/requests";
+import { useAuth } from "@/hooks/useAuth";
 import { Discussion } from "@/models/discussion";
 import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Avatar, Button, Card, CardBody, CardHeader, Chip } from "@heroui/react";
@@ -31,6 +32,7 @@ const StatusChip = ({ status }: { status: VolunteerRequest["requestStatus"] }) =
 };
 
 export function DiscussionList() {
+    const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [, setSelectedChat] = useState<Discussion | null>(null);
     const [chats, setChats] = useState<Discussion[]>([]);
@@ -66,10 +68,10 @@ export function DiscussionList() {
             const discussions = discussionsRes.data.result?.value ?? [];
 
             const relationIds = discussions.map((d) => d.relationId);
-            const allRequestsRes = await getVolunteerRequestsByAdminId(1, 100);
+            const allRequestsRes = await getVolunteerRequestsByRelationUser();
             if (!allRequestsRes.data.result) throw new Error("Не удалось получить заявки");
 
-            const allRequests = allRequestsRes.data.result.value!.items;
+            const allRequests = allRequestsRes.data.result.value!;
             const relatedRequests = allRequests.filter((req) => relationIds.includes(req.id));
 
             setChats(discussions);
@@ -105,8 +107,8 @@ export function DiscussionList() {
     return (
         <div className="fixed right-6 bottom-6 z-50 h-[400px] w-80">
             <Card className="flex h-full flex-col border-green-900/20 bg-black/90 backdrop-blur-sm">
-                <CardHeader className="border-b border-green-900/20 pb-3">
-                    <div className="flex items-center justify-between">
+                <CardHeader className="gap-8 border-b border-green-900/20 pb-3">
+                    <div className="flex items-center justify-between gap-22">
                         <h3 className="text-base font-semibold text-white">Чаты по заявкам</h3>
                         <Button
                             variant="ghost"
@@ -123,20 +125,26 @@ export function DiscussionList() {
 
                 <CardBody className="flex-1 overflow-y-auto p-0">
                     {chats.map((chat) => {
-                        const lastMessage = chat.messages.at(-1);
-                        const isCurrentUserFirst = chat.secondMember;
-                        const partnerName = isCurrentUserFirst
-                            ? `${chat.secondMemberName} ${chat.secondMemberSurname}`
-                            : `${chat.firstMemberName} ${chat.firstMemberSurname}`;
-                        const avatarInitials = partnerName
+                        const isCurrentUserAdmin = chat.firstMember === user?.id;
+
+                        const partnerData = isCurrentUserAdmin
+                            ? {
+                                  id: chat.secondMember,
+                                  name: `${chat.secondMemberName} ${chat.secondMemberSurname}`,
+                              }
+                            : {
+                                  id: chat.firstMember,
+                                  name: `${chat.firstMemberName} ${chat.firstMemberSurname}`,
+                              };
+
+                        // Генерируем инициалы для аватара
+                        const avatarInitials = partnerData.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")
                             .toUpperCase();
-                        /* const unreadCount = chat.messages.filter(
-                            (m) => !m.isRead && m.userId !== "current-user-id",
-                        ).length;*/
 
+                        const unreadCount = chat.unreadMessagesCount;
                         const relatedRequest = requests.find((req) => req.id === chat.relationId);
                         const status = relatedRequest?.requestStatus ?? "Submitted";
 
@@ -151,17 +159,19 @@ export function DiscussionList() {
                                 <div className="flex items-start gap-3">
                                     <div className="relative">
                                         <Avatar className="h-10 w-10" name={avatarInitials} />
-                                        {/*{unreadCount > 0 && (
+                                        {unreadCount > 0 && (
                                             <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 text-xs font-medium text-black">
                                                 {unreadCount}
                                             </div>
-                                        )}*/}
+                                        )}
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <div className="mb-1 flex items-center justify-between">
-                                            <h4 className="truncate text-sm font-medium text-white">{partnerName}</h4>
+                                            <h4 className="truncate text-sm font-medium text-white">
+                                                {partnerData.name}
+                                            </h4>
                                             <span className="text-xs text-gray-400">
-                                                {lastMessage ? formatTime(new Date(lastMessage.createdAt)) : ""}
+                                                {chat.lastMessage ? formatTime(new Date(chat.lastMessageDate)) : ""}
                                             </span>
                                         </div>
 
@@ -169,7 +179,7 @@ export function DiscussionList() {
                                             <StatusChip status={status} />
                                         </div>
 
-                                        <p className="truncate text-xs text-gray-400">{lastMessage?.text ?? ""}</p>
+                                        <p className="truncate text-xs text-gray-400">{chat.lastMessage}</p>
                                     </div>
                                 </div>
                             </div>

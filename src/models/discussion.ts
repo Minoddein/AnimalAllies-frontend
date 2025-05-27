@@ -8,6 +8,9 @@ export interface Discussion {
     firstMemberSurname: string;
     secondMemberName: string;
     secondMemberSurname: string;
+    lastMessage: string;
+    lastMessageDate: Date;
+    unreadMessagesCount: number;
     relationId: string;
     messages: Message[];
 }
