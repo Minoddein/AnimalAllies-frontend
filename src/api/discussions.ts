@@ -29,3 +29,22 @@ export async function postMessage(discussionId: string, text: string): Promise<A
         Text: text,
     });
 }
+
+export async function editMessage(
+    discussionId: string,
+    messageId: string,
+    text: string,
+): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.put<Envelope<Result>>(`${API_URL}Discussion/editing-message`, {
+        DiscussionId: discussionId,
+        MessageId: messageId,
+        Text: text,
+    });
+}
+
+export async function deleteMessage(discussionId: string, messageId: string): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<Result>>(`${API_URL}Discussion/deletion-message`, {
+        DiscussionId: discussionId,
+        MessageId: messageId,
+    });
+}
