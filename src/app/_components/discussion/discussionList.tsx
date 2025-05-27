@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { getDiscussionsByUserId } from "@/api/discussions";
 import { getVolunteerRequestsByRelationUser } from "@/api/requests";
+import { OpenDiscussion } from "@/app/_components/discussion/discussion";
 import { useAuth } from "@/hooks/useAuth";
 import { Discussion } from "@/models/discussion";
 import { VolunteerRequest } from "@/models/volunteerRequests";
@@ -34,7 +35,7 @@ const StatusChip = ({ status }: { status: VolunteerRequest["requestStatus"] }) =
 export function DiscussionList() {
     const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-    const [, setSelectedChat] = useState<Discussion | null>(null);
+    const [selectedChat, setSelectedChat] = useState<Discussion | null>(null);
     const [chats, setChats] = useState<Discussion[]>([]);
     const [requests, setRequests] = useState<VolunteerRequest[]>([]);
     const [, setIsLoading] = useState(false);
@@ -105,88 +106,126 @@ export function DiscussionList() {
     }
 
     return (
-        <div className="fixed right-6 bottom-6 z-50 h-[400px] w-80">
-            <Card className="flex h-full flex-col border-green-900/20 bg-black/90 backdrop-blur-sm">
-                <CardHeader className="gap-8 border-b border-green-900/20 pb-3">
-                    <div className="flex items-center justify-between gap-22">
-                        <h3 className="text-base font-semibold text-white">Чаты по заявкам</h3>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onPress={() => {
-                                setIsOpen(false);
-                            }}
-                            className="h-8 w-8 p-0 hover:bg-red-500/20"
-                        >
-                            <X className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </CardHeader>
-
-                <CardBody className="flex-1 overflow-y-auto p-0">
-                    {chats.map((chat) => {
-                        const isCurrentUserAdmin = chat.firstMember === user?.id;
-
-                        const partnerData = isCurrentUserAdmin
-                            ? {
-                                  id: chat.secondMember,
-                                  name: `${chat.secondMemberName} ${chat.secondMemberSurname}`,
-                              }
-                            : {
-                                  id: chat.firstMember,
-                                  name: `${chat.firstMemberName} ${chat.firstMemberSurname}`,
-                              };
-
-                        // Генерируем инициалы для аватара
-                        const avatarInitials = partnerData.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .toUpperCase();
-
-                        const unreadCount = chat.unreadMessagesCount;
-                        const relatedRequest = requests.find((req) => req.id === chat.relationId);
-                        const status = relatedRequest?.requestStatus ?? "Submitted";
-
-                        return (
-                            <div
-                                key={chat.id}
-                                onClick={() => {
-                                    handleChatSelect(chat);
-                                }}
-                                className="cursor-pointer border-b border-gray-800/50 p-3 last:border-b-0 hover:bg-gray-800/30"
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div className="relative">
-                                        <Avatar className="h-10 w-10" name={avatarInitials} />
-                                        {unreadCount > 0 && (
-                                            <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 text-xs font-medium text-black">
-                                                {unreadCount}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <div className="mb-1 flex items-center justify-between">
-                                            <h4 className="truncate text-sm font-medium text-white">
-                                                {partnerData.name}
-                                            </h4>
-                                            <span className="text-xs text-gray-400">
-                                                {chat.lastMessage ? formatTime(new Date(chat.lastMessageDate)) : ""}
-                                            </span>
-                                        </div>
-
-                                        <div className="mb-1">
-                                            <StatusChip status={status} />
-                                        </div>
-
-                                        <p className="truncate text-xs text-gray-400">{chat.lastMessage}</p>
-                                    </div>
-                                </div>
+        <>
+            {selectedChat ? (
+                <OpenDiscussion
+                    relationId={selectedChat.relationId}
+                    chatPartner={{
+                        id:
+                            selectedChat.firstMember === user?.id
+                                ? selectedChat.secondMember
+                                : selectedChat.firstMember,
+                        name:
+                            selectedChat.firstMember === user?.id
+                                ? selectedChat.secondMemberName
+                                : selectedChat.firstMemberName,
+                        surname:
+                            selectedChat.firstMember === user?.id
+                                ? selectedChat.secondMemberSurname
+                                : selectedChat.firstMemberSurname,
+                        avatar:
+                            selectedChat.firstMember === user?.id
+                                ? selectedChat.secondMemberName[0] + (selectedChat.secondMemberSurname[0] || "")
+                                : selectedChat.firstMemberName[0] + (selectedChat.firstMemberSurname[0] || ""),
+                        status: requests.find((r) => r.id === selectedChat.relationId)?.requestStatus,
+                    }}
+                    currentUser={{
+                        id: user?.id ?? "",
+                        name: user?.firstName ?? "",
+                        surname: user?.secondName ?? "",
+                        avatar: (user?.firstName[0] ?? "") + (user?.secondName[0] ?? ""),
+                    }}
+                    onBack={() => {
+                        setSelectedChat(null);
+                    }}
+                />
+            ) : (
+                <div className="fixed right-6 bottom-6 z-50 h-[400px] w-80">
+                    <Card className="flex h-full flex-col border-green-900/20 bg-black/90 backdrop-blur-sm">
+                        <CardHeader className="gap-8 border-b border-green-900/20 pb-3">
+                            <div className="flex items-center justify-between gap-22">
+                                <h3 className="text-base font-semibold text-white">Чаты по заявкам</h3>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onPress={() => {
+                                        setIsOpen(false);
+                                    }}
+                                    className="h-8 w-8 p-0 hover:bg-red-500/20"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
                             </div>
-                        );
-                    })}
-                </CardBody>
-            </Card>
-        </div>
+                        </CardHeader>
+
+                        <CardBody className="flex-1 overflow-y-auto p-0">
+                            {chats.map((chat) => {
+                                const isCurrentUserAdmin = chat.firstMember === user?.id;
+
+                                const partnerData = isCurrentUserAdmin
+                                    ? {
+                                          id: chat.secondMember,
+                                          name: `${chat.secondMemberName} ${chat.secondMemberSurname}`,
+                                      }
+                                    : {
+                                          id: chat.firstMember,
+                                          name: `${chat.firstMemberName} ${chat.firstMemberSurname}`,
+                                      };
+
+                                // Генерируем инициалы для аватара
+                                const avatarInitials = partnerData.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .toUpperCase();
+
+                                const unreadCount = chat.unreadMessagesCount;
+                                const relatedRequest = requests.find((req) => req.id === chat.relationId);
+                                const status = relatedRequest?.requestStatus ?? "Submitted";
+
+                                return (
+                                    <div
+                                        key={chat.id}
+                                        onClick={() => {
+                                            handleChatSelect(chat);
+                                        }}
+                                        className="cursor-pointer border-b border-gray-800/50 p-3 last:border-b-0 hover:bg-gray-800/30"
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div className="relative">
+                                                <Avatar className="h-10 w-10" name={avatarInitials} />
+                                                {unreadCount > 0 && (
+                                                    <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 text-xs font-medium text-black">
+                                                        {unreadCount}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="mb-1 flex items-center justify-between">
+                                                    <h4 className="truncate text-sm font-medium text-white">
+                                                        {partnerData.name}
+                                                    </h4>
+                                                    <span className="text-xs text-gray-400">
+                                                        {chat.lastMessage
+                                                            ? formatTime(new Date(chat.lastMessageDate))
+                                                            : ""}
+                                                    </span>
+                                                </div>
+
+                                                <div className="mb-1">
+                                                    <StatusChip status={status} />
+                                                </div>
+
+                                                <p className="truncate text-xs text-gray-400">{chat.lastMessage}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </CardBody>
+                    </Card>
+                </div>
+            )}
+        </>
     );
 }

@@ -3,8 +3,22 @@ import { AxiosResponse } from "axios";
 import { API_URL, api } from "@/api/api";
 import { Discussion } from "@/models/discussion";
 import { Envelope } from "@/models/envelope";
-import { ResultWith } from "@/models/result";
+import { Result, ResultWith } from "@/models/result";
 
 export async function getDiscussionsByUserId(): Promise<AxiosResponse<Envelope<ResultWith<Discussion[]>>>> {
     return api.get<Envelope<ResultWith<Discussion[]>>>(`${API_URL}Discussion/discussions-by-user-id`, {});
+}
+
+export async function getMessagesFromDiscussion(
+    relationId: string,
+): Promise<AxiosResponse<Envelope<ResultWith<Discussion>>>> {
+    return api.get<Envelope<ResultWith<Discussion>>>(`${API_URL}Discussion/messages-by-relation-id`, {
+        params: { RelationId: relationId },
+    });
+}
+
+export async function markAsReadMessages(discussionId: string): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<Result>>(`${API_URL}Discussion/mark-as-read`, {
+        DiscussionId: discussionId,
+    });
 }
