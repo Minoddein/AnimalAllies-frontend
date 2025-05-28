@@ -12,5 +12,6 @@ export interface Discussion {
     lastMessageDate: Date;
     unreadMessagesCount: number;
     relationId: string;
-    messages: Message[];
+    discussionStatus: string;
+    messages: Message[] | null;
 }

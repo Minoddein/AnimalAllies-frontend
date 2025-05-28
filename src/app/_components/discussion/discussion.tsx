@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Check, Edit, Send, Trash2, X, XIcon } from "lucide-react";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import {
     deleteMessage,
@@ -77,7 +77,10 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
                 if (response.data.result?.value) {
                     const data = response.data.result.value;
                     setDiscussion(data);
-                    setMessages(data.messages);
+                    setMessages(
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                        data.messages ? data.messages.filter((msg): msg is Message => !!msg && "userId" in msg) : [],
+                    );
                     await markAsReadMessages(response.data.result.value.id);
                 }
             } catch (err) {
@@ -189,6 +192,11 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
                                         {`${chatPartner.name} ${chatPartner.surname}`}
                                     </span>
                                     <StatusChip status={chatPartner.status} />
+                                    {discussion?.discussionStatus === "Closed" && (
+                                        <Chip className="border-red-500/20 bg-red-500/10 text-xs text-red-500">
+                                            Дискуссия закрыта
+                                        </Chip>
+                                    )}
                                 </div>
                             </div>
 
@@ -205,80 +213,102 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
                         </div>
                     </CardHeader>
                     <CardBody className="flex-1 space-y-4 overflow-y-auto p-4">
-                        {messages.map((message) => {
-                            const isCurrentUser = message.userId === currentUser.id;
-                            return (
-                                <div
-                                    key={message.messageId}
-                                    className={`flex ${isCurrentUser ? "flex-row-reverse" : ""} gap-2`}
-                                    onContextMenu={(e) => {
-                                        handleContextMenu(e, message.messageId, isCurrentUser);
-                                    }}
-                                >
-                                    {!isCurrentUser && (
-                                        <Avatar className="h-8 w-8 flex-shrink-0" name={chatPartner.avatar || "?"} />
-                                    )}
+                        {messages.length > 0 ? (
+                            messages.map((message) => {
+                                const isCurrentUser = message.userId === currentUser.id;
+                                return (
                                     <div
-                                        className={`max-w-[80%] rounded-lg p-3 ${
-                                            isCurrentUser
-                                                ? "bg-green-500 text-black"
-                                                : "border border-gray-700 bg-gray-800 text-white"
-                                        }`}
+                                        key={message.messageId}
+                                        className={`flex ${isCurrentUser ? "flex-row-reverse" : ""} gap-2`}
+                                        onContextMenu={(e) => {
+                                            handleContextMenu(e, message.messageId, isCurrentUser);
+                                        }}
                                     >
-                                        <div className="text-sm">{message.text}</div>
-                                        <div className="mt-1 flex items-center justify-between gap-2">
-                                            {message.isEdited && (
+                                        {!isCurrentUser && (
+                                            <Avatar
+                                                className="h-8 w-8 flex-shrink-0"
+                                                name={chatPartner.avatar || "?"}
+                                            />
+                                        )}
+                                        <div
+                                            className={`max-w-[80%] rounded-lg p-3 ${
+                                                isCurrentUser
+                                                    ? "bg-green-500 text-black"
+                                                    : "border border-gray-700 bg-gray-800 text-white"
+                                            }`}
+                                        >
+                                            <div className="text-sm">{message.text}</div>
+                                            <div className="mt-1 flex items-center justify-between gap-2">
+                                                {message.isEdited && (
+                                                    <div
+                                                        className={`text-xs ${
+                                                            isCurrentUser ? "text-black/70" : "text-gray-400"
+                                                        }`}
+                                                    >
+                                                        изменено
+                                                    </div>
+                                                )}
                                                 <div
                                                     className={`text-xs ${
                                                         isCurrentUser ? "text-black/70" : "text-gray-400"
                                                     }`}
                                                 >
-                                                    изменено
+                                                    {formatTime(new Date(message.createdAt))}
                                                 </div>
-                                            )}
-                                            <div
-                                                className={`text-xs ${
-                                                    isCurrentUser ? "text-black/70" : "text-gray-400"
-                                                }`}
-                                            >
-                                                {formatTime(new Date(message.createdAt))}
                                             </div>
                                         </div>
                                     </div>
+                                );
+                            })
+                        ) : (
+                            <div className="flex h-full items-center justify-center text-gray-400">
+                                Диалог пуст. Начните общение!
+                            </div>
+                        )}
+                        {discussion?.discussionStatus === "Closed" && (
+                            <div className="flex flex-col items-center justify-center py-4">
+                                <div className="rounded-lg bg-red-900/20 p-3 text-center text-sm text-red-400">
+                                    Дискуссия закрыта для новых сообщений
                                 </div>
-                            );
-                        })}
+                            </div>
+                        )}
                         <div ref={messagesEndRef} />
                     </CardBody>
                     <div className="border-t border-green-900/20 p-4">
-                        <div className="flex gap-2">
-                            <Input
-                                value={newMessage}
-                                onChange={(e) => {
-                                    setNewMessage(e.target.value);
-                                }}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter" && !e.shiftKey) {
-                                        e.preventDefault();
-                                        void handleSendMessageOrEdit();
-                                    }
-                                }}
-                                placeholder={isEditing ? "Редактирование сообщения..." : "Введите сообщение..."}
-                                className="flex-1 border-gray-700 bg-gray-800 focus:border-green-500"
-                            />
-                            <Button
-                                onPress={() => void handleSendMessageOrEdit()}
-                                disabled={!newMessage.trim()}
-                                className="bg-green-500 hover:bg-green-600 disabled:opacity-50"
-                            >
-                                {isEditing ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
-                            </Button>
-                            {isEditing && (
-                                <Button onPress={cancelEdit} className="bg-red-500 hover:bg-red-600">
-                                    <XIcon className="h-4 w-4" />
+                        {discussion?.discussionStatus === "Closed" ? (
+                            <div className="text-center text-sm text-gray-500">
+                                Невозможно отправить сообщение в закрытую дискуссию
+                            </div>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Input
+                                    value={newMessage}
+                                    onChange={(e) => {
+                                        setNewMessage(e.target.value);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" && !e.shiftKey) {
+                                            e.preventDefault();
+                                            void handleSendMessageOrEdit();
+                                        }
+                                    }}
+                                    placeholder={isEditing ? "Редактирование сообщения..." : "Введите сообщение..."}
+                                    className="flex-1 border-gray-700 bg-gray-800 focus:border-green-500"
+                                />
+                                <Button
+                                    onPress={() => void handleSendMessageOrEdit()}
+                                    disabled={!newMessage.trim()}
+                                    className="bg-green-500 hover:bg-green-600 disabled:opacity-50"
+                                >
+                                    {isEditing ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
                                 </Button>
-                            )}
-                        </div>
+                                {isEditing && (
+                                    <Button onPress={cancelEdit} className="bg-red-500 hover:bg-red-600">
+                                        <XIcon className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </Card>
             </div>
