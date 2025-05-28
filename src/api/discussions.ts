@@ -48,3 +48,9 @@ export async function deleteMessage(discussionId: string, messageId: string): Pr
         MessageId: messageId,
     });
 }
+
+export async function closeDiscussion(discussionId: string): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.put<Envelope<Result>>(`${API_URL}Discussion/${discussionId}/closing-discussion`, {
+        DiscussionId: discussionId,
+    });
+}
