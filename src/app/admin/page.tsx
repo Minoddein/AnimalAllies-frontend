@@ -105,14 +105,21 @@ export default function AdminDashboard() {
                         </CardHeader>
                         <CardBody>
                             <div className="grid grid-cols-2 gap-3">
-                                <button className="rounded-lg border border-emerald-600/30 bg-emerald-600/10 p-4 transition-colors hover:bg-emerald-600/20">
+                                <Link
+                                    href="/admin/species"
+                                    className="inline-block rounded-lg border border-emerald-600/30 bg-emerald-600/10 p-4 transition-colors hover:bg-emerald-600/20"
+                                >
                                     <PawPrint className="mb-2 h-6 w-6 text-emerald-400" />
                                     <p className="text-sm font-medium text-white">Добавить вид</p>
-                                </button>
-                                <button className="rounded-lg border border-blue-600/30 bg-blue-600/10 p-4 transition-colors hover:bg-blue-600/20">
+                                </Link>
+
+                                <Link
+                                    href="/admin/species"
+                                    className="inline-block rounded-lg border border-blue-600/30 bg-blue-600/10 p-4 transition-colors hover:bg-blue-600/20"
+                                >
                                     <PawPrint className="mb-2 h-6 w-6 text-blue-400" />
                                     <p className="text-sm font-medium text-white">Добавить породу</p>
-                                </button>
+                                </Link>
                                 <button className="rounded-lg border border-purple-600/30 bg-purple-600/10 p-4 transition-colors hover:bg-purple-600/20">
                                     <Users className="mb-2 h-6 w-6 text-purple-400" />
                                     <p className="text-sm font-medium text-white">Пользователи</p>
