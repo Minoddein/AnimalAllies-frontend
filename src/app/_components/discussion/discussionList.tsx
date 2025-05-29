@@ -1,7 +1,5 @@
 "use client";
 
-import { MessageCircle, X } from "lucide-react";
-
 import { useEffect, useState } from "react";
 
 import { getDiscussionsByUserId } from "@/api/discussions";
@@ -11,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Discussion } from "@/models/discussion";
 import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Avatar, Button, Card, CardBody, CardHeader, Chip } from "@heroui/react";
+import { Icon } from "@iconify/react";
 
 // Компонент для отображения статуса заявки
 const StatusChip = ({ status }: { status: VolunteerRequest["requestStatus"] }) => {
@@ -98,7 +97,7 @@ export function DiscussionList() {
                     }}
                     className="h-14 w-14 rounded-full bg-green-500 shadow-lg hover:bg-green-600"
                 >
-                    <MessageCircle className="h-6 w-6" />
+                    <Icon icon="lucide:message-circle" className="h-6 w-6" />
                 </Button>
             </div>
         );
@@ -153,7 +152,7 @@ export function DiscussionList() {
                                     }}
                                     className="h-8 w-8 p-0 hover:bg-red-500/20"
                                 >
-                                    <X className="h-4 w-4" />
+                                    <Icon icon="lucide:x" className="h-4 w-4" />
                                 </Button>
                             </div>
                         </CardHeader>

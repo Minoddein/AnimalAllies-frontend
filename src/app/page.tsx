@@ -3,6 +3,8 @@
 import * as React from "react";
 import { useContext, useEffect, useState } from "react";
 
+import Image from "next/image";
+
 import VolunteerForm from "@/app/_components/auth/volunteer-register-form";
 import ModalOrDrawer from "@/components/modal-or-drawer";
 import { AuthContext } from "@/contexts/auth/AuthContext";
@@ -75,7 +77,7 @@ export default function App() {
                             }`}
                         >
                             <div className="absolute inset-0 z-10 bg-gradient-to-t from-black via-transparent to-transparent" />
-                            <img
+                            <Image
                                 src={item.image || "/placeholder.svg"}
                                 alt={item.name}
                                 className="h-full w-full object-cover"

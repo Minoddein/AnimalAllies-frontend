@@ -1,7 +1,5 @@
 "use client";
 
-import { Check, RefreshCw, Search, X } from "lucide-react";
-
 import { useEffect, useState } from "react";
 
 import { closeDiscussion } from "@/api/discussions";
@@ -36,6 +34,7 @@ import {
     Select,
     SelectItem,
 } from "@heroui/react";
+import { Icon } from "@iconify/react";
 
 import { DiscussionList } from "../_components/discussion/discussionList";
 
@@ -156,7 +155,7 @@ export default function VolunteerRequestsPage() {
 
     useEffect(() => {
         void fetchRequests(currentPage);
-    }, [currentPage, statusFilter, itemsPerPage, requestTypeFilter]);
+    }, [currentPage, statusFilter, itemsPerPage, requestTypeFilter, fetchRequests]);
 
     const refreshAfterAction = async () => {
         if (pagedData.items.length === 1 && currentPage > 1) {
@@ -257,7 +256,10 @@ export default function VolunteerRequestsPage() {
             {/* Фильтры и поиск */}
             <div className="mb-6 flex flex-col gap-4 md:flex-row">
                 <div className="relative flex-1">
-                    <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                    <Icon
+                        icon="lucide:search"
+                        className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform"
+                    />
                     <Input
                         placeholder="Поиск по имени или email"
                         value={searchQuery}
@@ -410,7 +412,7 @@ export default function VolunteerRequestsPage() {
                                                                 void handleApprove(request);
                                                             }}
                                                         >
-                                                            <Check className="mr-2 h-4 w-4" />
+                                                            <Icon icon="lucide:check" className="mr-2 h-4 w-4" />
                                                             Одобрить
                                                         </Button>
                                                         <Button
@@ -420,7 +422,7 @@ export default function VolunteerRequestsPage() {
                                                                 handleRevision(request);
                                                             }}
                                                         >
-                                                            <RefreshCw className="mr-2 h-4 w-4" />
+                                                            <Icon icon="lucide:refresh-cw" className="mr-2 h-4 w-4" />
                                                             На доработку
                                                         </Button>
                                                         <Button
@@ -430,7 +432,7 @@ export default function VolunteerRequestsPage() {
                                                                 handleReject(request);
                                                             }}
                                                         >
-                                                            <X className="mr-2 h-4 w-4" />
+                                                            <Icon icon="lucide:x" className="mr-2 h-4 w-4" />
                                                             Отклонить
                                                         </Button>
                                                     </div>
@@ -457,7 +459,7 @@ export default function VolunteerRequestsPage() {
                                                             handleResubmitRequest(request);
                                                         }}
                                                     >
-                                                        <RefreshCw className="mr-2 h-4 w-4" />
+                                                        <Icon icon="lucide:refresh-cw" className="mr-2 h-4 w-4" />
                                                         Отправить на пересмотр
                                                     </Button>
                                                 </div>

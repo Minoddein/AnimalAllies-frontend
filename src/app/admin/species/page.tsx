@@ -1,7 +1,5 @@
 "use client";
 
-import { Edit, PawPrint, Plus, Search, Trash2 } from "lucide-react";
-
 import { useState } from "react";
 
 import {
@@ -20,6 +18,7 @@ import {
     SelectItem,
     useDisclosure,
 } from "@heroui/react";
+import { Icon } from "@iconify/react";
 
 interface Breed {
     id: string;
@@ -117,7 +116,7 @@ export default function SpeciesManagement() {
                             placeholder="Поиск видов и пород..."
                             value={searchTerm}
                             onValueChange={setSearchTerm}
-                            startContent={<Search className="h-4 w-4 text-gray-400" />}
+                            startContent={<Icon icon="lucide:search" className="h-4 w-4 text-gray-400" />}
                             classNames={{
                                 base: "max-w-full",
                                 mainWrapper: "h-full",
@@ -130,7 +129,7 @@ export default function SpeciesManagement() {
                     <div className="flex items-center gap-3">
                         <Button
                             color="success"
-                            startContent={<Plus className="h-4 w-4" />}
+                            startContent={<Icon icon="lucide:plus" className="h-4 w-4" />}
                             onPress={onCreateSpeciesOpen}
                             className="bg-green-500 text-white hover:bg-green-600"
                         >
@@ -138,7 +137,7 @@ export default function SpeciesManagement() {
                         </Button>
                         <Button
                             variant="bordered"
-                            startContent={<Plus className="h-4 w-4" />}
+                            startContent={<Icon icon="lucide:plus" className="h-4 w-4" />}
                             onPress={onCreateBreedOpen}
                             className="border border-green-500 text-white hover:border-green-400 hover:bg-green-500/10"
                         >
@@ -171,7 +170,7 @@ export default function SpeciesManagement() {
                                         size="sm"
                                         className="border border-green-500 text-gray-400 hover:border-green-400 hover:bg-green-500/10 hover:text-white"
                                     >
-                                        <Edit className="h-4 w-4" />
+                                        <Icon icon="lucide:edit" className="h-4 w-4" />
                                     </Button>
                                     <Button
                                         isIconOnly
@@ -182,7 +181,7 @@ export default function SpeciesManagement() {
                                         }}
                                         className="border border-red-500 text-red-400 hover:border-red-400 hover:bg-red-500/10"
                                     >
-                                        <Trash2 className="h-4 w-4" />
+                                        <Icon icon="lucide:trash-2" className="h-4 w-4" />
                                     </Button>
                                 </div>
                             </CardHeader>
@@ -211,7 +210,7 @@ export default function SpeciesManagement() {
 
                 {filteredSpecies.length === 0 && (
                     <div className="py-12 text-center">
-                        <PawPrint className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                        <Icon icon="lucide:paw-print" className="mx-auto mb-4 h-12 w-12 text-gray-400" />
                         <h3 className="mb-2 text-lg font-medium text-gray-400">Виды не найдены</h3>
                         <p className="text-gray-400">Попробуйте изменить поисковый запрос или добавьте новый вид</p>
                     </div>

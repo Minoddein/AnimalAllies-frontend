@@ -1,7 +1,5 @@
 "use client";
 
-import { ArrowLeft, Check, Edit, Send, Trash2, X, XIcon } from "lucide-react";
-
 import React, { useEffect, useRef, useState } from "react";
 
 import {
@@ -15,6 +13,7 @@ import { Discussion } from "@/models/discussion";
 import { Message } from "@/models/message";
 import { CardBody, CardHeader } from "@heroui/card";
 import { Avatar, Button, Card, Chip, Input } from "@heroui/react";
+import { Icon } from "@iconify/react";
 
 interface DiscussionProps {
     relationId: string;
@@ -180,7 +179,7 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
                                         onPress={onBack}
                                         className="h-8 w-8 p-0 hover:bg-gray-500/20"
                                     >
-                                        <ArrowLeft className="h-4 w-4" />
+                                        <Icon icon="lucide:arrow-left" className="h-4 w-4" />
                                     </Button>
                                 )}
                             </div>
@@ -207,7 +206,7 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
                                     onPress={onBack}
                                     className="h-8 w-8 p-0 hover:bg-red-500/20"
                                 >
-                                    <X className="h-4 w-4" />
+                                    <Icon icon="lucide:x" className="h-4 w-4" />
                                 </Button>
                             </div>
                         </div>
@@ -300,11 +299,15 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
                                     disabled={!newMessage.trim()}
                                     className="bg-green-500 hover:bg-green-600 disabled:opacity-50"
                                 >
-                                    {isEditing ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
+                                    {isEditing ? (
+                                        <Icon icon="lucide:check" className="h-4 w-4" />
+                                    ) : (
+                                        <Icon icon="lucide:send" className="h-4 w-4" />
+                                    )}
                                 </Button>
                                 {isEditing && (
                                     <Button onPress={cancelEdit} className="bg-red-500 hover:bg-red-600">
-                                        <XIcon className="h-4 w-4" />
+                                        <Icon icon="lucide:x-icon" className="h-4 w-4" />
                                     </Button>
                                 )}
                             </div>
@@ -326,7 +329,7 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
                         }}
                         className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-700"
                     >
-                        <Edit className="h-3 w-3" />
+                        <Icon icon="lucide:edit" className="h-3 w-3" />
                         Редактировать
                     </button>
                     <button
@@ -335,7 +338,7 @@ export function OpenDiscussion({ relationId, chatPartner, currentUser, onBack }:
                         }}
                         className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-400 hover:bg-gray-700"
                     >
-                        <Trash2 className="h-3 w-3" />
+                        <Icon icon="lucide:trash-2" className="h-3 w-3" />
                         Удалить
                     </button>
                 </div>
