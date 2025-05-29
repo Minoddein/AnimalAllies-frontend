@@ -2,7 +2,7 @@
 
 import { Check, RefreshCw, Search, X } from "lucide-react";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { closeDiscussion } from "@/api/discussions";
 import {
@@ -101,65 +101,62 @@ export default function VolunteerRequestsPage() {
     const [editedExperience, setEditedExperience] = useState("");
     const itemsPerPage = 4;
 
-    const fetchRequests = useCallback(
-        async (page: number) => {
-            setIsLoading(true);
-            try {
-                let response;
-                if (isAdmin) {
-                    response =
-                        requestTypeFilter === "all"
-                            ? await getVolunteerRequests(
-                                  page,
-                                  itemsPerPage,
-                                  statusFilter === "all" ? undefined : statusFilter,
-                              )
-                            : await getVolunteerRequestsByAdminId(
-                                  page,
-                                  itemsPerPage,
-                                  statusFilter === "all" ? undefined : statusFilter,
-                              );
-                } else {
-                    response = await getVolunteerRequestsByUserId(
-                        page,
-                        itemsPerPage,
-                        statusFilter === "all" ? undefined : statusFilter,
-                    );
-                    setRequestTypeFilter("my");
-                }
-
-                const validatedRequests =
-                    response.data.result?.value?.items.map((item) => ({
-                        ...item,
-                        volunteerInfo: {
-                            firstName: item.firstName || "",
-                            secondName: item.secondName || "",
-                            patronymic: item.patronymic || "",
-                            email: item.email || "",
-                            phoneNumber: item.phoneNumber || "",
-                            volunteerDescription: item.volunteerDescription || "",
-                            workExperience: item.workExperience || "",
-                        },
-                    })) ?? [];
-
-                setPagedData({
-                    items: validatedRequests,
-                    totalCount: response.data.result?.value?.totalCount ?? 0,
-                });
-            } catch (error) {
-                console.error("Error fetching requests:", error);
-            } finally {
-                setIsLoading(false);
+    const fetchRequests = async (page: number) => {
+        setIsLoading(true);
+        try {
+            let response;
+            if (isAdmin) {
+                response =
+                    requestTypeFilter === "all"
+                        ? await getVolunteerRequests(
+                              page,
+                              itemsPerPage,
+                              statusFilter === "all" ? undefined : statusFilter,
+                          )
+                        : await getVolunteerRequestsByAdminId(
+                              page,
+                              itemsPerPage,
+                              statusFilter === "all" ? undefined : statusFilter,
+                          );
+            } else {
+                response = await getVolunteerRequestsByUserId(
+                    page,
+                    itemsPerPage,
+                    statusFilter === "all" ? undefined : statusFilter,
+                );
+                setRequestTypeFilter("my");
             }
-        },
-        [isAdmin, requestTypeFilter, statusFilter, itemsPerPage, setPagedData, setRequestTypeFilter, setIsLoading],
-    );
+
+            const validatedRequests =
+                response.data.result?.value?.items.map((item) => ({
+                    ...item,
+                    volunteerInfo: {
+                        firstName: item.firstName || "",
+                        secondName: item.secondName || "",
+                        patronymic: item.patronymic || "",
+                        email: item.email || "",
+                        phoneNumber: item.phoneNumber || "",
+                        volunteerDescription: item.volunteerDescription || "",
+                        workExperience: item.workExperience || "",
+                    },
+                })) ?? [];
+
+            setPagedData({
+                items: validatedRequests,
+                totalCount: response.data.result?.value?.totalCount ?? 0,
+            });
+        } catch (error) {
+            console.error("Error fetching requests:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const totalPages = Math.ceil(pagedData.totalCount / itemsPerPage);
 
     useEffect(() => {
         void fetchRequests(currentPage);
-    }, [currentPage, statusFilter, itemsPerPage, requestTypeFilter, fetchRequests]);
+    }, [currentPage, statusFilter, itemsPerPage, requestTypeFilter]);
 
     const refreshAfterAction = async () => {
         if (pagedData.items.length === 1 && currentPage > 1) {

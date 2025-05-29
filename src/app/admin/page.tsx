@@ -2,6 +2,8 @@
 
 import { FileText, PawPrint, Users } from "lucide-react";
 
+import Link from "next/link";
+
 import { Card, CardBody, CardHeader, cn } from "@heroui/react";
 
 export default function AdminDashboard() {
@@ -115,10 +117,13 @@ export default function AdminDashboard() {
                                     <Users className="mb-2 h-6 w-6 text-purple-400" />
                                     <p className="text-sm font-medium text-white">Пользователи</p>
                                 </button>
-                                <button className="rounded-lg border border-orange-600/30 bg-orange-600/10 p-4 transition-colors hover:bg-orange-600/20">
+                                <Link
+                                    href="/requests"
+                                    className="inline-block rounded-lg border border-orange-600/30 bg-orange-600/10 p-4 transition-colors hover:bg-orange-600/20"
+                                >
                                     <FileText className="mb-2 h-6 w-6 text-orange-400" />
                                     <p className="text-sm font-medium text-white">Заявки</p>
-                                </button>
+                                </Link>
                             </div>
                         </CardBody>
                     </Card>
