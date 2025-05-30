@@ -34,6 +34,7 @@ import {
     Pagination,
     Select,
     SelectItem,
+    addToast,
 } from "@heroui/react";
 
 import { DiscussionList } from "../_components/discussion/discussionList";
@@ -146,6 +147,15 @@ export default function VolunteerRequestsPage() {
             });
         } catch (error) {
             console.error("Error fetching requests:", error);
+            addToast({
+                title: "Ошибка",
+                description: user
+                    ? "Упс, при выполнении возникла ошибка :("
+                    : "Страница доступна только после входа в аккаунт",
+                color: "danger",
+                timeout: 5000,
+                shouldShowTimeoutProgress: true,
+            });
         } finally {
             setIsLoading(false);
         }
@@ -159,15 +169,38 @@ export default function VolunteerRequestsPage() {
 
     const refreshAfterAction = async () => {
         if (pagedData.items.length === 1 && currentPage > 1) {
-            setCurrentPage((prev) => prev - 1); // это вызовет useEffect -> fetchRequests(newPage)
+            setCurrentPage((prev) => prev - 1);
         } else {
             await fetchRequests(currentPage);
         }
     };
 
     const handleApprove = async (request: VolunteerRequest) => {
-        await approveVolunteerRequest(request.id);
-        await refreshAfterAction();
+        try {
+            console.log("Before:", pagedData.items.find((r) => r.id === request.id)?.requestStatus);
+            const response = await approveVolunteerRequest(request.id);
+            console.log("TakeForASubmit response:", response.data);
+
+            // Вариант 1: Обновляем вручную (если сервер возвращает обновленный объект)
+            if (response.data.result?.isSuccess) {
+                setPagedData((prev) => ({
+                    ...prev,
+                    items: prev.items.map((item) =>
+                        item.id === request.id ? { ...item, requestStatus: "Approved" } : item,
+                    ),
+                }));
+            }
+            // Вариант 2: Перезапрашиваем данные
+            else {
+                await fetchRequests(currentPage);
+            }
+
+            console.log("After:", pagedData.items.find((r) => r.id === request.id)?.requestStatus);
+        } catch (error) {
+            console.error("Error in handleTakeForASubmit:", error);
+        }
+        // await approveVolunteerRequest(request.id);
+        // await refreshAfterAction();
     };
 
     const handleReject = (request: VolunteerRequest) => {
@@ -246,6 +279,8 @@ export default function VolunteerRequestsPage() {
             setIsLoading(false);
         }
     };
+
+    console.log(pagedData);
 
     return (
         <div className="container mx-auto max-w-7xl py-8">
@@ -475,6 +510,7 @@ export default function VolunteerRequestsPage() {
                 <Pagination
                     className="mt-6 flex justify-center"
                     initialPage={currentPage}
+                    page={currentPage}
                     total={totalPages}
                     onChange={(page) => {
                         setCurrentPage(page);
