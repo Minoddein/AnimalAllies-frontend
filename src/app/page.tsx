@@ -3,12 +3,10 @@
 import * as React from "react";
 import { useContext, useEffect, useState } from "react";
 
-import Image from "next/image";
-
 import VolunteerForm from "@/app/_components/auth/volunteer-register-form";
 import ModalOrDrawer from "@/components/modal-or-drawer";
 import { AuthContext } from "@/contexts/auth/AuthContext";
-import { Badge, Button, Card, CardBody, Divider, addToast, useDisclosure } from "@heroui/react";
+import { Badge, Button, Card, CardBody, Divider, addToast, cn, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export default function App() {
@@ -64,7 +62,7 @@ export default function App() {
     };
 
     return (
-        <main className="min-h-screen bg-black text-white">
+        <main className="min-h-screen">
             {/* Hero Section */}
             <section className="relative h-[80vh] overflow-hidden">
                 {/* Carousel */}
@@ -76,8 +74,8 @@ export default function App() {
                                 index === currentSlide ? "opacity-100" : "pointer-events-none opacity-0"
                             }`}
                         >
-                            <div className="absolute inset-0 z-10 bg-gradient-to-t from-black via-transparent to-transparent" />
-                            <Image
+                            <div className="from-background absolute inset-0 z-10 bg-gradient-to-t via-transparent to-transparent" />
+                            <img
                                 src={item.image || "/placeholder.svg"}
                                 alt={item.name}
                                 className="h-full w-full object-cover"
@@ -114,7 +112,7 @@ export default function App() {
                             isIconOnly
                             variant="bordered"
                             size="sm"
-                            className="rounded-full border-white text-white hover:bg-white/20 hover:text-white"
+                            className="border-foreground hover:bg-foreground/20 rounded-full"
                             onPress={prevSlide}
                         >
                             <Icon icon="lucide:chevron-left" width={16} height={16} />
@@ -123,7 +121,10 @@ export default function App() {
                             {carouselItems.map((_, index) => (
                                 <button
                                     key={index}
-                                    className={`h-2 w-2 rounded-full ${index === currentSlide ? "bg-white" : "bg-white/50"}`}
+                                    className={cn(
+                                        "h-2 w-2 rounded-full",
+                                        index === currentSlide ? "bg-foreground/100" : "bg-foreground/50",
+                                    )}
                                     onClick={() => {
                                         setCurrentSlide(index);
                                         setAutoplay(false);
@@ -135,7 +136,7 @@ export default function App() {
                             isIconOnly
                             variant="bordered"
                             size="sm"
-                            className="rounded-full border-white text-white hover:bg-white/20 hover:text-white"
+                            className="border-foreground hover:bg-foreground/20 rounded-full"
                             onPress={nextSlide}
                         >
                             <Icon icon="lucide:chevron-right" width={16} height={16} />
@@ -145,13 +146,13 @@ export default function App() {
             </section>
 
             {/* Welcome Section */}
-            <section className="bg-black py-16">
+            <section className="py-16">
                 <div className="container mx-auto px-4">
                     <div className="mx-auto max-w-3xl text-center">
                         <h2 className="mb-6 text-3xl font-bold md:text-4xl">
                             Добро пожаловать в <span className="text-emerald-500">AnimalAllies</span>
                         </h2>
-                        <p className="mb-8 text-lg text-gray-300">
+                        <p className="text-foreground/65 mb-8 text-lg">
                             Мы помогаем животным найти любящий дом и объединяем людей, которые хотят помочь. Наша миссия
                             — сделать мир лучше для наших четвероногих друзей.
                         </p>
@@ -200,41 +201,41 @@ export default function App() {
             </section>
 
             {/* Features Section */}
-            <section className="bg-black/80 py-16">
+            <section className="bg-background/80 py-16">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-                        <Card className="border-emerald-900 bg-black/50">
+                        <Card className="bg-background/50 border-emerald-900">
                             <CardBody className="p-6">
-                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-900/30">
+                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-400/30 dark:bg-emerald-900/30">
                                     <Icon icon="lucide:heart" className="h-6 w-6 text-emerald-500" />
                                 </div>
                                 <h3 className="mb-2 text-xl font-bold">Помощь животным</h3>
-                                <p className="text-gray-300">
+                                <p className="text-foreground/65">
                                     Мы спасаем, лечим и находим дом для бездомных животных. Каждый питомец заслуживает
                                     любви и заботы.
                                 </p>
                             </CardBody>
                         </Card>
 
-                        <Card className="border-emerald-900 bg-black/50">
+                        <Card className="bg-background/50 border-emerald-900">
                             <CardBody className="p-6">
-                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-900/30">
+                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-400/30 dark:bg-emerald-900/30">
                                     <Icon icon="lucide:paw-print" className="h-6 w-6 text-emerald-500" />
                                 </div>
                                 <h3 className="mb-2 text-xl font-bold">Поиск пропавших</h3>
-                                <p className="text-gray-300">
+                                <p className="text-foreground/65">
                                     Наша система помогает находить потерявшихся питомцев и воссоединять их с хозяевами.
                                 </p>
                             </CardBody>
                         </Card>
 
-                        <Card className="border-emerald-900 bg-black/50">
+                        <Card className="bg-background/50 border-emerald-900">
                             <CardBody className="p-6">
-                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-900/30">
+                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-400/30 dark:bg-emerald-900/30">
                                     <Icon icon="lucide:calendar" className="h-6 w-6 text-emerald-500" />
                                 </div>
                                 <h3 className="mb-2 text-xl font-bold">События и акции</h3>
-                                <p className="text-gray-300">
+                                <p className="text-foreground/65">
                                     Регулярно проводим мероприятия, выставки и акции для помощи животным и привлечения
                                     внимания к их проблемам.
                                 </p>
@@ -245,11 +246,11 @@ export default function App() {
             </section>
 
             {/* Call to Action */}
-            <section className="bg-gradient-to-b from-black to-emerald-950 py-16">
+            <section className="from-background bg-gradient-to-b to-emerald-200 py-16 dark:to-emerald-950">
                 <div className="container mx-auto px-4">
                     <div className="mx-auto max-w-3xl text-center">
                         <h2 className="mb-6 text-3xl font-bold">Присоединяйтесь к нам сегодня</h2>
-                        <p className="mb-8 text-lg text-gray-300">
+                        <p className="text-foreground/65 mb-8 text-lg">
                             Вместе мы можем сделать больше для животных, которые нуждаются в нашей помощи. Станьте
                             частью сообщества AnimalAllies!
                         </p>
@@ -259,7 +260,7 @@ export default function App() {
                     </div>
                 </div>
             </section>
-            <footer className="border-t border-gray-800 bg-black py-12">
+            <footer className="py-12">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
                         <div>
@@ -267,25 +268,25 @@ export default function App() {
                                 <Icon icon="lucide:paw-print" width={24} height={24} className="text-emerald-500" />
                                 <span className="text-xl font-bold">AnimalAllies</span>
                             </div>
-                            <p className="text-gray-400">Помогаем животным найти дом и заботу с 2024 года.</p>
+                            <p className="text-foreground/45">Помогаем животным найти дом и заботу с 2024 года.</p>
                             <div className="mt-4 flex space-x-4">
-                                <a href="#" className="text-gray-400 transition-colors hover:text-emerald-500">
+                                <a href="#" className="text-foreground/45 transition-colors hover:text-emerald-500">
                                     <Icon icon="lucide:facebook" width={20} height={20} />
                                 </a>
-                                <a href="#" className="text-gray-400 transition-colors hover:text-emerald-500">
+                                <a href="#" className="text-foreground/45 transition-colors hover:text-emerald-500">
                                     <Icon icon="lucide:instagram" width={20} height={20} />
                                 </a>
-                                <a href="#" className="text-gray-400 transition-colors hover:text-emerald-500">
+                                <a href="#" className="text-foreground/45 transition-colors hover:text-emerald-500">
                                     <Icon icon="lucide:twitter" width={20} height={20} />
                                 </a>
-                                <a href="#" className="text-gray-400 transition-colors hover:text-emerald-500">
+                                <a href="#" className="text-foreground/45 transition-colors hover:text-emerald-500">
                                     <Icon icon="lucide:youtube" width={20} height={20} />
                                 </a>
                             </div>
                         </div>
                         <div>
                             <h3 className="mb-4 font-bold">Помощь</h3>
-                            <ul className="space-y-2 text-gray-400">
+                            <ul className="text-foreground/45 space-y-2">
                                 <li>
                                     <a href="#" className="transition-colors hover:text-emerald-500">
                                         Как помочь
@@ -310,7 +311,7 @@ export default function App() {
                         </div>
                         <div>
                             <h3 className="mb-4 font-bold">Контакты</h3>
-                            <ul className="space-y-3 text-gray-400">
+                            <ul className="text-foreground/45 space-y-3">
                                 <li className="flex items-start gap-2">
                                     <Icon icon="lucide:mail" width={18} height={18} className="mt-0.5 flex-shrink-0" />
                                     <span>info@animalallies.ru</span>
@@ -340,7 +341,7 @@ export default function App() {
                         </div>
                     </div>
                     <Divider className="my-8 bg-gray-800" />
-                    <div className="flex flex-col items-center justify-between text-gray-400 md:flex-row">
+                    <div className="text-foreground/45 flex flex-col items-center justify-between md:flex-row">
                         <p>© 2025 AnimalAllies. Все права защищены.</p>
                         <div className="mt-4 flex gap-4 md:mt-0">
                             <a href="#" className="transition-colors hover:text-emerald-500">
