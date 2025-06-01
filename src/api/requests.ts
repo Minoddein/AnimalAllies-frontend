@@ -91,6 +91,10 @@ export async function getVolunteerRequestsByRelationUser(): Promise<
     );
 }
 
+export async function getVolunteerRequestsInWaitingCount(): Promise<AxiosResponse<Envelope<ResultWith<number>>>> {
+    return api.get<Envelope<ResultWith<number>>>(`${API_URL}VolunteerRequests/request-count`);
+}
+
 export async function getVolunteerRequestsByUserId(
     page: number,
     pageSize: number,

@@ -1,11 +1,26 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import Link from "next/link";
 
+import { getVolunteerRequestsInWaitingCount } from "@/api/requests";
 import { Card, CardBody, CardHeader, cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export default function AdminDashboard() {
+    const [requestInWaitingCount, setRequestInWaitingCount] = useState(0);
+
+    async function loadRequestsInWaitingCount() {
+        const response = await getVolunteerRequestsInWaitingCount();
+
+        setRequestInWaitingCount(response.data.result?.value ?? 0);
+    }
+
+    useEffect(() => {
+        void loadRequestsInWaitingCount();
+    }, []);
+
     const stats = [
         {
             title: "Всего видов",
@@ -30,7 +45,7 @@ export default function AdminDashboard() {
         },
         {
             title: "Заявки",
-            value: "89",
+            value: requestInWaitingCount,
             description: "Ожидают рассмотрения",
             icon: "lucide:file-text",
             color: "text-orange-400",
@@ -104,31 +119,57 @@ export default function AdminDashboard() {
                         </CardHeader>
                         <CardBody>
                             <div className="grid grid-cols-2 gap-3">
+                                {/* Кнопка "Добавить вид" */}
                                 <Link
                                     href="/admin/species"
-                                    className="inline-block rounded-lg border border-emerald-600/30 bg-emerald-600/10 p-4 transition-colors hover:bg-emerald-600/20"
+                                    className="relative rounded-lg border border-emerald-600/30 bg-emerald-600/10 p-4 pt-8 transition-colors hover:bg-emerald-600/20"
                                 >
-                                    <Icon icon="lucide:paw-print" className="mb-2 h-6 w-6 text-emerald-400" />
-                                    <p className="text-sm font-medium text-white">Добавить вид</p>
+                                    <Icon
+                                        icon="lucide:paw-print"
+                                        className="absolute top-4 left-4 h-5 w-5 text-emerald-400"
+                                    />
+                                    <p className="flex h-full items-center justify-center text-sm font-medium text-white">
+                                        Добавить вид
+                                    </p>
                                 </Link>
 
+                                {/* Кнопка "Добавить породу" */}
                                 <Link
                                     href="/admin/species"
-                                    className="inline-block rounded-lg border border-blue-600/30 bg-blue-600/10 p-4 transition-colors hover:bg-blue-600/20"
+                                    className="relative rounded-lg border border-blue-600/30 bg-blue-600/10 p-4 pt-8 transition-colors hover:bg-blue-600/20"
                                 >
-                                    <Icon icon="lucide:paw-print" className="mb-2 h-6 w-6 text-blue-400" />
-                                    <p className="text-sm font-medium text-white">Добавить породу</p>
+                                    <Icon
+                                        icon="lucide:paw-print"
+                                        className="absolute top-4 left-4 h-5 w-5 text-blue-400"
+                                    />
+                                    <p className="flex h-full items-center justify-center text-sm font-medium text-white">
+                                        Добавить породу
+                                    </p>
                                 </Link>
-                                <button className="rounded-lg border border-purple-600/30 bg-purple-600/10 p-4 transition-colors hover:bg-purple-600/20">
-                                    <Icon icon="lucide:users" className="mb-2 h-6 w-6 text-purple-400" />
-                                    <p className="text-sm font-medium text-white">Пользователи</p>
+
+                                {/* Кнопка "Пользователи" */}
+                                <button className="relative rounded-lg border border-purple-600/30 bg-purple-600/10 p-4 pt-8 transition-colors hover:bg-purple-600/20">
+                                    <Icon
+                                        icon="lucide:users"
+                                        className="absolute top-4 left-4 h-5 w-5 text-purple-400"
+                                    />
+                                    <p className="flex h-full items-center justify-center text-sm font-medium text-white">
+                                        Пользователи
+                                    </p>
                                 </button>
+
+                                {/* Кнопка "Заявки" */}
                                 <Link
                                     href="/requests"
-                                    className="inline-block rounded-lg border border-orange-600/30 bg-orange-600/10 p-4 transition-colors hover:bg-orange-600/20"
+                                    className="relative rounded-lg border border-orange-600/30 bg-orange-600/10 p-4 pt-8 transition-colors hover:bg-orange-600/20"
                                 >
-                                    <Icon icon="lucide:file-text" className="mb-2 h-6 w-6 text-orange-400" />
-                                    <p className="text-sm font-medium text-white">Заявки</p>
+                                    <Icon
+                                        icon="lucide:file-text"
+                                        className="absolute top-4 left-4 h-5 w-5 text-orange-400"
+                                    />
+                                    <p className="flex h-full items-center justify-center text-sm font-medium text-white">
+                                        Заявки
+                                    </p>
                                 </Link>
                             </div>
                         </CardBody>
