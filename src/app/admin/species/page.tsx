@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { PawPrint } from "lucide-react";
 
+import { useEffect, useState } from "react";
+
+import { createBreed, createSpecies, deleteBreed, deleteSpecies, getSpecies } from "@/api/species";
+import { Species } from "@/models/species";
 import {
     Button,
     Card,
@@ -14,101 +18,115 @@ import {
     ModalContent,
     ModalFooter,
     ModalHeader,
+    Pagination,
     Select,
     SelectItem,
     useDisclosure,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-interface Breed {
-    id: string;
-    name: string;
-}
-
-interface Species {
-    id: string;
-    name: string;
-    breeds: Breed[];
-}
-
 export default function SpeciesManagement() {
-    const [species, setSpecies] = useState<Species[]>([
-        {
-            id: "1",
-            name: "Кошка",
-            breeds: [
-                { id: "1", name: "Персидская" },
-                { id: "2", name: "Сиамская" },
-                { id: "3", name: "Британская короткошерстная" },
-            ],
-        },
-        {
-            id: "2",
-            name: "Собака",
-            breeds: [
-                { id: "4", name: "Лабрадор" },
-                { id: "5", name: "Немецкая овчарка" },
-                { id: "6", name: "Золотистый ретривер" },
-            ],
-        },
-    ]);
-
+    const [species, setSpecies] = useState<Species[]>([]);
+    const [pagedData, setPagedData] = useState<{ items: Species[]; totalCount: number }>({
+        items: [],
+        totalCount: 0,
+    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [newSpeciesName, setNewSpeciesName] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     const [newBreedName, setNewBreedName] = useState("");
     const [selectedSpeciesId, setSelectedSpeciesId] = useState<string>("");
-
     const { isOpen: isCreateSpeciesOpen, onOpen: onCreateSpeciesOpen, onClose: onCreateSpeciesClose } = useDisclosure();
     const { isOpen: isCreateBreedOpen, onOpen: onCreateBreedOpen, onClose: onCreateBreedClose } = useDisclosure();
 
-    const filteredSpecies = species.filter(
-        (s) =>
-            s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            s.breeds.some((b) => b.name.toLowerCase().includes(searchTerm.toLowerCase())),
-    );
+    const loadSpecies = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await getSpecies(currentPage, itemsPerPage);
+            if (!response.data.result?.value?.items) {
+                throw new Error("Некорректный формат данных от сервера");
+            }
 
-    const handleCreateSpecies = () => {
-        if (!newSpeciesName.trim()) return;
+            const speciesWithBreeds = response.data.result.value.items.map((s) => ({
+                ...s,
+                breeds: (s.breeds ?? [])
+                    .filter((breed) => typeof breed === "object")
+                    .map((breed) => ({
+                        breedId: breed.breedId || `temp-${Math.random().toString(36).substring(2, 9)}`,
+                        breedName: breed.breedName || "Без названия",
+                    })),
+            }));
 
-        const newSpecies: Species = {
-            id: Date.now().toString(),
-            name: newSpeciesName,
-            breeds: [],
-        };
-
-        setSpecies([...species, newSpecies]);
-        setNewSpeciesName("");
-        onCreateSpeciesClose();
+            setSpecies(speciesWithBreeds);
+            setPagedData({
+                items: speciesWithBreeds,
+                totalCount: response.data.result.value.totalCount,
+            });
+        } catch (err) {
+            console.error("Ошибка загрузки видов:", err);
+            setError("Не удалось загрузить список видов");
+            setSpecies([]);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleCreateBreed = () => {
+    const totalPages = Math.ceil(pagedData.totalCount / itemsPerPage);
+
+    useEffect(() => {
+        void loadSpecies();
+    }, [currentPage]);
+
+    const handleCreateSpecies = async () => {
+        if (!newSpeciesName.trim()) return;
+
+        try {
+            await createSpecies(newSpeciesName);
+            setNewSpeciesName("");
+            onCreateSpeciesClose();
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            await loadSpecies();
+        } catch (err) {
+            console.error("Ошибка создания вида:", err);
+            setError("Не удалось создать вид");
+        }
+    };
+
+    const handleCreateBreed = async () => {
         if (!newBreedName.trim() || !selectedSpeciesId) return;
 
-        const newBreed: Breed = {
-            id: Date.now().toString(),
-            name: newBreedName,
-        };
-
-        setSpecies(species.map((s) => (s.id === selectedSpeciesId ? { ...s, breeds: [...s.breeds, newBreed] } : s)));
+        await createBreed(selectedSpeciesId, newBreedName);
 
         setNewBreedName("");
         setSelectedSpeciesId("");
         onCreateBreedClose();
+
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        await loadSpecies();
     };
 
-    const handleDeleteSpecies = (speciesId: string) => {
-        setSpecies(species.filter((s) => s.id !== speciesId));
+    const handleDeleteSpecies = async (speciesId: string) => {
+        await deleteSpecies(speciesId);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await loadSpecies();
     };
 
-    const handleDeleteBreed = (speciesId: string, breedId: string) => {
-        setSpecies(
-            species.map((s) => (s.id === speciesId ? { ...s, breeds: s.breeds.filter((b) => b.id !== breedId) } : s)),
-        );
+    const handleDeleteBreed = async (speciesId: string, breedId: string) => {
+        await deleteBreed(speciesId, breedId);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await loadSpecies();
     };
+
+    const filteredSpecies = species.filter((s) => s.speciesName.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
         <div className="min-h-screen bg-black">
-            {/* Search */}
+            {/* Поиск и кнопки */}
             <div className="container mx-auto px-8 py-8">
                 <div className="flex flex-row justify-between gap-3">
                     <div className="max-w-md flex-1">
@@ -118,11 +136,9 @@ export default function SpeciesManagement() {
                             onValueChange={setSearchTerm}
                             startContent={<Icon icon="lucide:search" className="h-4 w-4 text-gray-400" />}
                             classNames={{
-                                base: "max-w-full",
-                                mainWrapper: "h-full",
                                 input: "text-white placeholder-gray-500",
                                 inputWrapper:
-                                    "h-full font-normal bg-black border border-green-500 hover:border-green-400 focus-within:border-green-400 transition-colors",
+                                    "bg-black border border-green-500 hover:border-green-400 focus-within:border-green-400",
                             }}
                         />
                     </div>
@@ -147,113 +163,121 @@ export default function SpeciesManagement() {
                 </div>
             </div>
 
-            {/* Species List */}
-            <div className="container mx-auto px-6 pb-8">
-                <div className="grid gap-6">
-                    {filteredSpecies.map((speciesItem) => (
-                        <Card
-                            key={speciesItem.id}
-                            className="border border-green-500 bg-black transition-colors hover:border-green-400"
-                        >
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <div>
-                                    <h3 className="text-xl font-semibold text-white">{speciesItem.name}</h3>
-                                    <p className="text-gray-400">
-                                        {speciesItem.breeds.length}{" "}
-                                        {speciesItem.breeds.length === 1 ? "порода" : "пород"}
-                                    </p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        isIconOnly
-                                        variant="bordered"
-                                        size="sm"
-                                        className="border border-green-500 text-gray-400 hover:border-green-400 hover:bg-green-500/10 hover:text-white"
-                                    >
-                                        <Icon icon="lucide:edit" className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                        isIconOnly
-                                        variant="bordered"
-                                        size="sm"
-                                        onPress={() => {
-                                            handleDeleteSpecies(speciesItem.id);
-                                        }}
-                                        className="border border-red-500 text-red-400 hover:border-red-400 hover:bg-red-500/10"
-                                    >
-                                        <Icon icon="lucide:trash-2" className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardBody>
-                                <div className="flex flex-wrap gap-2">
-                                    {speciesItem.breeds.map((breed) => (
-                                        <Chip
-                                            key={breed.id}
-                                            variant="flat"
-                                            onClose={() => {
-                                                handleDeleteBreed(speciesItem.id, breed.id);
-                                            }}
-                                            className="border border-gray-700 bg-gray-900 text-white hover:bg-gray-800"
-                                        >
-                                            {breed.name}
-                                        </Chip>
-                                    ))}
-                                    {speciesItem.breeds.length === 0 && (
-                                        <p className="text-gray-400 italic">Породы не добавлены</p>
-                                    )}
-                                </div>
-                            </CardBody>
-                        </Card>
-                    ))}
-                </div>
+            {/* Сообщения об ошибке */}
+            {error && <div className="container mx-auto mb-4 px-6 text-red-500">{error}</div>}
 
-                {filteredSpecies.length === 0 && (
+            {/* Основной контент */}
+            <div className="container mx-auto px-6 pb-8">
+                {loading ? (
                     <div className="py-12 text-center">
-                        <Icon icon="lucide:paw-print" className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                        <h3 className="mb-2 text-lg font-medium text-gray-400">Виды не найдены</h3>
-                        <p className="text-gray-400">Попробуйте изменить поисковый запрос или добавьте новый вид</p>
+                        <PawPrint className="mx-auto h-12 w-12 animate-pulse text-gray-400" />
+                        <p className="mt-2 text-gray-400">Загрузка...</p>
+                    </div>
+                ) : filteredSpecies.length > 0 ? (
+                    <div className="grid gap-6">
+                        {filteredSpecies.map((speciesItem) => (
+                            <Card
+                                key={speciesItem.speciesId}
+                                className="border border-green-500 bg-black transition-colors hover:border-green-400"
+                            >
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                    <div>
+                                        <h3 className="text-xl font-semibold text-white">{speciesItem.speciesName}</h3>
+                                        <p className="text-gray-400">
+                                            {speciesItem.breeds?.length}{" "}
+                                            {speciesItem.breeds?.length === 1 ? "порода" : "пород"}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            isIconOnly
+                                            variant="bordered"
+                                            size="sm"
+                                            onPress={() => {
+                                                void handleDeleteSpecies(speciesItem.speciesId);
+                                            }}
+                                            className="border border-red-500 text-red-400 hover:border-red-400 hover:bg-red-500/10"
+                                        >
+                                            <Icon icon="lucide:trash-2" className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </CardHeader>
+                                <CardBody>
+                                    <div className="flex flex-wrap gap-2">
+                                        {speciesItem.breeds
+                                            ?.filter((breed) => breed.breedName)
+                                            .map((breed) => (
+                                                <Chip
+                                                    key={breed.breedId}
+                                                    variant="flat"
+                                                    onClose={() => {
+                                                        void handleDeleteBreed(speciesItem.speciesId, breed.breedId);
+                                                    }}
+                                                    className="border border-gray-700 bg-gray-900 text-white hover:bg-gray-800"
+                                                >
+                                                    {breed.breedName}
+                                                </Chip>
+                                            ))}
+                                        {(!speciesItem.breeds ||
+                                            speciesItem.breeds.length === 0 ||
+                                            speciesItem.breeds.every((breed) => !breed.breedName)) && (
+                                            <p className="text-gray-400 italic">Породы не добавлены</p>
+                                        )}
+                                    </div>
+                                </CardBody>
+                            </Card>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="py-12 text-center">
+                        <PawPrint className="mx-auto h-12 w-12 text-gray-400" />
+                        <h3 className="mt-2 text-lg font-medium text-gray-400">Виды не найдены</h3>
+                        <p className="text-gray-400">Попробуйте изменить поисковый запрос</p>
                     </div>
                 )}
             </div>
 
-            {/* Create Species Modal */}
-            <Modal
-                isOpen={isCreateSpeciesOpen}
-                onClose={onCreateSpeciesClose}
-                classNames={{
-                    base: "bg-black border border-green-500",
-                    header: "border-b border-green-500/30",
-                    body: "py-6",
-                    footer: "border-t border-green-500/30",
-                }}
-            >
-                <ModalContent>
-                    <ModalHeader className="flex flex-col gap-1">
+            {pagedData.items.length > 0 && (
+                <Pagination
+                    className="mt-6 flex justify-center"
+                    initialPage={currentPage}
+                    total={totalPages}
+                    onChange={(page) => {
+                        setCurrentPage(page);
+                    }}
+                    showControls
+                    showShadow={true}
+                    siblings={1}
+                    boundaries={1}
+                />
+            )}
+            {/* Модальное окно создания вида */}
+            <Modal isOpen={isCreateSpeciesOpen} onClose={onCreateSpeciesClose}>
+                <ModalContent className="border border-green-500 bg-black">
+                    <ModalHeader className="border-b border-green-500/30">
                         <h2 className="text-white">Создать новый вид</h2>
-                        <p className="text-sm text-gray-400">Добавьте новый вид животного в справочник</p>
                     </ModalHeader>
                     <ModalBody>
                         <Input
                             label="Название вида"
-                            placeholder="Например: Кошка"
                             value={newSpeciesName}
                             onValueChange={setNewSpeciesName}
                             classNames={{
                                 input: "text-white",
-                                inputWrapper:
-                                    "bg-black border border-green-500 hover:border-green-400 focus-within:border-green-400",
+                                inputWrapper: "bg-black border border-green-500",
                                 label: "text-gray-400",
                             }}
                         />
                     </ModalBody>
-                    <ModalFooter>
+                    <ModalFooter className="border-t border-green-500/30">
                         <Button variant="light" onPress={onCreateSpeciesClose} className="text-gray-400">
                             Отмена
                         </Button>
                         <Button
                             color="success"
-                            onPress={handleCreateSpecies}
+                            onPress={() => {
+                                void handleCreateSpecies();
+                            }}
                             className="bg-green-500 text-white hover:bg-green-600"
                         >
                             Создать
@@ -262,7 +286,7 @@ export default function SpeciesManagement() {
                 </ModalContent>
             </Modal>
 
-            {/* Create Breed Modal */}
+            {/* Модальное окно создания породы */}
             <Modal
                 isOpen={isCreateBreedOpen}
                 onClose={onCreateBreedClose}
@@ -295,8 +319,8 @@ export default function SpeciesManagement() {
                             }}
                         >
                             {species.map((s) => (
-                                <SelectItem key={s.id} className="text-white hover:bg-gray-900">
-                                    {s.name}
+                                <SelectItem key={s.speciesId} className="text-white hover:bg-gray-900">
+                                    {s.speciesName}
                                 </SelectItem>
                             ))}
                         </Select>
@@ -319,7 +343,9 @@ export default function SpeciesManagement() {
                         </Button>
                         <Button
                             color="success"
-                            onPress={handleCreateBreed}
+                            onPress={() => {
+                                void handleCreateBreed();
+                            }}
                             className="bg-green-500 text-white hover:bg-green-600"
                         >
                             Создать
