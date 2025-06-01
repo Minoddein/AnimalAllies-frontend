@@ -59,3 +59,14 @@ export async function getSpeciesWithBreedsBySearchTerm(
         },
     });
 }
+
+interface TotalCountSpeciesAndBreedsResponse {
+    speciesCount: number;
+    breedCount: number;
+}
+
+export async function getSpeciesAndBreedsTotalCount(): Promise<
+    AxiosResponse<Envelope<ResultWith<TotalCountSpeciesAndBreedsResponse>>>
+> {
+    return api.get<Envelope<ResultWith<TotalCountSpeciesAndBreedsResponse>>>(`${API_URL}Species/total-count`);
+}

@@ -4,41 +4,53 @@ import { useEffect, useState } from "react";
 
 import Link from "next/link";
 
+import { getUsersCount } from "@/api/accounts";
 import { getVolunteerRequestsInWaitingCount } from "@/api/requests";
+import { getSpeciesAndBreedsTotalCount } from "@/api/species";
 import { Card, CardBody, CardHeader, cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export default function AdminDashboard() {
     const [requestInWaitingCount, setRequestInWaitingCount] = useState(0);
+    const [speciesTotalCount, setSpeciesTotalCount] = useState(0);
+    const [breedTotalCount, setBreedTotalCount] = useState(0);
+    const [activeUsersCount, setActiveUsersCount] = useState(0);
 
-    async function loadRequestsInWaitingCount() {
-        const response = await getVolunteerRequestsInWaitingCount();
+    async function loadStats() {
+        const responseVolunteerRequests = await getVolunteerRequestsInWaitingCount();
 
-        setRequestInWaitingCount(response.data.result?.value ?? 0);
+        setRequestInWaitingCount(responseVolunteerRequests.data.result?.value ?? 0);
+
+        const responseTotalCountSpeciesAndBreeds = await getSpeciesAndBreedsTotalCount();
+        setSpeciesTotalCount(responseTotalCountSpeciesAndBreeds.data.result?.value?.speciesCount ?? 0);
+        setBreedTotalCount(responseTotalCountSpeciesAndBreeds.data.result?.value?.breedCount ?? 0);
+
+        const responseUsersCount = await getUsersCount();
+        setActiveUsersCount(responseUsersCount.data.result?.value?.activeUsers ?? 0);
     }
 
     useEffect(() => {
-        void loadRequestsInWaitingCount();
+        void loadStats();
     }, []);
 
     const stats = [
         {
             title: "Всего видов",
-            value: "12",
+            value: speciesTotalCount,
             description: "Активных видов животных",
             icon: "lucide:paw-print",
             color: "text-emerald-400",
         },
         {
             title: "Всего пород",
-            value: "156",
+            value: breedTotalCount,
             description: "Зарегистрированных пород",
             icon: "lucide:paw-print",
             color: "text-blue-400",
         },
         {
             title: "Пользователи",
-            value: "2,847",
+            value: activeUsersCount,
             description: "Активных пользователей",
             icon: "lucide:users",
             color: "text-purple-400",
