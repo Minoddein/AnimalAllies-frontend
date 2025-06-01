@@ -11,6 +11,7 @@ import {
     deleteSpecies,
     getAllSpeciesWithBreeds,
     getSpecies,
+    getSpeciesWithBreedsBySearchTerm,
 } from "@/api/species";
 import { Species } from "@/models/species";
 import {
@@ -33,7 +34,7 @@ import {
 import { Icon } from "@iconify/react";
 
 export default function SpeciesManagement() {
-    const [species, setSpecies] = useState<Species[]>([]);
+    const [, setSpecies] = useState<Species[]>([]);
     const [pagedData, setPagedData] = useState<{ items: Species[]; totalCount: number }>({
         items: [],
         totalCount: 0,
@@ -53,8 +54,23 @@ export default function SpeciesManagement() {
     const loadSpecies = async () => {
         setLoading(true);
         setError(null);
+
         try {
-            const response = await getSpecies(currentPage, itemsPerPage, undefined, undefined, searchTerm);
+            let response;
+
+            if (searchTerm) {
+                // Если есть searchTerm — делаем запрос к новому эндпоинту
+                response = await getSpeciesWithBreedsBySearchTerm(
+                    currentPage,
+                    itemsPerPage,
+                    undefined,
+                    undefined,
+                    searchTerm,
+                );
+            } else {
+                response = await getSpecies(currentPage, itemsPerPage, undefined, undefined);
+            }
+
             if (!response.data.result?.value?.items) {
                 throw new Error("Некорректный формат данных от сервера");
             }
@@ -171,7 +187,11 @@ export default function SpeciesManagement() {
         await loadSpecies();
     };
 
-    const filteredSpecies = species.filter((s) => s.speciesName.toLowerCase().includes(searchTerm.toLowerCase()));
+    /*const filteredSpecies = species.filter(
+        (s) =>
+            s.speciesName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            s.breeds?.some((b) => b.breedName.toLowerCase().includes(searchTerm.toLowerCase())),
+    );*/
 
     return (
         <div className="min-h-screen bg-black">
@@ -220,9 +240,9 @@ export default function SpeciesManagement() {
                         <PawPrint className="mx-auto h-12 w-12 animate-pulse text-gray-400" />
                         <p className="mt-2 text-gray-400">Загрузка...</p>
                     </div>
-                ) : filteredSpecies.length > 0 ? (
+                ) : pagedData.items.length > 0 ? (
                     <div className="grid gap-6">
-                        {filteredSpecies.map((speciesItem) => (
+                        {pagedData.items.map((speciesItem) => (
                             <Card
                                 key={speciesItem.speciesId}
                                 className="border border-green-500 bg-black transition-colors hover:border-green-400"
