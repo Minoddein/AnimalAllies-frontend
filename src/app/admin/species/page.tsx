@@ -32,7 +32,7 @@ export default function SpeciesManagement() {
         totalCount: 0,
     });
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [newSpeciesName, setNewSpeciesName] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -124,15 +124,8 @@ export default function SpeciesManagement() {
 
     const handleSearch = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
-        setCurrentPage(1); // Сбрасываем на первую страницу при новом поиске
+        setCurrentPage(1);
         await loadSpecies();
-    };
-
-    // Обработчик нажатия Enter в поле поиска
-    const handleKeyDown = async (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") {
-            await handleSearch();
-        }
     };
 
     const filteredSpecies = species.filter((s) => s.speciesName.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -152,25 +145,7 @@ export default function SpeciesManagement() {
                                 placeholder="Поиск видов и пород..."
                                 value={searchTerm}
                                 onValueChange={setSearchTerm}
-                                onKeyDown={(e) => {
-                                    void handleKeyDown(e);
-                                }}
                                 startContent={<Icon icon="lucide:search" className="h-4 w-4 text-gray-400" />}
-                                endContent={
-                                    <Button
-                                        type="submit"
-                                        isIconOnly
-                                        variant="light"
-                                        className="text-gray-400 hover:text-white"
-                                    >
-                                        <Icon icon="lucide:search" className="h-4 w-4" />
-                                    </Button>
-                                }
-                                classNames={{
-                                    input: "text-white placeholder-gray-500",
-                                    inputWrapper:
-                                        "bg-black border border-green-500 hover:border-green-400 focus-within:border-green-400",
-                                }}
                             />
                         </form>
                     </div>
@@ -187,16 +162,13 @@ export default function SpeciesManagement() {
                             variant="bordered"
                             startContent={<Icon icon="lucide:plus" className="h-4 w-4" />}
                             onPress={onCreateBreedOpen}
-                            className="border border-green-500 text-white hover:border-green-400 hover:bg-green-500/10"
+                            className="border border-gray-600 text-white hover:border-gray-500 hover:bg-gray-700/10"
                         >
                             Добавить породу
                         </Button>
                     </div>
                 </div>
             </div>
-
-            {/* Сообщения об ошибке */}
-            {error && <div className="container mx-auto mb-4 px-6 text-red-500">{error}</div>}
 
             {/* Основной контент */}
             <div className="container mx-auto px-6 pb-8">
@@ -228,7 +200,7 @@ export default function SpeciesManagement() {
                                             onPress={() => {
                                                 void handleDeleteSpecies(speciesItem.speciesId);
                                             }}
-                                            className="border border-red-500 text-red-400 hover:border-red-400 hover:bg-red-500/10"
+                                            className="border border-red-700 text-red-400 hover:border-red-600 hover:bg-red-500/10"
                                         >
                                             <Icon icon="lucide:trash-2" className="h-4 w-4" />
                                         </Button>
@@ -245,14 +217,12 @@ export default function SpeciesManagement() {
                                                     onClose={() => {
                                                         void handleDeleteBreed(speciesItem.speciesId, breed.breedId);
                                                     }}
-                                                    className="border border-gray-700 bg-gray-900 text-white hover:bg-gray-800"
+                                                    className="border border-gray-600 bg-gray-800 text-white hover:bg-gray-700"
                                                 >
                                                     {breed.breedName}
                                                 </Chip>
                                             ))}
-                                        {(!speciesItem.breeds ||
-                                            speciesItem.breeds.length === 0 ||
-                                            speciesItem.breeds.every((breed) => !breed.breedName)) && (
+                                        {(!speciesItem.breeds || speciesItem.breeds.length === 0) && (
                                             <p className="text-gray-400 italic">Породы не добавлены</p>
                                         )}
                                     </div>
@@ -278,39 +248,38 @@ export default function SpeciesManagement() {
                         setCurrentPage(page);
                     }}
                     showControls
-                    showShadow={true}
+                    color="primary"
                     siblings={1}
                     boundaries={1}
                 />
             )}
+
             {/* Модальное окно создания вида */}
             <Modal isOpen={isCreateSpeciesOpen} onClose={onCreateSpeciesClose}>
-                <ModalContent className="border border-green-500 bg-black">
-                    <ModalHeader className="border-b border-green-500/30">
+                <ModalContent>
+                    <ModalHeader>
                         <h2 className="text-white">Создать новый вид</h2>
                     </ModalHeader>
                     <ModalBody>
                         <Input
                             label="Название вида"
+                            variant="bordered"
                             value={newSpeciesName}
                             onValueChange={setNewSpeciesName}
                             classNames={{
                                 input: "text-white",
-                                inputWrapper: "bg-black border border-green-500",
-                                label: "text-gray-400",
                             }}
                         />
                     </ModalBody>
-                    <ModalFooter className="border-t border-green-500/30">
+                    <ModalFooter>
                         <Button variant="light" onPress={onCreateSpeciesClose} className="text-gray-400">
                             Отмена
                         </Button>
                         <Button
-                            color="success"
+                            color="primary"
                             onPress={() => {
                                 void handleCreateSpecies();
                             }}
-                            className="bg-green-500 text-white hover:bg-green-600"
                         >
                             Создать
                         </Button>
@@ -319,16 +288,7 @@ export default function SpeciesManagement() {
             </Modal>
 
             {/* Модальное окно создания породы */}
-            <Modal
-                isOpen={isCreateBreedOpen}
-                onClose={onCreateBreedClose}
-                classNames={{
-                    base: "bg-black border border-green-500",
-                    header: "border-b border-green-500/30",
-                    body: "py-6",
-                    footer: "border-t border-green-500/30",
-                }}
-            >
+            <Modal isOpen={isCreateBreedOpen} onClose={onCreateBreedClose}>
                 <ModalContent>
                     <ModalHeader className="flex flex-col gap-1">
                         <h2 className="text-white">Создать новую породу</h2>
@@ -342,16 +302,10 @@ export default function SpeciesManagement() {
                             onSelectionChange={(keys) => {
                                 setSelectedSpeciesId(Array.from(keys)[0] as string);
                             }}
-                            classNames={{
-                                trigger: "bg-black border border-green-500 hover:border-green-400",
-                                label: "text-gray-400",
-                                value: "text-white",
-                                listbox: "bg-black",
-                                popoverContent: "bg-black border border-green-500",
-                            }}
+                            variant="bordered"
                         >
                             {species.map((s) => (
-                                <SelectItem key={s.speciesId} className="text-white hover:bg-gray-900">
+                                <SelectItem key={s.speciesId} className="text-white hover:bg-gray-700">
                                     {s.speciesName}
                                 </SelectItem>
                             ))}
@@ -360,13 +314,8 @@ export default function SpeciesManagement() {
                             label="Название породы"
                             placeholder="Например: Персидская"
                             value={newBreedName}
+                            variant="bordered"
                             onValueChange={setNewBreedName}
-                            classNames={{
-                                input: "text-white",
-                                inputWrapper:
-                                    "bg-black border border-green-500 hover:border-green-400 focus-within:border-green-400",
-                                label: "text-gray-400",
-                            }}
                         />
                     </ModalBody>
                     <ModalFooter>
@@ -374,11 +323,10 @@ export default function SpeciesManagement() {
                             Отмена
                         </Button>
                         <Button
-                            color="success"
+                            color="primary"
                             onPress={() => {
                                 void handleCreateBreed();
                             }}
-                            className="bg-green-500 text-white hover:bg-green-600"
                         >
                             Создать
                         </Button>
