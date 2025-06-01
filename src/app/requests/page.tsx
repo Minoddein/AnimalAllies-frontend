@@ -28,7 +28,6 @@ import {
     CardBody,
     CardFooter,
     CardHeader,
-    CircularProgress,
     Input,
     Modal,
     ModalBody,
@@ -101,7 +100,7 @@ export default function VolunteerRequestsPage() {
         items: [],
         totalCount: 0,
     });
-    const [isLoading, setIsLoading] = useState(false);
+    const [, setIsLoading] = useState(false);
     const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
     const [selectedDescription, setSelectedDescription] = useState("");
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -351,13 +350,6 @@ export default function VolunteerRequestsPage() {
                 </Select>
             </div>
 
-            <Modal isOpen={isLoading}>
-                <ModalContent>
-                    <ModalBody>
-                        <CircularProgress aria-label="Loading..." size="lg" />
-                    </ModalBody>
-                </ModalContent>
-            </Modal>
             {/* Список заявок */}
             <div className="grid gap-4">
                 {pagedData.items.length > 0 ? (
