@@ -58,7 +58,7 @@
         "prettier": "^3.5.3",
         "prettier-plugin-tailwindcss": "^0.6.11",
         "react-hook-form": "^7.55.0",
-        "stylelint": "^16.19.1",
+        "stylelint": "^16.20.0",
         "stylelint-config-recommended": "^16.0.0",
         "stylelint-config-tailwindcss": "^1.0.0",
         "swr": "^2.3.3",
