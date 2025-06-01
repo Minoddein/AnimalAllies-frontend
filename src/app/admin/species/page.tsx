@@ -46,7 +46,7 @@ export default function SpeciesManagement() {
         setLoading(true);
         setError(null);
         try {
-            const response = await getSpecies(currentPage, itemsPerPage);
+            const response = await getSpecies(currentPage, itemsPerPage, undefined, undefined, searchTerm);
             if (!response.data.result?.value?.items) {
                 throw new Error("Некорректный формат данных от сервера");
             }
@@ -122,6 +122,19 @@ export default function SpeciesManagement() {
         await loadSpecies();
     };
 
+    const handleSearch = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        setCurrentPage(1); // Сбрасываем на первую страницу при новом поиске
+        await loadSpecies();
+    };
+
+    // Обработчик нажатия Enter в поле поиска
+    const handleKeyDown = async (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            await handleSearch();
+        }
+    };
+
     const filteredSpecies = species.filter((s) => s.speciesName.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
@@ -130,17 +143,36 @@ export default function SpeciesManagement() {
             <div className="container mx-auto px-8 py-8">
                 <div className="flex flex-row justify-between gap-3">
                     <div className="max-w-md flex-1">
-                        <Input
-                            placeholder="Поиск видов и пород..."
-                            value={searchTerm}
-                            onValueChange={setSearchTerm}
-                            startContent={<Icon icon="lucide:search" className="h-4 w-4 text-gray-400" />}
-                            classNames={{
-                                input: "text-white placeholder-gray-500",
-                                inputWrapper:
-                                    "bg-black border border-green-500 hover:border-green-400 focus-within:border-green-400",
+                        <form
+                            onSubmit={(e) => {
+                                void handleSearch(e);
                             }}
-                        />
+                        >
+                            <Input
+                                placeholder="Поиск видов и пород..."
+                                value={searchTerm}
+                                onValueChange={setSearchTerm}
+                                onKeyDown={(e) => {
+                                    void handleKeyDown(e);
+                                }}
+                                startContent={<Icon icon="lucide:search" className="h-4 w-4 text-gray-400" />}
+                                endContent={
+                                    <Button
+                                        type="submit"
+                                        isIconOnly
+                                        variant="light"
+                                        className="text-gray-400 hover:text-white"
+                                    >
+                                        <Icon icon="lucide:search" className="h-4 w-4" />
+                                    </Button>
+                                }
+                                classNames={{
+                                    input: "text-white placeholder-gray-500",
+                                    inputWrapper:
+                                        "bg-black border border-green-500 hover:border-green-400 focus-within:border-green-400",
+                                }}
+                            />
+                        </form>
                     </div>
                     <div className="flex items-center gap-3">
                         <Button

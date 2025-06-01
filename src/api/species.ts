@@ -12,13 +12,15 @@ export async function getSpecies(
     pageSize: number,
     sortBy?: string,
     sortDirection?: string,
+    searchTerm?: string,
 ): Promise<AxiosResponse<Envelope<ResultWith<PagedResponse<Species>>>>> {
     return api.get<Envelope<ResultWith<PagedResponse<Species>>>>(`${API_URL}Species`, {
         params: {
-            sortBy,
-            sortDirection,
-            page,
-            pageSize,
+            SortBy: sortBy,
+            SortDirection: sortDirection,
+            Page: page,
+            PageSize: pageSize,
+            SearchTerm: searchTerm,
         },
     });
 }
