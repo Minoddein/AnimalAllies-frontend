@@ -2,7 +2,6 @@ import { AxiosResponse } from "axios";
 
 import { API_URL, api } from "@/api/api";
 import { PagedResponse } from "@/api/requests";
-import { Breed } from "@/models/breed";
 import { Envelope } from "@/models/envelope";
 import { Result, ResultWith } from "@/models/result";
 import { Species } from "@/models/species";
@@ -41,8 +40,6 @@ export async function deleteBreed(speciesId: string, breedId: string): Promise<A
     return api.delete<Envelope<Result>>(`${API_URL}Species/${speciesId}/${breedId}`);
 }
 
-export async function getBreedsBySpeciesId(
-    speciesId: string,
-): Promise<AxiosResponse<Envelope<ResultWith<PagedResponse<Breed>>>>> {
-    return api.get<Envelope<ResultWith<PagedResponse<Breed>>>>(`${API_URL}Species/${speciesId}`);
+export async function getAllSpeciesWithBreeds(): Promise<AxiosResponse<Envelope<ResultWith<Species[]>>>> {
+    return api.get<Envelope<ResultWith<Species[]>>>(`${API_URL}Species/all-species-with-breeds`);
 }

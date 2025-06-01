@@ -4,7 +4,14 @@ import { PawPrint } from "lucide-react";
 
 import { useEffect, useState } from "react";
 
-import { createBreed, createSpecies, deleteBreed, deleteSpecies, getSpecies } from "@/api/species";
+import {
+    createBreed,
+    createSpecies,
+    deleteBreed,
+    deleteSpecies,
+    getAllSpeciesWithBreeds,
+    getSpecies,
+} from "@/api/species";
 import { Species } from "@/models/species";
 import {
     Button,
@@ -41,6 +48,7 @@ export default function SpeciesManagement() {
     const [selectedSpeciesId, setSelectedSpeciesId] = useState<string>("");
     const { isOpen: isCreateSpeciesOpen, onOpen: onCreateSpeciesOpen, onClose: onCreateSpeciesClose } = useDisclosure();
     const { isOpen: isCreateBreedOpen, onOpen: onCreateBreedOpen, onClose: onCreateBreedClose } = useDisclosure();
+    const [speciesForCreate, setSpeciesForCreate] = useState<Species[]>([]);
 
     const loadSpecies = async () => {
         setLoading(true);
@@ -75,11 +83,44 @@ export default function SpeciesManagement() {
         }
     };
 
+    const loadSpeciesWithBreedsForCreation = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await getAllSpeciesWithBreeds();
+            if (!response.data.result?.value) {
+                throw new Error("Некорректный формат данных от сервера");
+            }
+
+            const speciesWithBreeds = response.data.result.value.map((s) => ({
+                ...s,
+                breeds: (s.breeds ?? [])
+                    .filter((breed) => typeof breed === "object")
+                    .map((breed) => ({
+                        breedId: breed.breedId || `temp-${Math.random().toString(36).substring(2, 9)}`,
+                        breedName: breed.breedName || "Без названия",
+                    })),
+            }));
+
+            setSpeciesForCreate(speciesWithBreeds);
+        } catch (err) {
+            console.error("Ошибка загрузки видов:", err);
+            setError("Не удалось загрузить список видов");
+            setSpecies([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const totalPages = Math.ceil(pagedData.totalCount / itemsPerPage);
 
     useEffect(() => {
         void loadSpecies();
     }, [currentPage]);
+
+    useEffect(() => {
+        void loadSpeciesWithBreedsForCreation();
+    }, []);
 
     const handleCreateSpecies = async () => {
         if (!newSpeciesName.trim()) return;
@@ -90,6 +131,7 @@ export default function SpeciesManagement() {
             onCreateSpeciesClose();
             await new Promise((resolve) => setTimeout(resolve, 1500));
             await loadSpecies();
+            await loadSpeciesWithBreedsForCreation();
         } catch (err) {
             console.error("Ошибка создания вида:", err);
             setError("Не удалось создать вид");
@@ -108,6 +150,7 @@ export default function SpeciesManagement() {
         await new Promise((resolve) => setTimeout(resolve, 1500));
 
         await loadSpecies();
+        await loadSpeciesWithBreedsForCreation();
     };
 
     const handleDeleteSpecies = async (speciesId: string) => {
@@ -304,7 +347,7 @@ export default function SpeciesManagement() {
                             }}
                             variant="bordered"
                         >
-                            {species.map((s) => (
+                            {speciesForCreate.map((s) => (
                                 <SelectItem key={s.speciesId} className="text-white hover:bg-gray-700">
                                     {s.speciesName}
                                 </SelectItem>
