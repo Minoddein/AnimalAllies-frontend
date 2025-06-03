@@ -83,6 +83,18 @@ export async function getVolunteerRequestsByAdminId(
     );
 }
 
+export async function getVolunteerRequestsByRelationUser(): Promise<
+    AxiosResponse<Envelope<ResultWith<VolunteerRequest[]>>>
+> {
+    return api.get<Envelope<ResultWith<VolunteerRequest[]>>>(
+        `${API_URL}VolunteerRequests/volunteer-requests-by-relation-user`,
+    );
+}
+
+export async function getVolunteerRequestsInWaitingCount(): Promise<AxiosResponse<Envelope<ResultWith<number>>>> {
+    return api.get<Envelope<ResultWith<number>>>(`${API_URL}VolunteerRequests/request-count`);
+}
+
 export async function getVolunteerRequestsByUserId(
     page: number,
     pageSize: number,

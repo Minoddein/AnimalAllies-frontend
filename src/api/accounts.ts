@@ -114,3 +114,14 @@ export async function uploadAvatar(
         },
     });
 }
+
+interface UsersCount {
+    totalUsers: number;
+    activeUsers: number;
+    blockedUsers: number;
+    volunteerUsers: number;
+}
+
+export async function getUsersCount(): Promise<AxiosResponse<Envelope<ResultWith<UsersCount>>>> {
+    return api.get<Envelope<ResultWith<UsersCount>>>(`${API_URL}Account/`);
+}

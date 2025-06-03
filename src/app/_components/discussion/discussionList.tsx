@@ -1,115 +1,30 @@
 "use client";
 
-import { MessageCircle, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { useState } from "react";
-
+import { getDiscussionsByUserId } from "@/api/discussions";
+import { getVolunteerRequestsByRelationUser } from "@/api/requests";
+import { OpenDiscussion } from "@/app/_components/discussion/discussion";
+import { useAuth } from "@/hooks/useAuth";
+import { Discussion } from "@/models/discussion";
+import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Avatar, Button, Card, CardBody, CardHeader, Chip } from "@heroui/react";
+import { Icon } from "@iconify/react";
 
-import { Discussion } from "./discussion";
-
-interface ChatUser {
-    id: string;
-    name: string;
-    role: "admin" | "user";
-    avatar: string;
-    status: "Waiting" | "Submitted" | "Rejected" | "RevisionRequired" | "Approved";
-    lastMessage: string;
-    lastMessageTime: Date;
-    unreadCount?: number;
-}
-
-// Моковые данные чатов
-const mockChats: ChatUser[] = [
-    {
-        id: "user1",
-        name: "Петр Смирнов",
-        role: "user",
-        avatar: "ПС",
-        status: "Submitted",
-        lastMessage: "Да, у меня есть опыт работы с травмированными животными...",
-        lastMessageTime: new Date("2025-05-24T11:15:00"),
-        unreadCount: 2,
-    },
-    {
-        id: "user2",
-        name: "Анна Иванова",
-        role: "user",
-        avatar: "АИ",
-        status: "RevisionRequired",
-        lastMessage: "Спасибо, я дополню информацию и отправлю заново.",
-        lastMessageTime: new Date("2025-05-24T09:45:00"),
-    },
-    {
-        id: "user3",
-        name: "Екатерина Соколова",
-        role: "user",
-        avatar: "ЕС",
-        status: "Waiting",
-        lastMessage: "Здравствуйте! Когда будет рассмотрена моя заявка?",
-        lastMessageTime: new Date("2025-05-24T08:20:00"),
-        unreadCount: 1,
-    },
-    {
-        id: "user4",
-        name: "Михаил Петров",
-        role: "user",
-        avatar: "МП",
-        status: "Approved",
-        lastMessage: "Отлично! Когда можно приступить к работе?",
-        lastMessageTime: new Date("2025-05-23T16:30:00"),
-    },
-    {
-        id: "user5",
-        name: "Ольга Васильева",
-        role: "user",
-        avatar: "ОВ",
-        status: "Rejected",
-        lastMessage: "Понятно, спасибо за обратную связь.",
-        lastMessageTime: new Date("2025-05-23T14:15:00"),
-    },
-];
-
-// Компонент для отображения статуса
-const StatusChip = ({ status }: { status: ChatUser["status"] }) => {
+// Компонент для отображения статуса заявки
+const StatusChip = ({ status }: { status: VolunteerRequest["requestStatus"] }) => {
     switch (status) {
         case "Waiting":
-            return (
-                <Chip
-                    variant="flat"
-                    size="sm"
-                    className="border-yellow-500/20 bg-yellow-500/10 text-xs text-yellow-500"
-                >
-                    Ожидает
-                </Chip>
-            );
+            return <Chip className="border-yellow-500/20 bg-yellow-500/10 text-xs text-yellow-500">Ожидает</Chip>;
         case "Submitted":
-            return (
-                <Chip variant="flat" size="sm" className="border-blue-500/20 bg-blue-500/10 text-xs text-blue-500">
-                    На рассмотрении
-                </Chip>
-            );
+            return <Chip className="border-blue-500/20 bg-blue-500/10 text-xs text-blue-500">На рассмотрении</Chip>;
         case "Approved":
-            return (
-                <Chip variant="flat" size="sm" className="border-green-500/20 bg-green-500/10 text-xs text-green-500">
-                    Одобрено
-                </Chip>
-            );
+            return <Chip className="border-green-500/20 bg-green-500/10 text-xs text-green-500">Одобрено</Chip>;
         case "Rejected":
-            return (
-                <Chip variant="flat" size="sm" className="border-red-500/20 bg-red-500/10 text-xs text-red-500">
-                    Отклонено
-                </Chip>
-            );
+            return <Chip className="border-red-500/20 bg-red-500/10 text-xs text-red-500">Отклонено</Chip>;
         case "RevisionRequired":
             return (
-                <Chip
-                    variant="flat"
-                    size="sm"
-                    className="border-orange-500/20 bg-orange-500/10 text-xs text-orange-500"
-                >
-                    Требует доработки
-                </Chip>
+                <Chip className="border-orange-500/20 bg-orange-500/10 text-xs text-orange-500">Требует доработки</Chip>
             );
         default:
             return null;
@@ -117,43 +32,62 @@ const StatusChip = ({ status }: { status: ChatUser["status"] }) => {
 };
 
 export function DiscussionList() {
+    const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedChat, setSelectedChat] = useState<ChatUser | null>(null);
-    const [chats] = useState<ChatUser[]>(mockChats);
+    const [selectedChat, setSelectedChat] = useState<Discussion | null>(null);
+    const [chats, setChats] = useState<Discussion[]>([]);
+    const [requests, setRequests] = useState<VolunteerRequest[]>([]);
+    const [, setIsLoading] = useState(false);
+    const [, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (isOpen) {
+                await loadDiscussions();
+            }
+        };
+
+        void fetchData();
+    }, [isOpen]);
 
     const formatTime = (date: Date) => {
+        const d = new Date(date);
         const now = new Date();
-        const diffInHours = Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60);
+        const diffInHours = Math.abs(now.getTime() - d.getTime()) / (1000 * 60 * 60);
+        return diffInHours < 24
+            ? d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })
+            : d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" });
+    };
 
-        if (diffInHours < 24) {
-            return date.toLocaleTimeString("ru-RU", {
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        } else {
-            return date.toLocaleDateString("ru-RU", {
-                day: "2-digit",
-                month: "2-digit",
-            });
+    const loadDiscussions = async () => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const discussionsRes = await getDiscussionsByUserId();
+            const discussions = discussionsRes.data.result?.value ?? [];
+
+            const relationIds = discussions.map((d) => d.relationId);
+            const allRequestsRes = await getVolunteerRequestsByRelationUser();
+            if (!allRequestsRes.data.result) throw new Error("Не удалось получить заявки");
+
+            const allRequests = allRequestsRes.data.result.value!;
+            const relatedRequests = allRequests.filter((req) => relationIds.includes(req.id));
+
+            setChats(discussions);
+            setRequests(relatedRequests);
+        } catch (err) {
+            console.error(err);
+            setError("Не удалось загрузить чаты");
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleChatSelect = (chat: ChatUser) => {
+    const handleChatSelect = (chat: Discussion) => {
         setSelectedChat(chat);
-        setIsOpen(false); // Закрываем список чатов
     };
 
-    const handleBackToList = () => {
-        setSelectedChat(null);
-        setIsOpen(true); // Возвращаемся к списку чатов
-    };
-
-    // Если выбран конкретный чат, показываем Discussion
-    if (selectedChat) {
-        return <Discussion chatPartner={selectedChat} onBack={handleBackToList} />;
-    }
-
-    // Кнопка для открытия списка чатов
     if (!isOpen) {
         return (
             <div className="fixed right-6 bottom-6 z-50">
@@ -163,72 +97,134 @@ export function DiscussionList() {
                     }}
                     className="h-14 w-14 rounded-full bg-green-500 shadow-lg hover:bg-green-600"
                 >
-                    <MessageCircle className="h-6 w-6" />
+                    <Icon icon="lucide:message-circle" className="h-6 w-6" />
                 </Button>
             </div>
         );
     }
 
-    // Список чатов
     return (
-        <div className="fixed right-6 bottom-6 z-50 h-[400px] w-80">
-            <Card className="flex h-full flex-col border-green-900/20 bg-black/90 backdrop-blur-sm">
-                <CardHeader className="border-b border-green-900/20 pb-3">
-                    <div className="grid grid-cols-[1fr_auto] items-center gap-24">
-                        <h3 className="text-base font-semibold text-white">Чаты по заявкам</h3>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onPress={() => {
-                                setIsOpen(false);
-                            }}
-                            className="h-8 w-8 p-0 hover:bg-red-500/20"
-                        >
-                            <X className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </CardHeader>
-
-                <CardBody className="flex-1 overflow-y-auto p-0">
-                    <div>
-                        {chats.map((chat) => (
-                            <div
-                                key={chat.id}
-                                onClick={() => {
-                                    handleChatSelect(chat);
-                                }}
-                                className="cursor-pointer border-b border-gray-800/50 p-3 transition-colors last:border-b-0 hover:bg-gray-800/30"
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div className="relative">
-                                        <Avatar className="h-10 w-10" name={chat.avatar} />
-                                        {chat.unreadCount && chat.unreadCount > 0 && (
-                                            <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 text-xs font-medium text-black">
-                                                {chat.unreadCount}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="min-w-0 flex-1">
-                                        <div className="mb-1 flex items-center justify-between gap-2">
-                                            <h4 className="truncate text-sm font-medium text-white">{chat.name}</h4>
-                                            <span className="flex-shrink-0 text-xs text-gray-400">
-                                                {formatTime(chat.lastMessageTime)}
-                                            </span>
-                                        </div>
-
-                                        <div className="mb-1">
-                                            <StatusChip status={chat.status} />
-                                        </div>
-
-                                        <p className="truncate text-xs text-gray-400">{chat.lastMessage}</p>
-                                    </div>
-                                </div>
+        <>
+            {selectedChat ? (
+                <OpenDiscussion
+                    relationId={selectedChat.relationId}
+                    chatPartner={{
+                        id:
+                            selectedChat.firstMember === user?.id
+                                ? selectedChat.secondMember
+                                : selectedChat.firstMember,
+                        name:
+                            selectedChat.firstMember === user?.id
+                                ? selectedChat.secondMemberName
+                                : selectedChat.firstMemberName,
+                        surname:
+                            selectedChat.firstMember === user?.id
+                                ? selectedChat.secondMemberSurname
+                                : selectedChat.firstMemberSurname,
+                        avatar:
+                            selectedChat.firstMember === user?.id
+                                ? selectedChat.secondMemberName[0] + (selectedChat.secondMemberSurname[0] || "")
+                                : selectedChat.firstMemberName[0] + (selectedChat.firstMemberSurname[0] || ""),
+                        status: requests.find((r) => r.id === selectedChat.relationId)?.requestStatus,
+                    }}
+                    currentUser={{
+                        id: user?.id ?? "",
+                        name: user?.firstName ?? "",
+                        surname: user?.secondName ?? "",
+                        avatar: (user?.firstName[0] ?? "") + (user?.secondName[0] ?? ""),
+                    }}
+                    onBack={() => {
+                        setSelectedChat(null);
+                        void loadDiscussions();
+                    }}
+                />
+            ) : (
+                <div className="fixed right-6 bottom-6 z-50 h-[400px] w-80">
+                    <Card className="flex h-full flex-col border-green-900/20 bg-black/90 backdrop-blur-sm">
+                        <CardHeader className="gap-8 border-b border-green-900/20 pb-3">
+                            <div className="flex items-center justify-between gap-22">
+                                <h3 className="text-base font-semibold text-white">Чаты по заявкам</h3>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onPress={() => {
+                                        setIsOpen(false);
+                                    }}
+                                    className="h-8 w-8 p-0 hover:bg-red-500/20"
+                                >
+                                    <Icon icon="lucide:x" className="h-4 w-4" />
+                                </Button>
                             </div>
-                        ))}
-                    </div>
-                </CardBody>
-            </Card>
-        </div>
+                        </CardHeader>
+
+                        <CardBody className="flex-1 overflow-y-auto p-0">
+                            {chats.map((chat) => {
+                                const isCurrentUserAdmin = chat.firstMember === user?.id;
+
+                                const partnerData = isCurrentUserAdmin
+                                    ? {
+                                          id: chat.secondMember,
+                                          name: `${chat.secondMemberName} ${chat.secondMemberSurname}`,
+                                      }
+                                    : {
+                                          id: chat.firstMember,
+                                          name: `${chat.firstMemberName} ${chat.firstMemberSurname}`,
+                                      };
+
+                                // Генерируем инициалы для аватара
+                                const avatarInitials = partnerData.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .toUpperCase();
+
+                                const unreadCount = chat.unreadMessagesCount;
+                                const relatedRequest = requests.find((req) => req.id === chat.relationId);
+                                const status = relatedRequest?.requestStatus ?? "Submitted";
+
+                                return (
+                                    <div
+                                        key={chat.id}
+                                        onClick={() => {
+                                            handleChatSelect(chat);
+                                        }}
+                                        className="cursor-pointer border-b border-gray-800/50 p-3 last:border-b-0 hover:bg-gray-800/30"
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div className="relative">
+                                                <Avatar className="h-10 w-10" name={avatarInitials} />
+                                                {unreadCount > 0 && (
+                                                    <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 text-xs font-medium text-black">
+                                                        {unreadCount}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="mb-1 flex items-center justify-between">
+                                                    <h4 className="truncate text-sm font-medium text-white">
+                                                        {partnerData.name}
+                                                    </h4>
+                                                    <span className="text-xs text-gray-400">
+                                                        {chat.lastMessage
+                                                            ? formatTime(new Date(chat.lastMessageDate))
+                                                            : ""}
+                                                    </span>
+                                                </div>
+
+                                                <div className="mb-1">
+                                                    <StatusChip status={status} />
+                                                </div>
+
+                                                <p className="truncate text-xs text-gray-400">{chat.lastMessage}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </CardBody>
+                    </Card>
+                </div>
+            )}
+        </>
     );
 }

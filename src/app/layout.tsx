@@ -119,9 +119,15 @@ const Header = () => {
                             <DropdownItem key="profile" className="h-14 gap-2" href="/profile">
                                 <p className="font-semibold">{user!.userName}</p>
                             </DropdownItem>
-                            <DropdownItem key="settings">Настройки</DropdownItem>
+                            {user?.roles.includes("Admin") === true ? (
+                                <DropdownItem key="admin" href="/admin">
+                                    Админ-панель
+                                </DropdownItem>
+                            ) : null}
                             <DropdownItem key="statistic">Статистика</DropdownItem>
-                            <DropdownItem key="help_and_feedback">Помощь</DropdownItem>
+                            {user?.roles.includes("Admin") !== true ? (
+                                <DropdownItem key="help_and_feedback">Помощь</DropdownItem>
+                            ) : null}
                             <DropdownItem
                                 key="logout"
                                 color="danger"
