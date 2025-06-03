@@ -1,5 +1,8 @@
 "use client";
 
+
+import { AxiosResponse } from "axios";
+import { Check, RefreshCw, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { closeDiscussion } from "@/api/discussions";
@@ -15,6 +18,8 @@ import {
     updateVolunteerRequest,
 } from "@/api/requests";
 import { useAuth } from "@/hooks/useAuth";
+import { Envelope } from "@/models/envelope";
+import { Result } from "@/models/result";
 import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Chip } from "@heroui/chip";
 import { Textarea } from "@heroui/input";
@@ -33,6 +38,7 @@ import {
     Pagination,
     Select,
     SelectItem,
+    addToast,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
@@ -75,6 +81,12 @@ const RequestStatusBadge = ({ status }: { status: VolunteerRequest["requestStatu
     }
 };
 
+interface UpdateDataProps {
+    response: AxiosResponse<Envelope<Result>>;
+    id: string;
+    status: "Waiting" | "Submitted" | "Rejected" | "RevisionRequired" | "Approved";
+}
+
 export default function VolunteerRequestsPage() {
     const { user } = useAuth();
     const isAdmin = user?.roles.includes("Admin");
@@ -99,6 +111,26 @@ export default function VolunteerRequestsPage() {
     const [editedDescription, setEditedDescription] = useState("");
     const [editedExperience, setEditedExperience] = useState("");
     const itemsPerPage = 4;
+
+    const updateData = async ({ response, id, status }: UpdateDataProps) => {
+        // Вариант 1: Обновляем вручную (если сервер возвращает обновленный объект)
+        if (response.data.result?.isSuccess) {
+            setPagedData((prev) => ({
+                ...prev,
+                items: prev.items.map((item) => (item.id !== id ? { ...item, requestStatus: status } : item)),
+            }));
+
+            if (status === "Submitted")
+                setPagedData((prev) => ({
+                    ...prev,
+                    items: prev.items.filter((item) => item.requestStatus !== "Submitted"),
+                }));
+        }
+        // Вариант 2: Перезапрашиваем данные
+        else {
+            await fetchRequests(currentPage);
+        }
+    };
 
     const fetchRequests = async (page: number) => {
         setIsLoading(true);
@@ -146,6 +178,15 @@ export default function VolunteerRequestsPage() {
             });
         } catch (error) {
             console.error("Error fetching requests:", error);
+            addToast({
+                title: "Ошибка",
+                description: user
+                    ? "Упс, при выполнении возникла ошибка :("
+                    : "Страница доступна только после входа в аккаунт",
+                color: "danger",
+                timeout: 5000,
+                shouldShowTimeoutProgress: true,
+            });
         } finally {
             setIsLoading(false);
         }
@@ -159,16 +200,20 @@ export default function VolunteerRequestsPage() {
 
     const refreshAfterAction = async () => {
         if (pagedData.items.length === 1 && currentPage > 1) {
-            setCurrentPage((prev) => prev - 1); // это вызовет useEffect -> fetchRequests(newPage)
+            setCurrentPage((prev) => prev - 1);
         } else {
             await fetchRequests(currentPage);
         }
     };
 
     const handleApprove = async (request: VolunteerRequest) => {
+        const response = await approveVolunteerRequest(request.id);
+        await updateData({ response, id: request.id, status: "Approved" });
+
         await approveVolunteerRequest(request.id);
         await refreshAfterAction();
         await closeDiscussion(request.discussionId!);
+
     };
 
     const handleReject = (request: VolunteerRequest) => {
@@ -186,6 +231,7 @@ export default function VolunteerRequestsPage() {
     };
 
     const submitComment = async () => {
+        setIsLoading(true);
         if (!selectedRequest || !commentText.trim()) return;
 
         if (commentAction === "reject") {
@@ -197,11 +243,14 @@ export default function VolunteerRequestsPage() {
 
         setIsCommentDialogOpen(false);
         await refreshAfterAction();
+        setIsLoading(false);
     };
 
     const handleTakeForASubmit = async (id: string) => {
-        await takeForASubmit(id);
-        await refreshAfterAction();
+        setIsLoading(true);
+        const response = await takeForASubmit(id);
+        await updateData({ response, id, status: "Submitted" });
+        setIsLoading(false);
     };
 
     const handleEditRequest = (request: VolunteerRequest) => {
@@ -480,6 +529,7 @@ export default function VolunteerRequestsPage() {
                 <Pagination
                     className="mt-6 flex justify-center"
                     initialPage={currentPage}
+                    page={currentPage}
                     total={totalPages}
                     onChange={(page) => {
                         setCurrentPage(page);
