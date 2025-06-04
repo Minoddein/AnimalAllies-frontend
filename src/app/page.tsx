@@ -178,6 +178,14 @@ export default function App() {
                                             timeout: 5000,
                                             shouldShowTimeoutProgress: true,
                                         });
+                                    } else if (user?.roles.includes("Admin")) {
+                                        addToast({
+                                            title: "Администратор",
+                                            description: "Вы администратор!",
+                                            color: "danger",
+                                            timeout: 5000,
+                                            shouldShowTimeoutProgress: true,
+                                        });
                                     } else onOpen();
                                 }}
                             >

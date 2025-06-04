@@ -1,8 +1,5 @@
 "use client";
 
-
-import { AxiosResponse } from "axios";
-import { Check, RefreshCw, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { closeDiscussion } from "@/api/discussions";
@@ -18,8 +15,6 @@ import {
     updateVolunteerRequest,
 } from "@/api/requests";
 import { useAuth } from "@/hooks/useAuth";
-import { Envelope } from "@/models/envelope";
-import { Result } from "@/models/result";
 import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Chip } from "@heroui/chip";
 import { Textarea } from "@heroui/input";
@@ -81,12 +76,6 @@ const RequestStatusBadge = ({ status }: { status: VolunteerRequest["requestStatu
     }
 };
 
-interface UpdateDataProps {
-    response: AxiosResponse<Envelope<Result>>;
-    id: string;
-    status: "Waiting" | "Submitted" | "Rejected" | "RevisionRequired" | "Approved";
-}
-
 export default function VolunteerRequestsPage() {
     const { user } = useAuth();
     const isAdmin = user?.roles.includes("Admin");
@@ -112,26 +101,6 @@ export default function VolunteerRequestsPage() {
     const [editedExperience, setEditedExperience] = useState("");
     const itemsPerPage = 4;
 
-    const updateData = async ({ response, id, status }: UpdateDataProps) => {
-        // Вариант 1: Обновляем вручную (если сервер возвращает обновленный объект)
-        if (response.data.result?.isSuccess) {
-            setPagedData((prev) => ({
-                ...prev,
-                items: prev.items.map((item) => (item.id !== id ? { ...item, requestStatus: status } : item)),
-            }));
-
-            if (status === "Submitted")
-                setPagedData((prev) => ({
-                    ...prev,
-                    items: prev.items.filter((item) => item.requestStatus !== "Submitted"),
-                }));
-        }
-        // Вариант 2: Перезапрашиваем данные
-        else {
-            await fetchRequests(currentPage);
-        }
-    };
-
     const fetchRequests = async (page: number) => {
         setIsLoading(true);
         try {
@@ -156,6 +125,11 @@ export default function VolunteerRequestsPage() {
                     statusFilter === "all" ? undefined : statusFilter,
                 );
                 setRequestTypeFilter("my");
+            }
+
+            if (response.data.result?.value?.items.length === 0 && currentPage > 1) {
+                setCurrentPage(currentPage - 1);
+                return;
             }
 
             const validatedRequests =
@@ -195,8 +169,26 @@ export default function VolunteerRequestsPage() {
     const totalPages = Math.ceil(pagedData.totalCount / itemsPerPage);
 
     useEffect(() => {
-        void fetchRequests(currentPage);
-    }, [currentPage, statusFilter, itemsPerPage, requestTypeFilter, fetchRequests]);
+        const controller = new AbortController();
+
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                await fetchRequests(currentPage);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const debounceTimer = setTimeout(() => {
+            void fetchData();
+        }, 300);
+
+        return () => {
+            clearTimeout(debounceTimer);
+            controller.abort();
+        };
+    }, [currentPage, statusFilter, requestTypeFilter]);
 
     const refreshAfterAction = async () => {
         if (pagedData.items.length === 1 && currentPage > 1) {
@@ -208,12 +200,18 @@ export default function VolunteerRequestsPage() {
 
     const handleApprove = async (request: VolunteerRequest) => {
         const response = await approveVolunteerRequest(request.id);
-        await updateData({ response, id: request.id, status: "Approved" });
+        if (response.data.result?.isSuccess) {
+            await fetchRequests(currentPage);
+        } else {
+            addToast({
+                title: "Ошибка",
+                description: "Не удалось одобрить заявку",
+                color: "danger",
+            });
+        }
 
-        await approveVolunteerRequest(request.id);
         await refreshAfterAction();
         await closeDiscussion(request.discussionId!);
-
     };
 
     const handleReject = (request: VolunteerRequest) => {
@@ -234,11 +232,23 @@ export default function VolunteerRequestsPage() {
         setIsLoading(true);
         if (!selectedRequest || !commentText.trim()) return;
 
+        let response;
+
         if (commentAction === "reject") {
-            await rejectRequest(selectedRequest.id, commentText);
+            response = await rejectRequest(selectedRequest.id, commentText);
             await closeDiscussion(selectedRequest.discussionId!);
         } else {
-            await sendForRevision(selectedRequest.id, commentText);
+            response = await sendForRevision(selectedRequest.id, commentText);
+        }
+
+        if (response.data.result?.isSuccess) {
+            await fetchRequests(currentPage);
+        } else {
+            addToast({
+                title: "Ошибка",
+                description: "Что-то пошло не так при отказе или отправке на ревизию",
+                color: "danger",
+            });
         }
 
         setIsCommentDialogOpen(false);
@@ -248,9 +258,27 @@ export default function VolunteerRequestsPage() {
 
     const handleTakeForASubmit = async (id: string) => {
         setIsLoading(true);
-        const response = await takeForASubmit(id);
-        await updateData({ response, id, status: "Submitted" });
-        setIsLoading(false);
+        try {
+            const response = await takeForASubmit(id);
+            if (response.data.result?.isSuccess) {
+                await fetchRequests(currentPage);
+            } else {
+                addToast({
+                    title: "Ошибка",
+                    description: "Не удалось взять заявку в работу",
+                    color: "danger",
+                });
+            }
+        } catch (error) {
+            console.error("Error taking request:", error);
+            addToast({
+                title: "Ошибка",
+                description: "Не удалось взять заявку в работу",
+                color: "danger",
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleEditRequest = (request: VolunteerRequest) => {

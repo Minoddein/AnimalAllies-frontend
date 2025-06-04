@@ -140,10 +140,10 @@ export function DiscussionList() {
                 />
             ) : (
                 <div className="fixed right-6 bottom-6 z-50 h-[400px] w-80">
-                    <Card className="flex h-full flex-col border-green-900/20 bg-black/90 backdrop-blur-sm">
+                    <Card className="bg-background/90 border-foreground/80 flex h-full flex-col backdrop-blur-sm">
                         <CardHeader className="gap-8 border-b border-green-900/20 pb-3">
                             <div className="flex items-center justify-between gap-22">
-                                <h3 className="text-base font-semibold text-white">Чаты по заявкам</h3>
+                                <h3 className="text-base font-semibold">Чаты по заявкам</h3>
                                 <Button
                                     variant="ghost"
                                     size="sm"
