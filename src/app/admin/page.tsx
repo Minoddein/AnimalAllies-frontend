@@ -160,7 +160,10 @@ export default function AdminDashboard() {
                                 </Link>
 
                                 {/* Кнопка "Пользователи" */}
-                                <button className="relative rounded-lg border border-purple-600/30 bg-purple-600/10 p-4 pt-8 transition-colors hover:bg-purple-600/20">
+                                <Link
+                                    href="/admin/users"
+                                    className="relative rounded-lg border border-purple-600/30 bg-purple-600/10 p-4 pt-8 transition-colors hover:bg-purple-600/20"
+                                >
                                     <Icon
                                         icon="lucide:users"
                                         className="absolute top-4 left-4 h-5 w-5 text-purple-400"
@@ -168,7 +171,7 @@ export default function AdminDashboard() {
                                     <p className="flex h-full items-center justify-center text-sm font-medium text-white">
                                         Пользователи
                                     </p>
-                                </button>
+                                </Link>
 
                                 {/* Кнопка "Заявки" */}
                                 <Link
