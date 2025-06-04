@@ -1,5 +1,8 @@
 "use client";
 
+import { AxiosResponse } from "axios";
+import { Check, RefreshCw, Search, X } from "lucide-react";
+
 import { useEffect, useState } from "react";
 
 import { closeDiscussion } from "@/api/discussions";
@@ -15,6 +18,8 @@ import {
     updateVolunteerRequest,
 } from "@/api/requests";
 import { useAuth } from "@/hooks/useAuth";
+import { Envelope } from "@/models/envelope";
+import { Result } from "@/models/result";
 import { VolunteerRequest } from "@/models/volunteerRequests";
 import { Chip } from "@heroui/chip";
 import { Textarea } from "@heroui/input";
@@ -35,7 +40,6 @@ import {
     SelectItem,
     addToast,
 } from "@heroui/react";
-import { Icon } from "@iconify/react";
 
 import { DiscussionList } from "../_components/discussion/discussionList";
 
@@ -76,6 +80,12 @@ const RequestStatusBadge = ({ status }: { status: VolunteerRequest["requestStatu
     }
 };
 
+interface UpdateDataProps {
+    response: AxiosResponse<Envelope<Result>>;
+    id: string;
+    status: "Waiting" | "Submitted" | "Rejected" | "RevisionRequired" | "Approved";
+}
+
 export default function VolunteerRequestsPage() {
     const { user } = useAuth();
     const isAdmin = user?.roles.includes("Admin");
@@ -101,6 +111,26 @@ export default function VolunteerRequestsPage() {
     const [editedExperience, setEditedExperience] = useState("");
     const itemsPerPage = 4;
 
+    const updateData = async ({ response, id, status }: UpdateDataProps) => {
+        // Вариант 1: Обновляем вручную (если сервер возвращает обновленный объект)
+        if (response.data.result?.isSuccess) {
+            setPagedData((prev) => ({
+                ...prev,
+                items: prev.items.map((item) => (item.id !== id ? { ...item, requestStatus: status } : item)),
+            }));
+
+            if (status === "Submitted")
+                setPagedData((prev) => ({
+                    ...prev,
+                    items: prev.items.filter((item) => item.requestStatus !== "Submitted"),
+                }));
+        }
+        // Вариант 2: Перезапрашиваем данные
+        else {
+            await fetchRequests(currentPage);
+        }
+    };
+
     const fetchRequests = async (page: number) => {
         setIsLoading(true);
         try {
@@ -125,11 +155,6 @@ export default function VolunteerRequestsPage() {
                     statusFilter === "all" ? undefined : statusFilter,
                 );
                 setRequestTypeFilter("my");
-            }
-
-            if (response.data.result?.value?.items.length === 0 && currentPage > 1) {
-                setCurrentPage(currentPage - 1);
-                return;
             }
 
             const validatedRequests =
@@ -169,26 +194,8 @@ export default function VolunteerRequestsPage() {
     const totalPages = Math.ceil(pagedData.totalCount / itemsPerPage);
 
     useEffect(() => {
-        const controller = new AbortController();
-
-        const fetchData = async () => {
-            setIsLoading(true);
-            try {
-                await fetchRequests(currentPage);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        const debounceTimer = setTimeout(() => {
-            void fetchData();
-        }, 300);
-
-        return () => {
-            clearTimeout(debounceTimer);
-            controller.abort();
-        };
-    }, [currentPage, statusFilter, requestTypeFilter]);
+        void fetchRequests(currentPage);
+    }, [currentPage, statusFilter, itemsPerPage, requestTypeFilter]);
 
     const refreshAfterAction = async () => {
         if (pagedData.items.length === 1 && currentPage > 1) {
@@ -199,17 +206,7 @@ export default function VolunteerRequestsPage() {
     };
 
     const handleApprove = async (request: VolunteerRequest) => {
-        const response = await approveVolunteerRequest(request.id);
-        if (response.data.result?.isSuccess) {
-            await fetchRequests(currentPage);
-        } else {
-            addToast({
-                title: "Ошибка",
-                description: "Не удалось одобрить заявку",
-                color: "danger",
-            });
-        }
-
+        await approveVolunteerRequest(request.id);
         await refreshAfterAction();
         await closeDiscussion(request.discussionId!);
     };
@@ -232,23 +229,10 @@ export default function VolunteerRequestsPage() {
         setIsLoading(true);
         if (!selectedRequest || !commentText.trim()) return;
 
-        let response;
-
         if (commentAction === "reject") {
-            response = await rejectRequest(selectedRequest.id, commentText);
-            await closeDiscussion(selectedRequest.discussionId!);
+            await rejectRequest(selectedRequest.id, commentText);
         } else {
-            response = await sendForRevision(selectedRequest.id, commentText);
-        }
-
-        if (response.data.result?.isSuccess) {
-            await fetchRequests(currentPage);
-        } else {
-            addToast({
-                title: "Ошибка",
-                description: "Что-то пошло не так при отказе или отправке на ревизию",
-                color: "danger",
-            });
+            await sendForRevision(selectedRequest.id, commentText);
         }
 
         setIsCommentDialogOpen(false);
@@ -258,27 +242,9 @@ export default function VolunteerRequestsPage() {
 
     const handleTakeForASubmit = async (id: string) => {
         setIsLoading(true);
-        try {
-            const response = await takeForASubmit(id);
-            if (response.data.result?.isSuccess) {
-                await fetchRequests(currentPage);
-            } else {
-                addToast({
-                    title: "Ошибка",
-                    description: "Не удалось взять заявку в работу",
-                    color: "danger",
-                });
-            }
-        } catch (error) {
-            console.error("Error taking request:", error);
-            addToast({
-                title: "Ошибка",
-                description: "Не удалось взять заявку в работу",
-                color: "danger",
-            });
-        } finally {
-            setIsLoading(false);
-        }
+        const response = await takeForASubmit(id);
+        await updateData({ response, id, status: "Submitted" });
+        setIsLoading(false);
     };
 
     const handleEditRequest = (request: VolunteerRequest) => {
@@ -333,10 +299,7 @@ export default function VolunteerRequestsPage() {
             {/* Фильтры и поиск */}
             <div className="mb-6 flex flex-col gap-4 md:flex-row">
                 <div className="relative flex-1">
-                    <Icon
-                        icon="lucide:search"
-                        className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform"
-                    />
+                    <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                     <Input
                         placeholder="Поиск по имени или email"
                         value={searchQuery}
@@ -489,7 +452,7 @@ export default function VolunteerRequestsPage() {
                                                                 void handleApprove(request);
                                                             }}
                                                         >
-                                                            <Icon icon="lucide:check" className="mr-2 h-4 w-4" />
+                                                            <Check className="mr-2 h-4 w-4" />
                                                             Одобрить
                                                         </Button>
                                                         <Button
@@ -499,7 +462,7 @@ export default function VolunteerRequestsPage() {
                                                                 handleRevision(request);
                                                             }}
                                                         >
-                                                            <Icon icon="lucide:refresh-cw" className="mr-2 h-4 w-4" />
+                                                            <RefreshCw className="mr-2 h-4 w-4" />
                                                             На доработку
                                                         </Button>
                                                         <Button
@@ -509,7 +472,7 @@ export default function VolunteerRequestsPage() {
                                                                 handleReject(request);
                                                             }}
                                                         >
-                                                            <Icon icon="lucide:x" className="mr-2 h-4 w-4" />
+                                                            <X className="mr-2 h-4 w-4" />
                                                             Отклонить
                                                         </Button>
                                                     </div>
@@ -536,7 +499,7 @@ export default function VolunteerRequestsPage() {
                                                             handleResubmitRequest(request);
                                                         }}
                                                     >
-                                                        <Icon icon="lucide:refresh-cw" className="mr-2 h-4 w-4" />
+                                                        <RefreshCw className="mr-2 h-4 w-4" />
                                                         Отправить на пересмотр
                                                     </Button>
                                                 </div>
