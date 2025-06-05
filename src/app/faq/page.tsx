@@ -41,7 +41,7 @@ export default function DonationsPage() {
                                         <span className="font-bold md:text-xl">{category.name}</span>
                                     </div>
                                     <p className="text-gray-300">
-                                        Ответы на часто задаваемые вопросы в категории &quot{category.name}&quot
+                                        Ответы на часто задаваемые вопросы в категории &quot;{category.name}&quot;
                                     </p>
                                 </div>
 
