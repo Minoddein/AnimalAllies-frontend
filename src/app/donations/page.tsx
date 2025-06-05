@@ -171,7 +171,7 @@ export default function DonationsPage() {
                                     идёт на помощь животным.
                                 </p>
                                 <Button
-                                    variant="outline"
+                                    variant="ghost"
                                     className="border-green-500 text-green-400 hover:bg-green-500/10"
                                 >
                                     Посмотреть отчёты
