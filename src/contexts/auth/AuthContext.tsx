@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }: Props) => {
             patronymic: response.patronymic,
             roles: response.roles,
             permissions: response.permissions,
+            isBanned: response.isBanned,
             socialNetworks: response.socialNetworks,
             volunteer: response.volunteerAccount
                 ? {

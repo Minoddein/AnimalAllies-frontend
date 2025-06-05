@@ -12,6 +12,7 @@ export interface LoginResponse {
     patronymic: string | null;
     roles: string[];
     permissions: string[];
+    isBanned: boolean;
     socialNetworks: SocialNetwork[];
     volunteerAccount: VolunteerAccountResponse | null;
 }

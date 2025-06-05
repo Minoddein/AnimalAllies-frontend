@@ -2,12 +2,13 @@
 
 import { Ban, Search, UserCheck, Users } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { BanUser, UsersCount, getUsersByPage, getUsersCount } from "@/api/accounts";
 import { Chip } from "@heroui/chip";
-import { Avatar, Button, Card, CardBody, CardHeader, Input } from "@heroui/react";
+import { Avatar, Button, Card, CardBody, CardHeader, Input, Pagination } from "@heroui/react";
 
-interface User {
+interface UserMember {
     id: string;
     avatar: string;
     firstName: string;
@@ -16,66 +17,7 @@ interface User {
     email: string;
     roles: string[];
     isBanned: boolean;
-    joinDate: string;
 }
-
-const mockUsers: User[] = [
-    {
-        id: "1",
-        avatar: "/placeholder.svg?height=40&width=40",
-        firstName: "Анна",
-        lastName: "Петрова",
-        username: "anna_pets",
-        email: "anna.petrova@example.com",
-        roles: ["Волонтёр", "Модератор"],
-        isBanned: false,
-        joinDate: "2024-01-15",
-    },
-    {
-        id: "2",
-        avatar: "/placeholder.svg?height=40&width=40",
-        firstName: "Михаил",
-        lastName: "Сидоров",
-        username: "mikhail_vet",
-        email: "mikhail.sidorov@example.com",
-        roles: ["Ветеринар"],
-        isBanned: false,
-        joinDate: "2024-02-20",
-    },
-    {
-        id: "3",
-        avatar: "/placeholder.svg?height=40&width=40",
-        firstName: "Елена",
-        lastName: "Козлова",
-        username: "elena_helper",
-        email: "elena.kozlova@example.com",
-        roles: ["Пользователь"],
-        isBanned: true,
-        joinDate: "2024-03-10",
-    },
-    {
-        id: "4",
-        avatar: "/placeholder.svg?height=40&width=40",
-        firstName: "Дмитрий",
-        lastName: "Волков",
-        username: "dmitry_admin",
-        email: "dmitry.volkov@example.com",
-        roles: ["Администратор", "Модератор"],
-        isBanned: false,
-        joinDate: "2023-12-05",
-    },
-    {
-        id: "5",
-        avatar: "/placeholder.svg?height=40&width=40",
-        firstName: "Ольга",
-        lastName: "Морозова",
-        username: "olga_volunteer",
-        email: "olga.morozova@example.com",
-        roles: ["Волонтёр"],
-        isBanned: false,
-        joinDate: "2024-01-28",
-    },
-];
 
 const getRoleColor = (role: string) => {
     switch (role) {
@@ -87,6 +29,8 @@ const getRoleColor = (role: string) => {
             return "bg-blue-500/20 text-blue-400 border-blue-500/30";
         case "Волонтёр":
             return "bg-green-500/20 text-green-400 border-green-500/30";
+        case "Пользователь":
+            return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
         default:
             return "bg-gray-500/20 text-gray-400 border-gray-500/30";
     }
@@ -94,18 +38,98 @@ const getRoleColor = (role: string) => {
 
 export default function UsersPage() {
     const [searchTerm, setSearchTerm] = useState("");
-    const [users, setUsers] = useState(mockUsers);
+    const [users, setUsers] = useState<UserMember[]>();
+    const [stats, setStats] = useState<UsersCount>();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagedData, setPagedData] = useState<{ items: UserMember[]; totalCount: number }>({
+        items: [],
+        totalCount: 0,
+    });
 
-    const filteredUsers = users.filter(
+    const itemsPerPage = 10;
+
+    const totalPages = Math.ceil(pagedData.totalCount / itemsPerPage);
+
+    async function getUsersStats() {
+        try {
+            const responseUsersCount = await getUsersCount();
+            if (!responseUsersCount.data.result) {
+                throw new Error("users count data was not found");
+            }
+
+            const stats = responseUsersCount.data.result.value;
+
+            setStats(stats);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function banUser(userId: string) {
+        await BanUser(userId);
+
+        await getUsers();
+    }
+
+    async function getUsers() {
+        try {
+            const response = await getUsersByPage(currentPage, itemsPerPage);
+            if (!response.data.result?.value) {
+                throw new Error("cannot load users");
+            }
+
+            const userMembers = response.data.result.value.items.map(
+                (user) =>
+                    ({
+                        id: user.id,
+                        avatar: "",
+                        firstName: user.adminProfile?.adminFirstName ?? user.participantAccount?.firstName,
+                        lastName: user.adminProfile?.adminSecondName ?? user.participantAccount?.secondName,
+                        username: user.userName,
+                        email: user.email,
+                        roles: user.roles
+                            .map((r) => r.name)
+                            .map((v) => {
+                                if (v === "Participant") {
+                                    return "Пользователь";
+                                } else if (v === "Volunteer") {
+                                    return "Волонтёр";
+                                } else if (v === "Admin") {
+                                    return "Администратор";
+                                }
+                            }),
+                        isBanned: user.isBanned,
+                    }) as UserMember,
+            );
+
+            setUsers(userMembers);
+            setPagedData({
+                items: userMembers,
+                totalCount: response.data.result.value.totalCount,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    useEffect(() => {
+        void getUsers();
+    }, [currentPage]);
+
+    useEffect(() => {
+        void getUsersStats();
+    }, []);
+
+    const filteredUsers = pagedData.items.filter(
         (user) =>
             user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
     const toggleBanStatus = (userId: string) => {
-        setUsers(users.map((user) => (user.id === userId ? { ...user, isBanned: !user.isBanned } : user)));
+        setUsers(users!.map((user) => (user.id === userId ? { ...user, isBanned: !user.isBanned } : user)));
     };
 
     return (
@@ -127,25 +151,19 @@ export default function UsersPage() {
                     <CardBody>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-white">{users.length}</div>
+                                <div className="text-2xl font-bold text-white">{stats?.totalUsers}</div>
                                 <div className="text-sm text-gray-400">Всего пользователей</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-green-400">
-                                    {users.filter((u) => !u.isBanned).length}
-                                </div>
+                                <div className="text-2xl font-bold text-green-400">{stats?.activeUsers}</div>
                                 <div className="text-sm text-gray-400">Активных</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-red-400">
-                                    {users.filter((u) => u.isBanned).length}
-                                </div>
+                                <div className="text-2xl font-bold text-red-400">{stats?.blockedUsers}</div>
                                 <div className="text-sm text-gray-400">Заблокированных</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-purple-400">
-                                    {users.filter((u) => u.roles.includes("Волонтёр")).length}
-                                </div>
+                                <div className="text-2xl font-bold text-purple-400">{stats?.volunteerUsers}</div>
                                 <div className="text-sm text-gray-400">Волонтёров</div>
                             </div>
                         </div>
@@ -201,15 +219,12 @@ export default function UsersPage() {
                                                         <div className="font-medium text-white">
                                                             {user.firstName} {user.lastName}
                                                         </div>
-                                                        <div className="text-sm text-gray-400">@{user.username}</div>
+                                                        <div className="text-sm text-gray-400">@{user.lastName}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="p-4">
                                                 <div className="text-white">{user.email}</div>
-                                                <div className="text-sm text-gray-400">
-                                                    Регистрация: {new Date(user.joinDate).toLocaleDateString("ru-RU")}
-                                                </div>
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex flex-wrap gap-1">
@@ -237,30 +252,33 @@ export default function UsersPage() {
                                                 </Chip>
                                             </td>
                                             <td className="p-4">
-                                                <Button
-                                                    variant="flat"
-                                                    size="sm"
-                                                    onPress={() => {
-                                                        toggleBanStatus(user.id);
-                                                    }}
-                                                    className={
-                                                        user.isBanned
-                                                            ? "border-green-500/30 text-green-400 hover:bg-green-500/10"
-                                                            : "border-red-500/30 text-red-400 hover:bg-red-500/10"
-                                                    }
-                                                >
-                                                    {user.isBanned ? (
-                                                        <>
-                                                            <UserCheck className="mr-1 h-4 w-4" />
-                                                            Разблокировать
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Ban className="mr-1 h-4 w-4" />
-                                                            Заблокировать
-                                                        </>
-                                                    )}
-                                                </Button>
+                                                {user.roles.includes("Администратор") ? null : (
+                                                    <Button
+                                                        variant="flat"
+                                                        size="sm"
+                                                        onPress={() => {
+                                                            toggleBanStatus(user.id);
+                                                            void banUser(user.id);
+                                                        }}
+                                                        className={
+                                                            user.isBanned
+                                                                ? "border-green-500/30 text-green-400 hover:bg-green-500/10"
+                                                                : "border-red-500/30 text-red-400 hover:bg-red-500/10"
+                                                        }
+                                                    >
+                                                        {user.isBanned ? (
+                                                            <>
+                                                                <UserCheck className="mr-1 h-4 w-4" />
+                                                                Разблокировать
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Ban className="mr-1 h-4 w-4" />
+                                                                Заблокировать
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -269,7 +287,21 @@ export default function UsersPage() {
                         </div>
                     </CardBody>
                 </Card>
-
+                {pagedData.items.length > 0 && (
+                    <Pagination
+                        className="mt-6 flex justify-center"
+                        initialPage={currentPage}
+                        page={currentPage}
+                        total={totalPages}
+                        onChange={(page) => {
+                            setCurrentPage(page);
+                        }}
+                        showControls
+                        showShadow={true}
+                        siblings={1}
+                        boundaries={1}
+                    />
+                )}
                 {filteredUsers.length === 0 && (
                     <div className="py-8 text-center text-gray-400">Пользователи не найдены</div>
                 )}

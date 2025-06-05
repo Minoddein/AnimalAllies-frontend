@@ -108,15 +108,17 @@ export default function SpeciesManagement() {
                 throw new Error("Некорректный формат данных от сервера");
             }
 
-            const speciesWithBreeds = response.data.result.value.map((s) => ({
-                ...s,
-                breeds: (s.breeds ?? [])
-                    .filter((breed) => typeof breed === "object")
-                    .map((breed) => ({
-                        breedId: breed.breedId || `temp-${Math.random().toString(36).substring(2, 9)}`,
-                        breedName: breed.breedName || "Без названия",
-                    })),
-            }));
+            const speciesWithBreeds = response.data.result.value
+                .filter((s, index, self) => index === self.findIndex((t) => t.speciesId === s.speciesId))
+                .map((s) => ({
+                    ...s,
+                    breeds: (s.breeds ?? [])
+                        .filter((breed) => typeof breed === "object")
+                        .map((breed) => ({
+                            breedId: breed.breedId || `temp-${Math.random().toString(36).substring(2, 9)}`,
+                            breedName: breed.breedName || "Без названия",
+                        })),
+                }));
 
             setSpeciesForCreate(speciesWithBreeds);
         } catch (err) {

@@ -39,6 +39,7 @@ export default function LoginForm() {
     const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (data) => {
         try {
             setIsLoading(true);
+            //TODO: Добавить сообщение, что войти нельзя, если аккаунт заблокирован
             await handleLogin(data.email, data.password);
         } catch (error) {
             console.error(error);

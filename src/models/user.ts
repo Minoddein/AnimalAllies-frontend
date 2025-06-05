@@ -10,6 +10,7 @@ export interface User {
     patronymic: string | null | undefined;
     roles: string[];
     permissions: string[];
+    isBanned: boolean;
     socialNetworks: SocialNetwork[];
     volunteer: Volunteer | null;
     avatarUrl: string | undefined;

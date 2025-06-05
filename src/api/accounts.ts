@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 
+import { PagedResponse } from "@/api/requests";
 import { Certificate } from "@/models/certificate";
 import { Envelope } from "@/models/envelope";
 import { RegisterProps } from "@/models/requests/RegisterProps";
@@ -115,7 +116,7 @@ export async function uploadAvatar(
     });
 }
 
-interface UsersCount {
+export interface UsersCount {
     totalUsers: number;
     activeUsers: number;
     blockedUsers: number;
@@ -124,4 +125,53 @@ interface UsersCount {
 
 export async function getUsersCount(): Promise<AxiosResponse<Envelope<ResultWith<UsersCount>>>> {
     return api.get<Envelope<ResultWith<UsersCount>>>(`${API_URL}Account/`);
+}
+
+export async function getUsersByPage(
+    page: number,
+    pageSize: number,
+): Promise<AxiosResponse<Envelope<ResultWith<PagedResponse<User>>>>> {
+    return api.get<Envelope<ResultWith<PagedResponse<User>>>>(`${API_URL}Account/all-users-by-page`, {
+        params: { page, pageSize },
+    });
+}
+
+export async function BanUser(userId: string): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<ResultWith<PagedResponse<User>>>>(`${API_URL}Account/ban-user`, {
+        UserId: userId,
+    });
+}
+
+interface AdminProfile {
+    adminUserId: string;
+    adminId: string;
+    adminFirstName: string;
+    adminSecondName: string;
+    adminPatronymic: string;
+}
+
+interface ParticipantAccount {
+    participantUserId: string;
+    participantId: string;
+    firstName: string;
+    secondName: string;
+    patronymic: string;
+}
+
+interface Role {
+    roleId: string;
+    name: string;
+}
+
+interface User {
+    id: string;
+    userName: string;
+    email: string;
+    photo: string | null;
+    isBanned: boolean;
+    roles: Role[];
+    participantAccount: ParticipantAccount | null;
+    participantAccountId: string | null;
+    adminProfile: AdminProfile | null;
+    adminProfileId: string;
 }
