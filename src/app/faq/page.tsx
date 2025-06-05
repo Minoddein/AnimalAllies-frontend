@@ -7,7 +7,7 @@ import { CardHeader } from "@heroui/card";
 import { Accordion, AccordionItem, Button, Card, CardBody, Tab, Tabs } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-export default function DonationsPage() {
+export default function FaqPage() {
     return (
         <div className="flex min-h-[90vh] flex-col bg-black text-white">
             <section className="relative flex h-96 items-center justify-center">

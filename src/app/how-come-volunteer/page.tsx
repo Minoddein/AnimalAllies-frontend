@@ -9,7 +9,7 @@ import { Chip } from "@heroui/chip";
 import { Accordion, AccordionItem, Button, Card, CardBody } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-export default function DonationsPage() {
+export default function HowComeVolunteerPage() {
     return (
         <div className="flex min-h-[90vh] flex-col bg-black text-white">
             <section className="relative flex h-96 items-center justify-center">
