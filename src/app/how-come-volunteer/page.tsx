@@ -2,94 +2,14 @@
 
 import React from "react";
 
+import { steps } from "@/data/secondary/steps";
+import { volunteerTypes } from "@/data/secondary/volunteer-types";
 import { CardHeader } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { Accordion, AccordionItem, Button, Card, CardBody } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export default function DonationsPage() {
-    const steps = [
-        {
-            number: 1,
-            title: "Регистрация аккаунта",
-            description: "Создайте личный кабинет на нашем сайте",
-            icon: <Icon icon="teenyicons:user-plus-outline" className="h-6 w-6" />,
-            details: [
-                "Нажмите кнопку 'Войти' в правом верхнем углу",
-                "Выберите 'Регистрация'",
-                "Заполните основную информацию: имя, email и т.д.",
-                "Подтвердите email адрес",
-                "Войдите в личный кабинет",
-            ],
-        },
-        {
-            number: 2,
-            title: "Заполнение анкеты волонтёра",
-            description: "Расскажите о себе и своих возможностях",
-            icon: <Icon icon="qlementine-icons:file-text-16" className="h-6 w-6" />,
-            details: [
-                "Перейдите в раздел 'Стать волонтёром'",
-                "Укажите номер телефона",
-                "Укажите ваш опыт волонтёрской деятельности",
-                "Добавьте небольшое описание себя как будущего волонтёра",
-                "Отправьте заявку на рассмотрение",
-            ],
-        },
-        {
-            number: 3,
-            title: "Ожидание одобрения",
-            description: "Наша команда рассмотрит вашу заявку",
-            icon: <Icon icon="mdi:clock-outline" className="h-6 w-6" />,
-            details: [
-                "Заявка рассматривается в течение 3-5 рабочих дней",
-                "Мы можем связаться с вами для уточнения деталей",
-                "При необходимости проведём короткое собеседование",
-                "Уведомление о решении придёт на email",
-                "После одобрения получите доступ к волонтёрским задачам",
-            ],
-        },
-        {
-            number: 4,
-            title: "Добро пожаловать в команду!",
-            description: "Начинайте помогать животным",
-            icon: <Icon icon="prime:check-circle" className="h-6 w-6" />,
-            details: [
-                "Получите приглашение в чат волонтёров",
-                "Ознакомьтесь с правилами и инструкциями",
-                "Выберите первое задание в личном кабинете",
-                "Свяжитесь с координатором для получения инструктажа",
-                "Начните делать добрые дела!",
-            ],
-        },
-    ];
-
-    const volunteerTypes = [
-        {
-            title: "Уход за животными",
-            description: "Кормление, выгул, социализация",
-            icon: <Icon icon="mdi:heart-outline" className="h-5 w-5" />,
-            time: "2-4 часа в неделю",
-        },
-        {
-            title: "Транспортировка",
-            description: "Перевозка животных к ветеринару",
-            icon: <Icon icon="lucide:map-pin" className="h-5 w-5" />,
-            time: "По необходимости",
-        },
-        {
-            title: "Административная помощь",
-            description: "Работа с документами, звонки",
-            icon: <Icon icon="qlementine-icons:file-text-16" className="h-5 w-5" />,
-            time: "3-5 часов в неделю",
-        },
-        {
-            title: "Мероприятия",
-            description: "Организация выставок и акций",
-            icon: <Icon icon="famicons:calendar-outline" className="h-5 w-5" />,
-            time: "Выходные дни",
-        },
-    ];
-
     return (
         <div className="flex min-h-[90vh] flex-col bg-black text-white">
             <section className="relative flex h-96 items-center justify-center">
