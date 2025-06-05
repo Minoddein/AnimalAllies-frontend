@@ -15,6 +15,41 @@ export default function App() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const { user, accessToken } = useContext(AuthContext)!;
 
+    const volunteerFormOpen = () => {
+        if (!accessToken)
+            addToast({
+                title: "Не авторизован",
+                description: "Для начала нужно авторизоваться как пользователь",
+                color: "danger",
+                timeout: 5000,
+                shouldShowTimeoutProgress: true,
+            });
+        else if (user?.volunteer) {
+            addToast({
+                title: "Уже волонтёр",
+                description: "Вы уже волонтёр",
+                color: "danger",
+                timeout: 5000,
+                shouldShowTimeoutProgress: true,
+            });
+        } else if (user?.roles.includes("Admin")) {
+            addToast({
+                title: "Администратор",
+                description: "Вы администратор!",
+                color: "danger",
+                timeout: 5000,
+                shouldShowTimeoutProgress: true,
+            });
+        } else onOpen();
+    };
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.get("openModal") === "volunteer") {
+            volunteerFormOpen();
+        }
+    }, []);
+
     const carouselItems = [
         {
             image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=1000",
@@ -158,37 +193,7 @@ export default function App() {
                         </p>
                         <div className="flex flex-wrap justify-center gap-4">
                             <Button color="success">Найти питомца</Button>
-                            <Button
-                                variant="bordered"
-                                color="success"
-                                onPress={() => {
-                                    if (!accessToken)
-                                        addToast({
-                                            title: "Не авторизован",
-                                            description: "Для начала нужно авторизоваться как пользователь",
-                                            color: "danger",
-                                            timeout: 5000,
-                                            shouldShowTimeoutProgress: true,
-                                        });
-                                    else if (user?.volunteer) {
-                                        addToast({
-                                            title: "Уже волонтёр",
-                                            description: "Вы уже волонтёр",
-                                            color: "danger",
-                                            timeout: 5000,
-                                            shouldShowTimeoutProgress: true,
-                                        });
-                                    } else if (user?.roles.includes("Admin")) {
-                                        addToast({
-                                            title: "Администратор",
-                                            description: "Вы администратор!",
-                                            color: "danger",
-                                            timeout: 5000,
-                                            shouldShowTimeoutProgress: true,
-                                        });
-                                    } else onOpen();
-                                }}
-                            >
+                            <Button variant="bordered" color="success" onPress={volunteerFormOpen}>
                                 Стать волонтёром
                             </Button>
                             <ModalOrDrawer
@@ -301,17 +306,17 @@ export default function App() {
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" className="transition-colors hover:text-emerald-500">
+                                    <a href="/donations" className="transition-colors hover:text-emerald-500">
                                         Пожертвования
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" className="transition-colors hover:text-emerald-500">
+                                    <a href="/how-come-volunteer" className="transition-colors hover:text-emerald-500">
                                         Стать волонтёром
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" className="transition-colors hover:text-emerald-500">
+                                    <a href="/faq" className="transition-colors hover:text-emerald-500">
                                         FAQ
                                     </a>
                                 </li>
