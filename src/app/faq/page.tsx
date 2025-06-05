@@ -1,185 +1,103 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 
-import { donationMethods } from "@/data/secondary/donationMethods";
+import { faqCategories } from "@/data/secondary/faq-categories";
 import { CardHeader } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import { Button, Card, CardBody } from "@heroui/react";
+import { Accordion, AccordionItem, Button, Card, CardBody, Tab, Tabs } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export default function DonationsPage() {
-    const [copiedText, setCopiedText] = useState<string | null>(null);
-
-    const copyToClipboard = async (text: string, label: string) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            setCopiedText(label);
-            setTimeout(() => {
-                setCopiedText(null);
-            }, 2000);
-        } catch (err) {
-            console.error("Failed to copy text: ", err);
-        }
-    };
-
     return (
         <div className="flex min-h-[90vh] flex-col bg-black text-white">
             <section className="relative flex h-96 items-center justify-center">
                 <div className="relative z-10 px-2 text-center">
                     <div className="mb-4 flex items-center justify-center gap-2">
-                        <Icon icon="mdi:heart" className="h-10 w-10 text-green-500" />
-                        <h1 className="text-5xl font-bold">Пожертвования</h1>
+                        <Icon icon="octicon:question-16" className="h-10 w-10 text-green-500" />
+                        <h1 className="text-5xl font-bold">Справка по системе</h1>
                     </div>
                     <p className="mx-auto max-w-2xl text-xl text-gray-200">
-                        Ваша поддержка помогает нам спасать жизни животных, обеспечивать им медицинскую помощь и
-                        находить любящие дома
+                        Ответы на часто задаваемые вопросы о нашей платформе и работе с животными
                     </p>
                 </div>
             </section>
 
             <main className="flex-1 px-6 py-12">
-                <div className="mx-auto max-w-6xl">
-                    {/* Impact Stats */}
-                    <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-                        <Card className="border-gray-700 bg-gray-900/50">
-                            <CardBody className="flex flex-col items-center pt-6">
-                                <div className="mb-2 block text-3xl font-bold text-green-500">247</div>
-                                <p className="text-gray-300">Животных спасено в этом году</p>
-                            </CardBody>
-                        </Card>
-                        <Card className="border-gray-700 bg-gray-900/50">
-                            <CardBody className="flex flex-col items-center pt-6">
-                                <div className="mb-2 text-3xl font-bold text-green-500">89</div>
-                                <p className="text-gray-300">Животных нашли дом</p>
-                            </CardBody>
-                        </Card>
-                        <Card className="border-gray-700 bg-gray-900/50">
-                            <CardBody className="flex flex-col items-center pt-6">
-                                <div className="mb-2 text-3xl font-bold text-green-500">156</div>
-                                <p className="text-gray-300">Операций проведено</p>
-                            </CardBody>
-                        </Card>
-                    </div>
-
-                    <div className="mb-12 grid grid-cols-1 gap-8 lg:grid-cols-3">
-                        {donationMethods.map((method, index) => (
-                            <Card
-                                key={index}
-                                className="border-gray-700 bg-gray-900/50 transition-colors hover:border-green-500/50"
-                            >
-                                <CardHeader>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/20 text-green-500">
-                                            {method.icon}
-                                        </div>
-                                        <div>
-                                            <h3 className="text-white">{method.title}</h3>
-                                            <p className="text-gray-400">{method.description}</p>
-                                        </div>
+                <div className="mb-10">
+                    <Tabs fullWidth>
+                        {faqCategories.map((category) => (
+                            <Tab
+                                key={category.id}
+                                title={
+                                    <div className="flex items-center space-x-2">
+                                        {category.icon}
+                                        <span>{category.name}</span>
                                     </div>
-                                </CardHeader>
-                                <CardBody className="space-y-3">
-                                    {method.details.map((detail, detailIndex) => (
-                                        <div key={detailIndex} className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-400">{detail.label}:</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-mono text-sm text-white">{detail.value}</span>
-                                                {detail.copyable && (
-                                                    <button
-                                                        onClick={() => {
-                                                            void copyToClipboard(detail.value, detail.label);
-                                                        }}
-                                                        className="rounded p-1 transition-colors hover:bg-gray-700"
-                                                        title="Копировать"
-                                                    >
-                                                        {copiedText === detail.label ? (
-                                                            <Icon
-                                                                icon="material-symbols:check"
-                                                                className="h-4 w-4 text-green-500"
-                                                            />
-                                                        ) : (
-                                                            <Icon
-                                                                icon="solar:copy-bold"
-                                                                className="h-4 w-4 text-gray-400"
-                                                            />
-                                                        )}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
+                                }
+                            >
+                                <div className="m-2">
+                                    <div className="mb-6 flex items-center space-x-2">
+                                        {category.icon}
+                                        <span className="font-bold md:text-xl">{category.name}</span>
+                                    </div>
+                                    <p className="text-gray-300">
+                                        Ответы на часто задаваемые вопросы в категории &quot{category.name}&quot
+                                    </p>
+                                </div>
+
+                                <Accordion variant="bordered">
+                                    {category.questions.map((question, index) => (
+                                        <AccordionItem
+                                            key={index}
+                                            aria-label={question.question}
+                                            title={question.question}
+                                        >
+                                            {question.answer}
+                                        </AccordionItem>
                                     ))}
-                                </CardBody>
-                            </Card>
+                                </Accordion>
+                            </Tab>
                         ))}
-                    </div>
-
-                    <Card className="mb-12 border-gray-700 bg-gray-900/50">
-                        <CardHeader className="flex flex-col items-center">
-                            <h3 className="text-center font-bold text-white md:text-2xl">
-                                Рекомендуемые суммы пожертвований
-                            </h3>
-                            <p className="text-center text-gray-400">
-                                Каждый рубль имеет значение, но вот что можно сделать с разными суммами
-                            </p>
-                        </CardHeader>
-                        <CardBody>
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                                <div className="rounded-lg bg-gray-800/50 p-4 text-center">
-                                    <div className="mb-2 text-2xl font-bold text-green-500">500₽</div>
-                                    <p className="text-sm text-gray-300">Корм для животного на неделю</p>
-                                </div>
-                                <div className="rounded-lg bg-gray-800/50 p-4 text-center">
-                                    <div className="mb-2 text-2xl font-bold text-green-500">1500₽</div>
-                                    <p className="text-sm text-gray-300">Вакцинация одного животного</p>
-                                </div>
-                                <div className="rounded-lg bg-gray-800/50 p-4 text-center">
-                                    <div className="mb-2 text-2xl font-bold text-green-500">5000₽</div>
-                                    <p className="text-sm text-gray-300">Стерилизация кошки или собаки</p>
-                                </div>
-                                <div className="rounded-lg bg-gray-800/50 p-4 text-center">
-                                    <div className="mb-2 text-2xl font-bold text-green-500">15000₽</div>
-                                    <p className="text-sm text-gray-300">Сложная операция</p>
-                                </div>
-                            </div>
-                        </CardBody>
-                    </Card>
-
-                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                        <Card className="border-gray-700 bg-gray-900/50">
-                            <CardHeader>
-                                <h3 className="font-bold text-white md:text-2xl">Налоговые льготы</h3>
-                            </CardHeader>
-                            <CardBody className="text-gray-300">
-                                <p className="mb-4">
-                                    Как зарегистрированная благотворительная организация, мы можем предоставить справку
-                                    для получения налогового вычета.
-                                </p>
-                                <Chip color="success" variant="flat">
-                                    До 13% возврат с суммы пожертвования
-                                </Chip>
-                            </CardBody>
-                        </Card>
-
-                        <Card className="border-gray-700 bg-gray-900/50">
-                            <CardHeader>
-                                <h3 className="font-bold text-white md:text-2xl">Прозрачность</h3>
-                            </CardHeader>
-                            <CardBody className="text-gray-300">
-                                <p className="mb-4">
-                                    Мы публикуем ежемесячные отчёты о том, как используются пожертвования. Каждый рубль
-                                    идёт на помощь животным.
-                                </p>
-                                <Button
-                                    variant="outline"
-                                    className="border-green-500 text-green-400 hover:bg-green-500/10"
-                                >
-                                    Посмотреть отчёты
-                                </Button>
-                            </CardBody>
-                        </Card>
-                    </div>
+                    </Tabs>
                 </div>
+
+                <Card className="mt-12 border-gray-700 bg-gray-900/50">
+                    <CardHeader className="flex flex-col items-center text-center">
+                        <h3 className="text-center font-bold text-white md:text-2xl">Не нашли ответ на свой вопрос?</h3>
+                        <p className="text-center text-gray-400">Свяжитесь с нами, и мы с радостью поможем вам</p>
+                    </CardHeader>
+                    <CardBody>
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            <div className="flex flex-col items-center text-center">
+                                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20 text-green-500">
+                                    <Icon icon="mdi-light:phone" className="h-6 w-6" />
+                                </div>
+                                <h3 className="mb-2 font-semibold">Телефон</h3>
+                                <p className="text-gray-300">+7 (999) 123-45-67</p>
+                                <p className="text-sm text-gray-400">Пн-Пт: 10:00-19:00</p>
+                            </div>
+                            <div className="flex flex-col items-center text-center">
+                                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20 text-green-500">
+                                    <Icon icon="material-symbols:mail-outline-rounded" className="h-6 w-6" />
+                                </div>
+                                <h3 className="mb-2 font-semibold">Email</h3>
+                                <p className="text-gray-300">support@animalallies.ru</p>
+                                <p className="text-sm text-gray-400">Ответ в течение 24 часов</p>
+                            </div>
+                            <div className="flex flex-col items-center text-center">
+                                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20 text-green-500">
+                                    <Icon icon="mdi-light:message" className="h-6 w-6" />
+                                </div>
+                                <h3 className="mb-2 font-semibold">Чат</h3>
+                                <p className="text-gray-300">Онлайн-консультант</p>
+                                <p className="text-sm text-gray-400">Ежедневно: 9:00-21:00</p>
+                            </div>
+                        </div>
+                        <div className="mt-6 flex justify-center">
+                            <Button className="bg-green-500 hover:bg-green-600">Задать вопрос</Button>
+                        </div>
+                    </CardBody>
+                </Card>
             </main>
         </div>
     );

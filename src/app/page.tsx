@@ -311,7 +311,7 @@ export default function App() {
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" className="transition-colors hover:text-emerald-500">
+                                    <a href="/faq" className="transition-colors hover:text-emerald-500">
                                         FAQ
                                     </a>
                                 </li>
