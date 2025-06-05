@@ -2,6 +2,8 @@
 
 import React from "react";
 
+import { useRouter } from "next/navigation";
+
 import { steps } from "@/data/secondary/steps";
 import { volunteerTypes } from "@/data/secondary/volunteer-types";
 import { CardHeader } from "@heroui/card";
@@ -10,6 +12,12 @@ import { Accordion, AccordionItem, Button, Card, CardBody } from "@heroui/react"
 import { Icon } from "@iconify/react";
 
 export default function HowComeVolunteerPage() {
+    const router = useRouter();
+
+    const handleStartNow = () => {
+        router.push("/?openModal=volunteer");
+    };
+
     return (
         <div className="flex min-h-[90vh] flex-col bg-black text-white">
             <section className="relative flex h-96 items-center justify-center">
@@ -129,7 +137,9 @@ export default function HowComeVolunteerPage() {
                             </div>
                         </div>
                         <div className="mt-6 text-center">
-                            <Button className="bg-green-500 hover:bg-green-600">Начать прямо сейчас</Button>
+                            <Button className="bg-green-500 hover:bg-green-600" onPress={handleStartNow}>
+                                Начать прямо сейчас
+                            </Button>
                         </div>
                     </CardBody>
                 </Card>
