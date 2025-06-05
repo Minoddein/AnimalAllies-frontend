@@ -306,7 +306,7 @@ export default function App() {
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" className="transition-colors hover:text-emerald-500">
+                                    <a href="/how-come-volunteer" className="transition-colors hover:text-emerald-500">
                                         Стать волонтёром
                                     </a>
                                 </li>

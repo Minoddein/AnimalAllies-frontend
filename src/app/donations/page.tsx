@@ -14,7 +14,9 @@ export default function DonationsPage() {
         try {
             await navigator.clipboard.writeText(text);
             setCopiedText(label);
-            setTimeout(() => { setCopiedText(null); }, 2000);
+            setTimeout(() => {
+                setCopiedText(null);
+            }, 2000);
         } catch (err) {
             console.error("Failed to copy text: ", err);
         }
@@ -61,7 +63,7 @@ export default function DonationsPage() {
             <section className="relative flex h-96 items-center justify-center">
                 <div className="relative z-10 px-2 text-center">
                     <div className="mb-4 flex items-center justify-center gap-2">
-                        <Icon icon="mdi:heart" className="h-8 w-8 text-green-500" />
+                        <Icon icon="mdi:heart" className="h-10 w-10 text-green-500" />
                         <h1 className="text-5xl font-bold">Пожертвования</h1>
                     </div>
                     <p className="mx-auto max-w-2xl text-xl text-gray-200">
