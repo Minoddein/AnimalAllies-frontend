@@ -7,6 +7,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 import { Avatar, Button, Card, CardBody } from "@heroui/react";
+import { Icon } from "@iconify/react";
 
 interface Volunteer {
     id: string;
@@ -84,20 +85,28 @@ const mockVolunteers: Volunteer[] = [
 
 export default function VolunteersList() {
     const [volunteers] = useState<Volunteer[]>(mockVolunteers);
+    const [isAsc, setIsAsc] = useState(true);
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">Найдено {volunteers.length} волонтёров</h2>
                 <div className="flex gap-2">
-                    <Button variant="flat" size="sm">
-                        По рейтингу
-                    </Button>
-                    <Button variant="flat" size="sm">
+                    <Button variant="flat" size="md">
                         По опыту
                     </Button>
-                    <Button variant="flat" size="sm">
-                        По активности
+                    <Button
+                        isIconOnly
+                        aria-label="asc-desc"
+                        variant="faded"
+                        onPress={() => {
+                            setIsAsc(!isAsc);
+                        }}
+                    >
+                        <Icon
+                            icon={isAsc ? "heroicons-solid:sort-ascending" : "ci:sort-ascending"}
+                            className="h-5 w-5"
+                        />
                     </Button>
                 </div>
             </div>
