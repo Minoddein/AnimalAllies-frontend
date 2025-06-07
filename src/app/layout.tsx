@@ -85,7 +85,7 @@ const Header = () => {
                     </Link>
                 </NavbarItem>
                 <NavbarItem>
-                    <Link aria-current="page" href="#">
+                    <Link aria-current="page" href="/volunteers">
                         Волонтёры
                     </Link>
                 </NavbarItem>
