@@ -9,11 +9,9 @@ import {
     Clock,
     Heart,
     Mail,
-    MapPin,
     MessageCircle,
     Phone,
     Share2,
-    Star,
     TrendingUp,
     Users,
 } from "lucide-react";
@@ -104,31 +102,10 @@ export default function VolunteerProfilePage() {
                                     </div>
 
                                     <h1 className="mb-2 text-2xl font-bold">{volunteer.name}</h1>
-
-                                    {/* Rating */}
-                                    <div className="mb-4 flex items-center justify-center gap-2">
-                                        <div className="flex items-center gap-1">
-                                            {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    className={`h-4 w-4 ${i < Math.floor(volunteer.rating) ? "fill-current text-yellow-400" : "text-gray-300"}`}
-                                                />
-                                            ))}
-                                        </div>
-                                        <span className="text-sm font-medium">{volunteer.rating}</span>
-                                        <span className="text-muted-foreground text-xs">
-                                            ({volunteer.stats.reviews} отзывов)
-                                        </span>
-                                    </div>
                                 </div>
 
                                 {/* Contact Info */}
                                 <div className="mb-6 space-y-3">
-                                    <div className="bg-background/50 flex items-center gap-3 rounded-lg p-3">
-                                        <MapPin className="text-primary h-4 w-4" />
-                                        <span className="text-sm">{volunteer.location}</span>
-                                    </div>
                                     <div className="bg-background/50 flex items-center gap-3 rounded-lg p-3">
                                         <Calendar className="text-primary h-4 w-4" />
                                         <span className="text-sm">С нами с {volunteer.joinDate}</span>
