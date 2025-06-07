@@ -1,12 +1,12 @@
 "use client";
 
-import { Award, Calendar, Clock, Heart, MapPin, MessageCircle, Star, User } from "lucide-react";
+import { Calendar, Clock, Heart, MessageCircle, User } from "lucide-react";
 
 import { useState } from "react";
 
 import Link from "next/link";
 
-import { Avatar, Badge, Button, Card, CardBody } from "@heroui/react";
+import { Avatar, Button, Card, CardBody } from "@heroui/react";
 
 interface Volunteer {
     id: string;
@@ -138,20 +138,10 @@ export default function VolunteersList() {
                                                     </h3>
                                                     <div className="text-muted-foreground mt-1 flex items-center gap-4 text-sm">
                                                         <div className="flex items-center gap-1">
-                                                            <MapPin className="h-3 w-3" />
-                                                            <span>{volunteer.location}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1">
                                                             <Clock className="h-3 w-3" />
                                                             <span>{volunteer.experience}</span>
                                                         </div>
                                                     </div>
-                                                </div>
-
-                                                {/* Rating */}
-                                                <div className="bg-primary/10 flex items-center gap-1 rounded-full px-2 py-1">
-                                                    <Star className="text-primary h-3 w-3 fill-current" />
-                                                    <span className="text-sm font-medium">{volunteer.rating}</span>
                                                 </div>
                                             </div>
 
@@ -173,34 +163,6 @@ export default function VolunteersList() {
                                                         с {volunteer.joinDate}
                                                     </span>
                                                 </div>
-                                            </div>
-
-                                            {/* Skills */}
-                                            <div className="mb-4 flex flex-wrap gap-1">
-                                                {volunteer.skills.slice(0, 3).map((skill, index) => (
-                                                    <Badge
-                                                        key={index}
-                                                        variant="solid"
-                                                        className="bg-background/50 text-xs"
-                                                    >
-                                                        {skill}
-                                                    </Badge>
-                                                ))}
-                                                {volunteer.skills.length > 3 && (
-                                                    <Badge variant="solid" className="bg-background/50 text-xs">
-                                                        +{volunteer.skills.length - 3}
-                                                    </Badge>
-                                                )}
-                                            </div>
-
-                                            {/* Badges */}
-                                            <div className="mb-4 flex flex-wrap gap-2">
-                                                {volunteer.badges.map((badge, index) => (
-                                                    <div key={index} className="flex items-center gap-1 text-xs">
-                                                        <Award className="text-primary h-3 w-3" />
-                                                        <span className="text-primary font-medium">{badge}</span>
-                                                    </div>
-                                                ))}
                                             </div>
 
                                             {/* Actions */}
