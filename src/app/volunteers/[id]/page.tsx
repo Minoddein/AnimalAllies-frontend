@@ -1,24 +1,10 @@
 "use client";
 
-import {
-    ArrowLeft,
-    Award,
-    Calendar,
-    Camera,
-    Car,
-    Clock,
-    Heart,
-    Mail,
-    MessageCircle,
-    Phone,
-    Share2,
-    TrendingUp,
-    Users,
-} from "lucide-react";
+import { ArrowLeft, Calendar, Camera, Car, Clock, Heart, Mail, MessageCircle, Phone, Users } from "lucide-react";
 
 import Link from "next/link";
 
-import { Avatar, Badge, Button, Card, CardBody, CardHeader } from "@heroui/react";
+import { Avatar, Button, Card, CardBody, CardHeader } from "@heroui/react";
 
 const mockVolunteer = {
     id: "1",
@@ -124,45 +110,11 @@ export default function VolunteerProfilePage() {
                                     </div>
                                 </div>
 
-                                {/* Skills */}
-                                <div className="mb-6">
-                                    <h3 className="mb-3 text-sm font-semibold">Навыки</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {volunteer.skills.map((skill, index) => (
-                                            <Badge key={index} variant="flat" className="bg-primary/10 text-primary">
-                                                {skill}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Achievements */}
-                                <div className="mb-6">
-                                    <h3 className="mb-3 text-sm font-semibold">Достижения</h3>
-                                    <div className="space-y-2">
-                                        {volunteer.badges.map((badge, index) => (
-                                            <div
-                                                key={index}
-                                                className="bg-background/50 flex items-center gap-2 rounded-lg p-2"
-                                            >
-                                                <Award className="text-primary h-4 w-4" />
-                                                <span className="text-sm font-medium">{badge}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
                                 {/* Action Buttons */}
-                                <div className="space-y-2">
-                                    <Button className="bg-primary hover:bg-primary/90 w-full">
-                                        <MessageCircle className="mr-2 h-4 w-4" />
-                                        Написать сообщение
-                                    </Button>
-                                    <Button variant="flat" className="w-full">
-                                        <Share2 className="mr-2 h-4 w-4" />
-                                        Поделиться профилем
-                                    </Button>
-                                </div>
+                                <Button className="bg-primary hover:bg-primary/90 w-full space-y-2">
+                                    <MessageCircle className="mr-2 h-4 w-4" />
+                                    Написать сообщение
+                                </Button>
                             </CardBody>
                         </Card>
                     </div>
@@ -178,7 +130,7 @@ export default function VolunteerProfilePage() {
                         </Card>
 
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <Card className="glass-effect border-0 shadow-lg">
                                 <CardBody className="pt-6 text-center">
                                     <Heart className="mx-auto mb-2 h-8 w-8 text-red-500" />
@@ -188,55 +140,12 @@ export default function VolunteerProfilePage() {
                             </Card>
                             <Card className="glass-effect border-0 shadow-lg">
                                 <CardBody className="pt-6 text-center">
-                                    <Users className="mx-auto mb-2 h-8 w-8 text-blue-500" />
-                                    <div className="text-2xl font-bold">{volunteer.stats.events}</div>
-                                    <p className="text-muted-foreground text-xs">Мероприятий</p>
-                                </CardBody>
-                            </Card>
-                            <Card className="glass-effect border-0 shadow-lg">
-                                <CardBody className="pt-6 text-center">
                                     <Clock className="mx-auto mb-2 h-8 w-8 text-green-500" />
                                     <div className="text-2xl font-bold">{volunteer.stats.hours}</div>
                                     <p className="text-muted-foreground text-xs">Часов помощи</p>
                                 </CardBody>
                             </Card>
-                            <Card className="glass-effect border-0 shadow-lg">
-                                <CardBody className="pt-6 text-center">
-                                    <TrendingUp className="mx-auto mb-2 h-8 w-8 text-purple-500" />
-                                    <div className="text-2xl font-bold">{volunteer.stats.rating}</div>
-                                    <p className="text-muted-foreground text-xs">Рейтинг</p>
-                                </CardBody>
-                            </Card>
                         </div>
-
-                        {/* Achievements Timeline */}
-                        <Card className="glass-effect border-0 shadow-xl">
-                            <CardHeader>Достижения</CardHeader>
-                            <CardBody>
-                                <div className="space-y-4">
-                                    {volunteer.achievements.map((achievement, index) => {
-                                        const IconComponent = achievement.icon;
-                                        return (
-                                            <div
-                                                key={index}
-                                                className="bg-background/30 flex items-start gap-4 rounded-lg p-4"
-                                            >
-                                                <div className="bg-primary/10 rounded-full p-3">
-                                                    <IconComponent className="text-primary h-5 w-5" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h4 className="font-semibold">{achievement.name}</h4>
-                                                    <p className="text-muted-foreground mb-1 text-sm">
-                                                        {achievement.description}
-                                                    </p>
-                                                    <p className="text-muted-foreground text-xs">{achievement.date}</p>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </CardBody>
-                        </Card>
 
                         {/* Activity Timeline */}
                         <Card className="glass-effect border-0 shadow-xl">
