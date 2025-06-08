@@ -17,6 +17,7 @@ import {
     takeForASubmit,
     updateVolunteerRequest,
 } from "@/api/requests";
+import { VolunteerCreateDto, createVolunteer } from "@/api/volunteer";
 import { useAuth } from "@/hooks/useAuth";
 import { Envelope } from "@/models/envelope";
 import { Result } from "@/models/result";
@@ -207,6 +208,22 @@ export default function VolunteerRequestsPage() {
 
     const handleApprove = async (request: VolunteerRequest) => {
         await approveVolunteerRequest(request.id);
+
+        const data: VolunteerCreateDto = {
+            fullName: {
+                firstName: request.firstName,
+                secondName: request.secondName,
+                patronymic: request.patronymic,
+            },
+            email: request.email,
+            description: request.volunteerDescription,
+            workExperience: Number(request.workExperience),
+            phoneNumber: request.phoneNumber,
+            requisites: [],
+        };
+
+        await createVolunteer(data);
+
         await refreshAfterAction();
         await closeDiscussion(request.discussionId!);
     };
