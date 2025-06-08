@@ -1,58 +1,76 @@
 "use client";
 
-import { ArrowLeft, Calendar, Camera, Car, Clock, Heart, Mail, MessageCircle, Phone, Users } from "lucide-react";
+import { ArrowLeft, Clock, Heart, Mail, MessageCircle, Phone } from "lucide-react";
+
+import { useEffect, useState } from "react";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
+import { getDownloadPresignedUrl } from "@/api/files";
+import { VolunteerDto, getVolunteerById } from "@/api/volunteer";
+import { Certificates } from "@/app/volunteers/components/certificates";
 import { Avatar, Button, Card, CardBody, CardHeader } from "@heroui/react";
 
-const mockVolunteer = {
-    id: "1",
-    name: "Анна Петрова",
-    avatar: "/placeholder.svg?height=400&width=400",
-    location: "Москва",
-    joinDate: "Апрель 2023",
-    experience: "1 год",
-    email: "anna@example.com",
-    phone: "+7 (999) 123-45-67",
-    skills: ["Уход за животными", "Фотография", "Транспортировка"],
-    badges: ["Опытный", "Наставник"],
-    status: "active",
-    rating: 4.9,
-    bio: "Я люблю животных с детства и всегда мечтала помогать им. В свободное время фотографирую животных для сайта приюта и помогаю с транспортировкой. Готова помочь с адаптацией новых питомцев в семьях.",
-    stats: {
-        animals: 15,
-        events: 8,
-        hours: 120,
-        rating: 4.9,
-        reviews: 23,
-    },
-    achievements: [
-        { name: "Первое животное", description: "Помог пристроить первое животное", date: "Май 2023", icon: Heart },
-        { name: "Фотограф", description: "Сделал 100+ фотографий для приюта", date: "Август 2023", icon: Camera },
-        { name: "Водитель", description: "Перевез 50+ животных", date: "Октябрь 2023", icon: Car },
-        { name: "Наставник", description: "Обучил 5 новых волонтёров", date: "Декабрь 2023", icon: Users },
-    ],
-    activities: [
-        { date: "15.05.2024", type: "event", description: "Участие в дне открытых дверей приюта", impact: "Высокий" },
-        { date: "10.05.2024", type: "animal", description: "Помощь в пристройстве кота Барсика", impact: "Высокий" },
-        {
-            date: "01.05.2024",
-            type: "training",
-            description: "Прохождение курса по первой помощи животным",
-            impact: "Средний",
-        },
-        {
-            date: "25.04.2024",
-            type: "event",
-            description: "Организация фотосессии для животных приюта",
-            impact: "Высокий",
-        },
-    ],
-};
-
 export default function VolunteerProfilePage() {
-    const volunteer = mockVolunteer;
+    const [volunteer, setVolunteer] = useState<VolunteerDto | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const params = useParams();
+    const id = params.id as string;
+
+    useEffect(() => {
+        async function loadVolunteer() {
+            try {
+                setLoading(true);
+                const response = await getVolunteerById(id);
+
+                if (!response.data.result?.value) {
+                    throw new Error("Волонтёр не найден");
+                }
+
+                const volunteer = response.data.result.value;
+                const fileInfo = volunteer.avatarUrl.split(".");
+
+                const presignedUrl = await getDownloadPresignedUrl(fileInfo[0], fileInfo[1]);
+
+                volunteer.avatarUrl = presignedUrl.data.downloadUrl;
+
+                setVolunteer(volunteer);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Произошла ошибка");
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        void loadVolunteer();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div>Загрузка профиля...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="text-red-500">{error}</div>
+            </div>
+        );
+    }
+
+    if (!volunteer) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div>Профиль волонтёра не найден</div>
+            </div>
+        );
+    }
 
     return (
         <div className="gradient-bg min-h-screen pl-6">
@@ -76,29 +94,22 @@ export default function VolunteerProfilePage() {
                                 <div className="text-center">
                                     {/* Avatar with status */}
                                     <div className="relative mb-4 inline-block">
-                                        <Avatar className="ring-primary/20 h-32 w-32 ring-4">
-                                            {/*<AvatarImage
-                                                src={volunteer.avatar || "/placeholder.svg"}
-                                                alt={volunteer.name}
-                                            />*/}
-                                            {/*<AvatarFallback className="bg-primary/10 text-primary text-2xl">
-                                                {volunteer.name.charAt(0)}
-                                            </AvatarFallback>*/}
-                                        </Avatar>
+                                        <Avatar
+                                            className="ring-primary/20 h-32 w-32 ring-4"
+                                            src={volunteer.avatarUrl}
+                                        />
                                     </div>
 
-                                    <h1 className="mb-2 text-2xl font-bold">{volunteer.name}</h1>
+                                    <h1 className="mb-2 text-2xl font-bold">
+                                        {volunteer.firstName} {volunteer.secondName}
+                                    </h1>
                                 </div>
 
                                 {/* Contact Info */}
                                 <div className="mb-6 space-y-3">
                                     <div className="bg-background/50 flex items-center gap-3 rounded-lg p-3">
-                                        <Calendar className="text-primary h-4 w-4" />
-                                        <span className="text-sm">С нами с {volunteer.joinDate}</span>
-                                    </div>
-                                    <div className="bg-background/50 flex items-center gap-3 rounded-lg p-3">
                                         <Clock className="text-primary h-4 w-4" />
-                                        <span className="text-sm">Опыт: {volunteer.experience}</span>
+                                        <span className="text-sm">Опыт: {volunteer.workExperience}</span>
                                     </div>
                                     <div className="bg-background/50 flex items-center gap-3 rounded-lg p-3">
                                         <Mail className="text-primary h-4 w-4" />
@@ -106,7 +117,7 @@ export default function VolunteerProfilePage() {
                                     </div>
                                     <div className="bg-background/50 flex items-center gap-3 rounded-lg p-3">
                                         <Phone className="text-primary h-4 w-4" />
-                                        <span className="text-sm">{volunteer.phone}</span>
+                                        <span className="text-sm">{volunteer.phoneNumber}</span>
                                     </div>
                                 </div>
 
@@ -125,7 +136,7 @@ export default function VolunteerProfilePage() {
                         <Card className="glass-effect border-0 shadow-xl">
                             <CardHeader>О волонтёре</CardHeader>
                             <CardBody>
-                                <p className="text-muted-foreground leading-relaxed">{volunteer.bio}</p>
+                                <p className="text-muted-foreground leading-relaxed">{volunteer.description}</p>
                             </CardBody>
                         </Card>
 
@@ -134,66 +145,25 @@ export default function VolunteerProfilePage() {
                             <Card className="glass-effect border-0 shadow-lg">
                                 <CardBody className="pt-6 text-center">
                                     <Heart className="mx-auto mb-2 h-8 w-8 text-red-500" />
-                                    <div className="text-2xl font-bold">{volunteer.stats.animals}</div>
+                                    <div className="text-2xl font-bold">{volunteer.animalsCount}</div>
                                     <p className="text-muted-foreground text-xs">Животных пристроено</p>
                                 </CardBody>
                             </Card>
                             <Card className="glass-effect border-0 shadow-lg">
                                 <CardBody className="pt-6 text-center">
                                     <Clock className="mx-auto mb-2 h-8 w-8 text-green-500" />
-                                    <div className="text-2xl font-bold">{volunteer.stats.hours}</div>
+                                    <div className="text-2xl font-bold">120</div>
                                     <p className="text-muted-foreground text-xs">Часов помощи</p>
                                 </CardBody>
                             </Card>
                         </div>
 
+                        <Certificates volunteerId={id} />
+
                         {/* Activity Timeline */}
                         <Card className="glass-effect border-0 shadow-xl">
                             <CardHeader>Последняя активность</CardHeader>
-                            <CardBody>
-                                {/*<Tabs className="w-full">
-                                    <div className="mb-6 grid w-full grid-cols-4">
-                                        <Tab value="all">Все</Tab>
-                                        <Tab value="events">События</Tab>
-                                        <Tab value="animals">Животные</Tab>
-                                        <Tab value="training">Обучение</Tab>
-                                    </div>
-                                    <TabsContent value="all" className="space-y-4">
-                                        {volunteer.activities.map((activity, index) => (
-                                            <div
-                                                key={index}
-                                                className="bg-background/30 flex items-start gap-4 rounded-lg p-4"
-                                            >
-                                                <div className="bg-primary/10 rounded-full p-2">
-                                                    {activity.type === "event" && (
-                                                        <Users className="text-primary h-4 w-4" />
-                                                    )}
-                                                    {activity.type === "animal" && (
-                                                        <Heart className="text-primary h-4 w-4" />
-                                                    )}
-                                                    {activity.type === "training" && (
-                                                        <Award className="text-primary h-4 w-4" />
-                                                    )}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="font-medium">{activity.description}</p>
-                                                    <div className="mt-2 flex items-center gap-4">
-                                                        <p className="text-muted-foreground text-sm">{activity.date}</p>
-                                                        <Badge
-                                                            variant={
-                                                                activity.impact === "Высокий" ? "default" : "secondary"
-                                                            }
-                                                            className="text-xs"
-                                                        >
-                                                            {activity.impact} импакт
-                                                        </Badge>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </TabsContent>
-                                </Tabs>*/}
-                            </CardBody>
+                            <CardBody>{/* Добавьте timeline если нужно */}</CardBody>
                         </Card>
                     </div>
                 </div>

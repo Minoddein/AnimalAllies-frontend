@@ -46,7 +46,6 @@ export default function VolunteersList() {
                 throw new Error("cannot load volunteers data");
             }
 
-            //Тестовый мапинг
             const mappedVolunteers: Volunteer[] = response.data.result.value.items.map(
                 (volunteer) =>
                     ({
@@ -182,7 +181,7 @@ export default function VolunteersList() {
                                                     <MessageCircle className="mr-2 h-4 w-4" />
                                                     Написать
                                                 </Button>
-                                                <Link href={`/volunteers/${volunteer.id}`} className="flex-1">
+                                                <Link href={`/volunteers/${volunteer.userId}`} className="flex-1">
                                                     <Button size="sm" className="bg-primary hover:bg-primary/90 w-full">
                                                         <User className="mr-2 h-4 w-4" />
                                                         Профиль

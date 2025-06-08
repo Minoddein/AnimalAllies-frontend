@@ -26,12 +26,13 @@ export interface VolunteerCreateDto {
     requisites: Requisite[];
 }
 
-interface VolunteerDto {
+export interface VolunteerDto {
     id: string;
     firstName: string;
     secondName: string;
     patronymic: string;
     phoneNumber: string;
+    email: string;
     workExperience: number;
     avatarUrl: string;
     userId: string;
@@ -71,4 +72,8 @@ export async function getVolunteersWithPagination(
             },
         },
     );
+}
+
+export async function getVolunteerById(id: string): Promise<AxiosResponse<Envelope<ResultWith<VolunteerDto>>>> {
+    return api.get<Envelope<ResultWith<VolunteerDto>>>(`${API_URL}Volunteer/${id}`);
 }
