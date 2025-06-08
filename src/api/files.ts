@@ -24,3 +24,25 @@ export interface DeleteRequest {
     fileId: string;
     extension: string;
 }
+
+export interface FileKey {
+    fileId: string;
+    extension: string;
+}
+
+export interface ManyDownloadPresignedUrlRequest {
+    bucketName: string;
+    fileKeys: FileKey[];
+}
+
+export async function getManyDownloadPresignedUrls(
+    request: ManyDownloadPresignedUrlRequest,
+): Promise<AxiosResponse<string[]>> {
+    return filesApi.post<string[]>(`${FILES_URL}files/many-presigned-for-downloading`, {
+        bucketName: request.bucketName,
+        fileKeys: request.fileKeys.map((k) => ({
+            FileId: k.fileId,
+            Extension: k.extension,
+        })),
+    });
+}

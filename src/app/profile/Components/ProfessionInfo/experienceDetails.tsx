@@ -26,7 +26,7 @@ export function ExperienceDetails({ user }: PersonalInfoProps) {
     );
 }
 
-function pluralizeYears(years: number) {
+export function pluralizeYears(years: number) {
     const lastDigit = years % 10;
     const lastTwoDigits = years % 100;
 

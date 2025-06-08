@@ -219,6 +219,7 @@ export default function VolunteerRequestsPage() {
             description: request.volunteerDescription,
             workExperience: Number(request.workExperience),
             phoneNumber: request.phoneNumber,
+            relationId: request.userId ?? "",
             requisites: [],
         };
 

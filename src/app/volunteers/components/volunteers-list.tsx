@@ -1,96 +1,98 @@
 "use client";
 
-import { Calendar, Clock, Heart, MessageCircle, User } from "lucide-react";
+import { Clock, Heart, MessageCircle, User } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Link from "next/link";
 
-import { Avatar, Button, Card, CardBody } from "@heroui/react";
+import { FileKey, getManyDownloadPresignedUrls } from "@/api/files";
+import { getVolunteersWithPagination } from "@/api/volunteer";
+import { pluralizeYears } from "@/app/profile/Components/ProfessionInfo/experienceDetails";
+import { Avatar, Button, Card, CardBody, Pagination } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 interface Volunteer {
     id: string;
+    userId: string;
     name: string;
     avatar: string;
-    location: string;
-    joinDate: string;
+    /*location: string;*/
+    /*joinDate: string;*/
     experience: string;
-    skills: string[];
-    badges: string[];
+    /*skills: string[];
+    badges: string[];*/
     status: "active" | "inactive";
-    rating: number;
+    /*rating: number;*/
     animalsHelped: number;
     description: string;
 }
 
-const mockVolunteers: Volunteer[] = [
-    {
-        id: "1",
-        name: "Анна Петрова",
-        avatar: "/placeholder.svg?height=400&width=400",
-        location: "Москва",
-        joinDate: "Апрель 2023",
-        experience: "1 год",
-        skills: ["Уход за животными", "Фотография", "Транспортировка"],
-        badges: ["Опытный", "Наставник"],
-        status: "active",
-        rating: 4.9,
-        animalsHelped: 15,
-        description: "Люблю животных с детства. Специализируюсь на фотографии для приюта и помощи в адаптации.",
-    },
-    {
-        id: "2",
-        name: "Иван Смирнов",
-        avatar: "/placeholder.svg?height=400&width=400",
-        location: "Санкт-Петербург",
-        joinDate: "Июнь 2022",
-        experience: "2 года",
-        skills: ["Ветеринария", "Социальные сети", "Организация мероприятий"],
-        badges: ["Ветеринар", "Координатор"],
-        status: "active",
-        rating: 5.0,
-        animalsHelped: 32,
-        description: "Ветеринар по образованию. Помогаю с медицинскими вопросами и организацией мероприятий.",
-    },
-    {
-        id: "3",
-        name: "Мария Иванова",
-        avatar: "/placeholder.svg?height=400&width=400",
-        location: "Екатеринбург",
-        joinDate: "Январь 2024",
-        experience: "6 месяцев",
-        skills: ["Социальные сети", "Фотография"],
-        badges: ["Новичок"],
-        status: "active",
-        rating: 4.7,
-        animalsHelped: 8,
-        description: "Начинающий волонтёр. Веду социальные сети приюта и делаю красивые фотографии животных.",
-    },
-    {
-        id: "4",
-        name: "Алексей Козлов",
-        avatar: "/placeholder.svg?height=400&width=400",
-        location: "Новосибирск",
-        joinDate: "Март 2021",
-        experience: "3 года",
-        skills: ["Транспортировка", "Строительство", "Ремонт"],
-        badges: ["Водитель", "Мастер"],
-        status: "active",
-        rating: 4.8,
-        animalsHelped: 28,
-        description: "Помогаю с транспортировкой животных и ремонтными работами в приютах.",
-    },
-];
-
 export default function VolunteersList() {
-    const [volunteers] = useState<Volunteer[]>(mockVolunteers);
     const [isAsc, setIsAsc] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagedData, setPagedData] = useState<{ items: Volunteer[]; totalCount: number }>({
+        items: [],
+        totalCount: 0,
+    });
+    const itemsPerPage = 4;
+
+    const totalPages = Math.ceil(pagedData.totalCount / itemsPerPage);
+
+    async function loadVolunteers() {
+        try {
+            const response = await getVolunteersWithPagination(currentPage, itemsPerPage);
+            if (!response.data.result?.value) {
+                throw new Error("cannot load volunteers data");
+            }
+
+            //Тестовый мапинг
+            const mappedVolunteers: Volunteer[] = response.data.result.value.items.map(
+                (volunteer) =>
+                    ({
+                        id: volunteer.id,
+                        userId: volunteer.userId,
+                        name: volunteer.firstName + " " + volunteer.secondName,
+                        avatar: volunteer.avatarUrl,
+                        description: volunteer.description,
+                        experience:
+                            volunteer.workExperience.toString() + " " + pluralizeYears(volunteer.workExperience),
+                        animalsHelped: volunteer.animalsCount,
+                        joinDate: new Date().toString(),
+                        status: "active",
+                    }) as Volunteer,
+            );
+
+            const fileKeys: FileKey[] = mappedVolunteers
+                .filter((v) => v.avatar)
+                .map((v) => {
+                    const parts = v.avatar.split(".");
+                    return {
+                        fileId: parts[0],
+                        extension: parts.slice(1).join("."),
+                    };
+                });
+
+            const responseUrls = await getManyDownloadPresignedUrls({ bucketName: "photos", fileKeys });
+
+            for (let i = 0; i < responseUrls.data.length; i++) {
+                mappedVolunteers[i].avatar = responseUrls.data[i];
+            }
+
+            setPagedData({ items: mappedVolunteers, totalCount: response.data.result.value.totalCount });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    useEffect(() => {
+        void loadVolunteers();
+    }, [currentPage]);
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Найдено {volunteers.length} волонтёров</h2>
+                <h2 className="text-2xl font-bold">Найдено {pagedData.totalCount} волонтёров</h2>
                 <div className="flex gap-2">
                     <Button variant="flat" size="md">
                         По опыту
@@ -112,7 +114,7 @@ export default function VolunteersList() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                {volunteers.map((volunteer) => (
+                {pagedData.items.map((volunteer) => (
                     <Card
                         key={volunteer.id}
                         className="card-hover glass-effect group overflow-hidden border-0 shadow-lg"
@@ -126,7 +128,7 @@ export default function VolunteersList() {
                                     <div className="flex items-start gap-4">
                                         {/* Avatar */}
                                         <div className="relative">
-                                            <Avatar className="ring-primary/20 h-20 w-20 ring-4">
+                                            <Avatar className="ring-primary/20 h-20 w-20 ring-4" src={volunteer.avatar}>
                                                 {/*<AvatarImage
                                                     src={volunteer.avatar || "/placeholder.svg"}
                                                     alt={volunteer.name}
@@ -166,12 +168,12 @@ export default function VolunteersList() {
                                                     <span className="font-medium">{volunteer.animalsHelped}</span>
                                                     <span className="text-muted-foreground">животных</span>
                                                 </div>
-                                                <div className="flex items-center gap-1 text-sm">
+                                                {/*<div className="flex items-center gap-1 text-sm">
                                                     <Calendar className="text-primary h-4 w-4" />
                                                     <span className="text-muted-foreground">
                                                         с {volunteer.joinDate}
                                                     </span>
-                                                </div>
+                                                </div>*/}
                                             </div>
 
                                             {/* Actions */}
@@ -196,12 +198,22 @@ export default function VolunteersList() {
                 ))}
             </div>
 
-            {/* Load More */}
-            <div className="pt-8 text-center">
-                <Button variant="flat" size="lg" className="px-8">
-                    Загрузить ещё
-                </Button>
-            </div>
+            {/* Пагинация */}
+            {pagedData.items.length > 0 && (
+                <Pagination
+                    className="mt-6 flex justify-center"
+                    initialPage={currentPage}
+                    page={currentPage}
+                    total={totalPages}
+                    onChange={(page) => {
+                        setCurrentPage(page);
+                    }}
+                    showControls
+                    showShadow={true}
+                    siblings={1}
+                    boundaries={1}
+                />
+            )}
         </div>
     );
 }

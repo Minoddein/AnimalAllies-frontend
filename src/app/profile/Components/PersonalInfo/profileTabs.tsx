@@ -9,6 +9,9 @@ import { Settings } from "@/app/profile/Components/Settings/settings";
 import { PersonalInfoProps } from "@/app/profile/page";
 import { Tab, Tabs } from "@heroui/react";
 
+import { Certificates } from "../ProfessionInfo/certificates";
+import { PaymentDetails } from "../ProfessionInfo/paymentDetails";
+
 export function ProfileTabs({ user }: PersonalInfoProps) {
     return (
         <div className="flex w-full flex-col pt-4">
@@ -28,8 +31,8 @@ export function ProfileTabs({ user }: PersonalInfoProps) {
                     <Tab key="prof" title="Профессиональная" className="flex-1 py-4 text-center">
                         <div className="space-y-4">
                             <Roles user={user} />
-                            {/*<PaymentDetails user={user} />
-                            <Certificates user={user} />*/}
+                            <PaymentDetails user={user} />
+                            <Certificates user={user} />
                             <ExperienceDetails user={user} />
                         </div>
                     </Tab>
