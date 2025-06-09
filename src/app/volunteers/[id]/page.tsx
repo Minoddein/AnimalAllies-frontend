@@ -10,6 +10,7 @@ import { useParams } from "next/navigation";
 import { getDownloadPresignedUrl } from "@/api/files";
 import { VolunteerDto, getVolunteerById } from "@/api/volunteer";
 import { Certificates } from "@/app/volunteers/components/certificates";
+import { PaymentDetails } from "@/app/volunteers/components/requisites";
 import { Avatar, Button, Card, CardBody, CardHeader } from "@heroui/react";
 
 export default function VolunteerProfilePage() {
@@ -159,6 +160,7 @@ export default function VolunteerProfilePage() {
                         </div>
 
                         <Certificates volunteerId={id} />
+                        <PaymentDetails volunteerId={id} />
 
                         {/* Activity Timeline */}
                         <Card className="glass-effect border-0 shadow-xl">

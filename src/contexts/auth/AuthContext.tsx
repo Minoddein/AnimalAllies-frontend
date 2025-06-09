@@ -156,12 +156,13 @@ export const AuthProvider = ({ children }: Props) => {
     }, [accessToken]);
 
     useLayoutEffect(() => {
+        let isRefreshing = false;
         const refreshInterceptor = api.interceptors.response.use(
             (config) => config,
             async (error: AxiosResponse<Response, Error>) => {
-                if (error.status === 401) {
+                if (error.status === 401 && !isRefreshing) {
                     const originalRequest = error.config;
-
+                    isRefreshing = true;
                     try {
                         const response = await refresh();
                         initData(response.data.result!);
@@ -171,6 +172,8 @@ export const AuthProvider = ({ children }: Props) => {
                         setAccessToken(undefined);
                         setUser(undefined);
                         sessionStorage.clear();
+                    } finally {
+                        isRefreshing = false;
                     }
                 }
 
