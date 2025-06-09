@@ -11,6 +11,7 @@ import { getDownloadPresignedUrl } from "@/api/files";
 import { VolunteerDto, getVolunteerById } from "@/api/volunteer";
 import { Certificates } from "@/app/volunteers/components/certificates";
 import { PaymentDetails } from "@/app/volunteers/components/requisites";
+import { SocialMedia } from "@/app/volunteers/components/socialMedia";
 import { Avatar, Button, Card, CardBody, CardHeader } from "@heroui/react";
 
 export default function VolunteerProfilePage() {
@@ -161,12 +162,13 @@ export default function VolunteerProfilePage() {
 
                         <Certificates volunteerId={id} />
                         <PaymentDetails volunteerId={id} />
+                        <SocialMedia volunteerId={id} />
 
                         {/* Activity Timeline */}
-                        <Card className="glass-effect border-0 shadow-xl">
+                        {/*<Card className="glass-effect border-0 shadow-xl">
                             <CardHeader>Последняя активность</CardHeader>
-                            <CardBody>{/* Добавьте timeline если нужно */}</CardBody>
-                        </Card>
+                            <CardBody> Добавьте timeline если нужно </CardBody>
+                        </Card>*/}
                     </div>
                 </div>
             </div>
