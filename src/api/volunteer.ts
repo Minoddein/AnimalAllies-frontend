@@ -77,3 +77,22 @@ export async function getVolunteersWithPagination(
 export async function getVolunteerById(id: string): Promise<AxiosResponse<Envelope<ResultWith<VolunteerDto>>>> {
     return api.get<Envelope<ResultWith<VolunteerDto>>>(`${API_URL}Volunteer/${id}`);
 }
+
+interface FullNameDto {
+    firstName: string;
+    secondName: string;
+    patronymic?: string | null;
+}
+
+export interface UpdateVolunteerMainInfoDto {
+    fullName: FullNameDto;
+    workExperience: number;
+    phoneNumber: string;
+}
+
+export async function updateVolunteer(
+    id: string,
+    dto: UpdateVolunteerMainInfoDto,
+): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.put<Envelope<Result>>(`${API_URL}Volunteer/${id}/main-info`, { dto });
+}

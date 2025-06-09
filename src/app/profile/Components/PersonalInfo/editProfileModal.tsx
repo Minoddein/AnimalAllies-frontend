@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 
 import { refresh, updateProfile } from "@/api/accounts";
+import { UpdateVolunteerMainInfoDto, updateVolunteer } from "@/api/volunteer";
 import { PersonalInfoProps } from "@/app/profile/page";
 import { AuthContext } from "@/contexts/auth/AuthContext";
 import { UpdateProfileProps } from "@/models/requests/UpdateProfileProps";
@@ -37,6 +38,24 @@ export function EditProfileModal({ user }: PersonalInfoProps) {
                 const response = await refresh();
                 updateUserData(response.data.result!);
             }
+
+            if (user.volunteer) {
+                const updateInfo: UpdateVolunteerMainInfoDto = {
+                    fullName: {
+                        firstName: formData.firstName || user.firstName,
+                        secondName: formData.secondName || user.secondName,
+                        patronymic: formData.patronymic ?? user.patronymic ?? null,
+                    },
+                    phoneNumber: formData.phone ?? user.volunteer.phone,
+                    workExperience: formData.experience ?? user.volunteer.experience,
+                };
+
+                const response = await updateVolunteer(user.id, updateInfo);
+                if (response.data.result?.IsFailure) {
+                    throw new Error("cannot update volunteer");
+                }
+            }
+
             onClose();
         } catch (error) {
             console.error("Ошибка:", error);
