@@ -1,6 +1,6 @@
 "use client";
 
-import { AxiosResponse } from "axios";
+import { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 import { createContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -26,6 +26,11 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 interface Props {
     children: React.ReactNode;
+}
+
+interface FailedQueueItem {
+    resolve: (token: string) => void;
+    reject: (err: unknown) => void;
 }
 
 export const AuthProvider = ({ children }: Props) => {
@@ -157,27 +162,67 @@ export const AuthProvider = ({ children }: Props) => {
 
     useLayoutEffect(() => {
         let isRefreshing = false;
+        let failedQueue: FailedQueueItem[] = [];
+
+        const processQueue = (error: unknown, token?: string) => {
+            failedQueue.forEach((promise) => {
+                if (error) {
+                    promise.reject(error);
+                } else {
+                    promise.resolve(token!);
+                }
+            });
+            failedQueue = [];
+        };
+
         const refreshInterceptor = api.interceptors.response.use(
-            (config) => config,
-            async (error: AxiosResponse<Response, Error>) => {
-                if (error.status === 401 && !isRefreshing) {
-                    const originalRequest = error.config;
-                    isRefreshing = true;
-                    try {
-                        const response = await refresh();
-                        initData(response.data.result!);
-                        originalRequest.headers.Authorization = `Bearer ${response.data.result!.accessToken}`;
-                        return await api(originalRequest);
-                    } catch {
-                        setAccessToken(undefined);
-                        setUser(undefined);
-                        sessionStorage.clear();
-                    } finally {
-                        isRefreshing = false;
-                    }
+            (response) => response,
+            async (error: AxiosError) => {
+                const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+                // Если ошибка не 401 или запрос на /refreshing - пропускаем
+                if (error.response?.status !== 401 || originalRequest.url === "/api/Account/refreshing") {
+                    return Promise.reject(new Error("Unauthorized"));
                 }
 
-                return Promise.reject(new Error("Unauthorized"));
+                // Если уже обновляем токен - ставим запрос в очередь
+                if (isRefreshing) {
+                    return new Promise<string>((resolve, reject) => {
+                        failedQueue.push({ resolve, reject });
+                    })
+                        .then((token) => {
+                            originalRequest.headers.set("Authorization", `Bearer ${token}`);
+                            return api(originalRequest);
+                        })
+                        .catch((err: unknown) => Promise.reject(err as Error));
+                }
+
+                // Запускаем обновление токена
+                isRefreshing = true;
+                try {
+                    const response = await refresh();
+                    const newAccessToken = response.data.result?.accessToken;
+
+                    if (!newAccessToken) throw new Error("No access token");
+
+                    setAccessToken(newAccessToken);
+                    sessionStorage.setItem("accessToken", newAccessToken);
+
+                    api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+
+                    // Повторяем запросы из очереди
+                    processQueue(null, newAccessToken);
+                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                    return await api(originalRequest);
+                } catch (refreshError: unknown) {
+                    // Если refresh не удался - разлогиниваем
+                    processQueue(refreshError);
+                    await handleLogout();
+                    window.location.href = "/login";
+                    return await Promise.reject(refreshError as Error);
+                } finally {
+                    isRefreshing = false;
+                }
             },
         );
 
@@ -185,6 +230,77 @@ export const AuthProvider = ({ children }: Props) => {
             api.interceptors.response.eject(refreshInterceptor);
         };
     }, []);
+
+    /*useLayoutEffect(() => {
+        let isRefreshing = false;
+        let failedQueue: { resolve: (token: string) => void; reject: (err: any) => void }[] = [];
+
+        const processQueue = (error: any, token?: string) => {
+            failedQueue.forEach((promise) => {
+                if (error) {
+                    promise.reject(error);
+                } else {
+                    promise.resolve(token!);
+                }
+            });
+            failedQueue = [];
+        };
+
+        const refreshInterceptor = api.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                const originalRequest = error.config;
+
+                // Если ошибка не 401 или запрос на /refreshing - пропускаем
+                if (error.response?.status !== 401 || originalRequest.url === "/api/Account/refreshing") {
+                    return Promise.reject(new Error("Unauthorized"));
+                }
+
+                // Если уже обновляем токен - ставим запрос в очередь
+                if (isRefreshing) {
+                    return new Promise((resolve, reject) => {
+                        failedQueue.push({ resolve, reject });
+                    })
+                        .then((token) => {
+                            originalRequest.headers.Authorization = `Bearer ${token}`;
+                            return api(originalRequest);
+                        })
+                        .catch((err) => Promise.reject(err));
+                }
+
+                // Запускаем обновление токена
+                isRefreshing = true;
+                try {
+                    const response = await refresh();
+                    const newAccessToken = response.data.result?.accessToken;
+
+                    if (!newAccessToken) throw new Error("No access token");
+
+                    setAccessToken(newAccessToken);
+                    sessionStorage.setItem("accessToken", newAccessToken);
+
+                    api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+
+                    // Повторяем запросы из очереди
+                    processQueue(null, newAccessToken);
+                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                    return await api(originalRequest);
+                } catch (refreshError) {
+                    // Если refresh не удался - разлогиниваем
+                    processQueue(refreshError);
+                    await handleLogout();
+                    window.location.href = "/";
+                    return await Promise.reject(refreshError);
+                } finally {
+                    isRefreshing = false;
+                }
+            },
+        );
+
+        return () => {
+            api.interceptors.response.eject(refreshInterceptor);
+        };
+    }, []);*/
 
     const handleLogout = async () => {
         const response = await logout();

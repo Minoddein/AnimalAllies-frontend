@@ -6,7 +6,8 @@ import { useContext, useEffect, useState } from "react";
 import VolunteerForm from "@/app/_components/auth/volunteer-register-form";
 import ModalOrDrawer from "@/components/modal-or-drawer";
 import { AuthContext } from "@/contexts/auth/AuthContext";
-import { Badge, Button, Card, CardBody, Divider, addToast, cn, useDisclosure } from "@heroui/react";
+import { Chip } from "@heroui/chip";
+import { Button, Card, CardBody, Divider, addToast, cn, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export default function App() {
@@ -118,9 +119,9 @@ export default function App() {
                             <div className="absolute right-0 bottom-0 left-0 z-20 p-8">
                                 <div className="container mx-auto">
                                     <div className="max-w-lg">
-                                        <Badge color="success" className="mb-2">
+                                        <Chip color="success" className="mb-2">
                                             {item.type}
-                                        </Badge>
+                                        </Chip>
                                         <h2 className="mb-2 text-4xl font-bold">{item.name}</h2>
                                         <div className="mb-4 flex items-center gap-4">
                                             <span className="flex items-center gap-1">

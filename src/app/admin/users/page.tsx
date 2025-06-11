@@ -219,7 +219,7 @@ export default function UsersPage() {
                                                         <div className="font-medium text-white">
                                                             {user.firstName} {user.lastName}
                                                         </div>
-                                                        <div className="text-sm text-gray-400">@{user.lastName}</div>
+                                                        <div className="text-sm text-gray-400">@{user.username}</div>
                                                     </div>
                                                 </div>
                                             </td>
