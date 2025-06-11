@@ -9,10 +9,11 @@ import { useParams } from "next/navigation";
 
 import { getDownloadPresignedUrl } from "@/api/files";
 import { VolunteerDto, getVolunteerById } from "@/api/volunteer";
+import MyAnimalsTab from "@/app/volunteers/[id]/_components/animals-tabs";
 import { Certificates } from "@/app/volunteers/components/certificates";
 import { PaymentDetails } from "@/app/volunteers/components/requisites";
 import { SocialMedia } from "@/app/volunteers/components/socialMedia";
-import { Avatar, Button, Card, CardBody, CardHeader } from "@heroui/react";
+import { Avatar, Button, Card, CardBody, CardHeader, Tab, Tabs } from "@heroui/react";
 
 export default function VolunteerProfilePage() {
     const [volunteer, setVolunteer] = useState<VolunteerDto | null>(null);
@@ -87,7 +88,6 @@ export default function VolunteerProfilePage() {
                         Назад к списку волонтёров
                     </Link>
                 </div>
-
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Profile Sidebar */}
                     <div className="lg:col-span-1">
@@ -131,44 +131,54 @@ export default function VolunteerProfilePage() {
                             </CardBody>
                         </Card>
                     </div>
-
                     {/* Main Content */}
                     <div className="space-y-8 lg:col-span-2">
-                        {/* Bio */}
-                        <Card className="glass-effect border-0 shadow-xl">
-                            <CardHeader>О волонтёре</CardHeader>
-                            <CardBody>
-                                <p className="text-muted-foreground leading-relaxed">{volunteer.description}</p>
-                            </CardBody>
-                        </Card>
+                        <Tabs fullWidth>
+                            <Tab key="description" title="Описание">
+                                <div className="space-y-8">
+                                    {/* Bio */}
+                                    <Card className="glass-effect border-0 shadow-xl">
+                                        <CardHeader>О волонтёре</CardHeader>
+                                        <CardBody>
+                                            <p className="text-muted-foreground leading-relaxed">
+                                                {volunteer.description}
+                                            </p>
+                                        </CardBody>
+                                    </Card>
 
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <Card className="glass-effect border-0 shadow-lg">
-                                <CardBody className="pt-6 text-center">
-                                    <Heart className="mx-auto mb-2 h-8 w-8 text-red-500" />
-                                    <div className="text-2xl font-bold">{volunteer.animalsCount}</div>
-                                    <p className="text-muted-foreground text-xs">Животных пристроено</p>
-                                </CardBody>
-                            </Card>
-                            <Card className="glass-effect border-0 shadow-lg">
-                                <CardBody className="pt-6 text-center">
-                                    <Clock className="mx-auto mb-2 h-8 w-8 text-green-500" />
-                                    <div className="text-2xl font-bold">120</div>
-                                    <p className="text-muted-foreground text-xs">Часов помощи</p>
-                                </CardBody>
-                            </Card>
-                        </div>
+                                    {/* Stats Grid */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Card className="glass-effect border-0 shadow-lg">
+                                            <CardBody className="pt-6 text-center">
+                                                <Heart className="mx-auto mb-2 h-8 w-8 text-red-500" />
+                                                <div className="text-2xl font-bold">{volunteer.animalsCount}</div>
+                                                <p className="text-muted-foreground text-xs">Животных пристроено</p>
+                                            </CardBody>
+                                        </Card>
+                                        <Card className="glass-effect border-0 shadow-lg">
+                                            <CardBody className="pt-6 text-center">
+                                                <Clock className="mx-auto mb-2 h-8 w-8 text-green-500" />
+                                                <div className="text-2xl font-bold">120</div>
+                                                <p className="text-muted-foreground text-xs">Часов помощи</p>
+                                            </CardBody>
+                                        </Card>
+                                    </div>
 
-                        <Certificates volunteerId={id} />
-                        <PaymentDetails volunteerId={id} />
-                        <SocialMedia volunteerId={id} />
+                                    <Certificates volunteerId={id} />
+                                    <PaymentDetails volunteerId={id} />
+                                    <SocialMedia volunteerId={id} />
 
-                        {/* Activity Timeline */}
-                        {/*<Card className="glass-effect border-0 shadow-xl">
-                            <CardHeader>Последняя активность</CardHeader>
-                            <CardBody> Добавьте timeline если нужно </CardBody>
-                        </Card>*/}
+                                    {/* Activity Timeline */}
+                                    {/*<Card className="glass-effect border-0 shadow-xl">
+                                <CardHeader>Последняя активность</CardHeader>
+                                <CardBody> Добавьте timeline если нужно </CardBody>
+                                </Card>*/}
+                                </div>
+                            </Tab>
+                            <Tab key="animals" title="Закреплённые животные">
+                                <MyAnimalsTab />
+                            </Tab>
+                        </Tabs>
                     </div>
                 </div>
             </div>
