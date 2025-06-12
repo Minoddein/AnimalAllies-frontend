@@ -28,20 +28,44 @@ interface Volunteer {
     description: string;
 }
 
-export default function VolunteersList() {
+interface VolunteersListProps {
+    searchTermProps: string;
+    experienceFromProps?: number | undefined;
+    experienceToProps?: number | undefined;
+}
+
+export default function VolunteersList({
+    searchTermProps,
+    experienceFromProps,
+    experienceToProps,
+}: VolunteersListProps) {
     const [isAsc, setIsAsc] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [pagedData, setPagedData] = useState<{ items: Volunteer[]; totalCount: number }>({
         items: [],
         totalCount: 0,
     });
+    const [searchTerm, setSearchTerm] = useState(searchTermProps);
+    const [experienceFrom, setExperienceFrom] = useState<number | undefined>(experienceFromProps);
+    const [experienceTo, setExperienceTo] = useState<number | undefined>(experienceToProps);
     const itemsPerPage = 4;
 
     const totalPages = Math.ceil(pagedData.totalCount / itemsPerPage);
 
     async function loadVolunteers() {
         try {
-            const response = await getVolunteersWithPagination(currentPage, itemsPerPage);
+            const response = await getVolunteersWithPagination(
+                currentPage,
+                itemsPerPage,
+                undefined,
+                undefined,
+                undefined,
+                searchTerm,
+                experienceFrom,
+                experienceTo,
+                "work_experience",
+                isAsc ? "asc" : "desc",
+            );
             if (!response.data.result?.value) {
                 throw new Error("cannot load volunteers data");
             }
@@ -85,15 +109,34 @@ export default function VolunteersList() {
     }
 
     useEffect(() => {
+        setSearchTerm(searchTermProps);
+        setExperienceFrom(experienceFromProps);
+        setExperienceTo(experienceToProps);
+    }, [searchTermProps, experienceFromProps, experienceToProps]);
+
+    /*const handleSearch = (term: string, from: number | undefined, to: number | undefined) => {
+        setSearchTerm(term);
+        setExperienceFrom(from);
+        setExperienceTo(to);
+        setCurrentPage(1);
+    };*/
+
+    useEffect(() => {
         void loadVolunteers();
-    }, [currentPage]);
+    }, [currentPage, searchTerm, experienceFrom, experienceTo]);
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">Найдено {pagedData.totalCount} волонтёров</h2>
                 <div className="flex gap-2">
-                    <Button variant="flat" size="md">
+                    <Button
+                        variant="flat"
+                        size="md"
+                        onPress={() => {
+                            void loadVolunteers();
+                        }}
+                    >
                         По опыту
                     </Button>
                     <Button

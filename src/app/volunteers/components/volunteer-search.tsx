@@ -7,8 +7,33 @@ import { useState } from "react";
 import { Button, Card, CardBody, CardHeader, Input } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-export default function VolunteerSearch() {
-    const [searchTerm, setSearchTerm] = useState("");
+interface VolunteerSearchProps {
+    onSearch: (searchTerm: string, experienceFrom: number | undefined, experienceTo: number | undefined) => void;
+    initialSearchTerm?: string;
+    initialExperienceFrom?: number | undefined;
+    initialExperienceTo?: number | undefined;
+}
+
+export default function VolunteerSearch({
+    onSearch,
+    initialSearchTerm = "",
+    initialExperienceFrom = undefined,
+    initialExperienceTo = undefined,
+}: VolunteerSearchProps) {
+    const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
+    const [experienceFrom, setExperienceFrom] = useState<number | undefined>(initialExperienceFrom);
+    const [experienceTo, setExperienceTo] = useState<number | undefined>(initialExperienceTo);
+
+    const handleSearch = () => {
+        onSearch(searchTerm, experienceFrom, experienceTo);
+    };
+
+    const handleReset = () => {
+        setSearchTerm("");
+        setExperienceFrom(undefined);
+        setExperienceTo(undefined);
+        /*onSearch("", null, null);*/
+    };
 
     return (
         <Card className="glass-effect sticky top-24 border-0 shadow-xl">
@@ -39,8 +64,24 @@ export default function VolunteerSearch() {
                         Опыт
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                        <Input label="От" type="number" min={0}></Input>
-                        <Input label="До" type="number" min={1}></Input>
+                        <Input
+                            label="От"
+                            type="number"
+                            value={experienceFrom?.toString() ?? ""}
+                            min={0}
+                            onChange={(e) => {
+                                setExperienceFrom(e.target.value ? parseInt(e.target.value) : undefined);
+                            }}
+                        ></Input>
+                        <Input
+                            label="До"
+                            type="number"
+                            value={experienceTo?.toString() ?? ""}
+                            onChange={(e) => {
+                                setExperienceTo(e.target.value ? parseInt(e.target.value) : undefined);
+                            }}
+                            min={1}
+                        ></Input>
                     </div>
                 </div>
 
@@ -50,12 +91,15 @@ export default function VolunteerSearch() {
                         variant="flat"
                         className="flex-1"
                         onPress={() => {
+                            handleReset();
                             setSearchTerm("");
                         }}
                     >
                         Сбросить
                     </Button>
-                    <Button className="bg-primary hover:bg-primary/90 flex-1">Найти</Button>
+                    <Button className="bg-primary hover:bg-primary/90 flex-1" onPress={handleSearch}>
+                        Найти
+                    </Button>
                 </div>
             </CardBody>
         </Card>

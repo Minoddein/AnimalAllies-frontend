@@ -1,16 +1,23 @@
+"use client";
+
 import { Award, Clock, Users } from "lucide-react";
 
-import type { Metadata } from "next";
+import { useState } from "react";
 
 import VolunteerSearch from "@/app/volunteers/components/volunteer-search";
 import VolunteersList from "@/app/volunteers/components/volunteers-list";
 
-export const metadata: Metadata = {
-    title: "Волонтёры | AnimalAllies",
-    description: "Наши волонтёры помогают животным найти новый дом",
-};
-
 export default function VolunteersPage() {
+    const [searchParams, setSearchParams] = useState({
+        searchTerm: "",
+        experienceFrom: undefined as number | undefined,
+        experienceTo: undefined as number | undefined,
+    });
+
+    const handleSearch = (searchTerm: string, experienceFrom: number | undefined, experienceTo: number | undefined) => {
+        setSearchParams({ searchTerm, experienceFrom, experienceTo });
+    };
+
     return (
         <div className="gradient-bg min-h-screen pl-10">
             <div className="container py-8 pl-4">
@@ -46,10 +53,19 @@ export default function VolunteersPage() {
                 {/* Main Content */}
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
                     <div className="lg:col-span-1">
-                        <VolunteerSearch />
+                        <VolunteerSearch
+                            onSearch={handleSearch}
+                            initialSearchTerm={searchParams.searchTerm}
+                            initialExperienceFrom={searchParams.experienceFrom}
+                            initialExperienceTo={searchParams.experienceTo}
+                        />
                     </div>
                     <div className="lg:col-span-3">
-                        <VolunteersList />
+                        <VolunteersList
+                            searchTermProps={searchParams.searchTerm}
+                            experienceFromProps={searchParams.experienceFrom}
+                            experienceToProps={searchParams.experienceTo}
+                        />
                     </div>
                 </div>
             </div>
