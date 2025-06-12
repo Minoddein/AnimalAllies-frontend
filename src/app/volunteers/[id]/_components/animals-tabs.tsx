@@ -4,9 +4,10 @@ import { Clock, Edit, GripVertical, Heart, MapPin, Plus, Trash2 } from "lucide-r
 
 import { useState } from "react";
 
+import ModalOrDrawer from "@/components/modal-or-drawer";
 import { DragDropContext, Draggable, DropResult, Droppable } from "@hello-pangea/dnd";
 import { Chip } from "@heroui/chip";
-import { Button, Card, CardBody, Image } from "@heroui/react";
+import { Button, Card, CardBody, Image, useDisclosure } from "@heroui/react";
 
 interface Animal {
     id: string;
@@ -72,6 +73,7 @@ export default function MyAnimalsTab() {
             dateAdded: "23.05.2025",
         },
     ]);
+    const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
     const getStatusLabel = (status: string) => {
         switch (status) {
@@ -96,6 +98,14 @@ export default function MyAnimalsTab() {
         setAnimals(items);
     };
 
+    const animalDelete = (id: string) => {
+        const items = Array.from(animals);
+        const deletedAnimalIndex = items.findIndex((a) => a.id === id);
+        items.splice(deletedAnimalIndex, 1);
+
+        setAnimals(items);
+    };
+
     return (
         <div className="min-h-screen bg-black text-white">
             {/* Main Content */}
@@ -114,10 +124,10 @@ export default function MyAnimalsTab() {
                 {/* Stats Cards */}
                 <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
                     <Card className="border-gray-700 bg-gray-900/50">
-                        <CardBody className="flex items-center justify-between p-6">
+                        <CardBody className="flex items-center justify-between space-y-2 p-6">
                             <div>
                                 <p className="mb-1 text-gray-400">Всего животных</p>
-                                <p className="text-3xl font-bold">{animals.length}</p>
+                                <p className="text-center text-3xl font-bold">{animals.length}</p>
                             </div>
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-blue-500">
                                 <Heart className="h-6 w-6" />
@@ -128,7 +138,7 @@ export default function MyAnimalsTab() {
                         <CardBody className="flex items-center justify-between p-6">
                             <div>
                                 <p className="mb-1 text-gray-400">Пристроено</p>
-                                <p className="text-3xl font-bold">
+                                <p className="text-center text-3xl font-bold">
                                     {animals.filter((a) => a.status === "adopted").length}
                                 </p>
                             </div>
@@ -141,7 +151,7 @@ export default function MyAnimalsTab() {
                         <CardBody className="flex items-center justify-between p-6">
                             <div>
                                 <p className="mb-1 text-gray-400">В процессе</p>
-                                <p className="text-3xl font-bold">
+                                <p className="text-center text-3xl font-bold">
                                     {animals.filter((a) => a.status === "pending").length}
                                 </p>
                             </div>
@@ -221,19 +231,46 @@ export default function MyAnimalsTab() {
                                                             </div>
                                                             <div className="ml-4 flex items-center gap-2">
                                                                 <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
+                                                                    variant="light"
+                                                                    isIconOnly
                                                                     className="text-gray-400 hover:text-white"
                                                                 >
                                                                     <Edit className="h-4 w-4" />
                                                                 </Button>
                                                                 <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
+                                                                    variant="light"
+                                                                    isIconOnly
                                                                     className="text-gray-400 hover:text-red-500"
+                                                                    onPress={onOpen}
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </Button>
+                                                                <ModalOrDrawer
+                                                                    label="Подтверждение"
+                                                                    isOpen={isOpen}
+                                                                    onOpenChangeAction={onOpenChange}
+                                                                >
+                                                                    <p>
+                                                                        Вы уверены что хотите удалить закреплённое
+                                                                        животное из списка?
+                                                                    </p>
+                                                                    <div className="flex flex-row justify-end gap-4">
+                                                                        <Button onPress={onClose}>Нет</Button>
+                                                                        <Button
+                                                                            startContent={
+                                                                                <Trash2 className="h-4 w-4" />
+                                                                            }
+                                                                            variant="light"
+                                                                            color="danger"
+                                                                            onPress={() => {
+                                                                                animalDelete(animal.id);
+                                                                                onClose();
+                                                                            }}
+                                                                        >
+                                                                            Да
+                                                                        </Button>
+                                                                    </div>
+                                                                </ModalOrDrawer>
                                                             </div>
                                                         </div>
                                                     )}
