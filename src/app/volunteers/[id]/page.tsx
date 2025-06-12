@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Clock, Heart, Mail, MessageCircle, Phone, Plus, X } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -13,15 +13,18 @@ import MyAnimalsTab from "@/app/volunteers/[id]/_components/animals-tabs";
 import { Certificates } from "@/app/volunteers/components/certificates";
 import { PaymentDetails } from "@/app/volunteers/components/requisites";
 import { SocialMedia } from "@/app/volunteers/components/socialMedia";
+import { AuthContext } from "@/contexts/auth/AuthContext";
 import { Avatar, Button, Card, CardBody, CardHeader, Chip, Input, Tab, Tabs } from "@heroui/react";
 
 export default function VolunteerProfilePage() {
+    const { user } = useContext(AuthContext)!;
     const [volunteer, setVolunteer] = useState<VolunteerDto | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [skills, setSkills] = useState<string[]>([]);
     const [newSkill, setNewSkill] = useState("");
     const [isAddingSkill, setIsAddingSkill] = useState(false);
+    const [isOwn, setIsOwn] = useState(false);
     const params = useParams();
     const id = params.id as string;
 
@@ -42,6 +45,7 @@ export default function VolunteerProfilePage() {
 
                 volunteer.avatarUrl = presignedUrl.data.downloadUrl;
 
+                setIsOwn(user!.id === volunteer.userId);
                 setVolunteer(volunteer);
                 setSkills(volunteer.skills.map((s) => s.skillName));
             } catch (err) {
@@ -159,7 +163,7 @@ export default function VolunteerProfilePage() {
                                 <div className="mb-6">
                                     <div className="mb-3 flex items-center justify-between">
                                         <h3 className="text-foreground text-sm font-semibold">Навыки</h3>
-                                        {!isAddingSkill && (
+                                        {!isAddingSkill && isOwn && (
                                             <Button
                                                 isIconOnly
                                                 size="sm"
@@ -185,14 +189,16 @@ export default function VolunteerProfilePage() {
                                                     size="sm"
                                                     className="text-xs font-medium"
                                                     endContent={
-                                                        <button
-                                                            onClick={() => {
-                                                                void handleRemoveSkill(skill);
-                                                            }}
-                                                            className="hover:bg-danger/20 ml-1 rounded-full p-0.5 transition-colors"
-                                                        >
-                                                            <X className="h-3 w-3" />
-                                                        </button>
+                                                        isOwn && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    void handleRemoveSkill(skill);
+                                                                }}
+                                                                className="hover:bg-danger/20 ml-1 rounded-full p-0.5 transition-colors"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        )
                                                     }
                                                 >
                                                     {skill}
