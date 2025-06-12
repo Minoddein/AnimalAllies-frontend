@@ -9,7 +9,7 @@ import Link from "next/link";
 import { FileKey, getManyDownloadPresignedUrls } from "@/api/files";
 import { getVolunteersWithPagination } from "@/api/volunteer";
 import { pluralizeYears } from "@/app/profile/Components/ProfessionInfo/experienceDetails";
-import { Avatar, Button, Card, CardBody, Pagination } from "@heroui/react";
+import { Avatar, Button, Card, CardBody, Chip, Pagination } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 interface Volunteer {
@@ -20,8 +20,8 @@ interface Volunteer {
     /*location: string;*/
     /*joinDate: string;*/
     experience: string;
-    /*skills: string[];
-    badges: string[];*/
+    skills: string[];
+    /*badges: string[];*/
     status: "active" | "inactive";
     /*rating: number;*/
     animalsHelped: number;
@@ -83,6 +83,7 @@ export default function VolunteersList({
                         animalsHelped: volunteer.animalsCount,
                         joinDate: new Date().toString(),
                         status: "active",
+                        skills: volunteer.skills.map((s) => s.skillName),
                     }) as Volunteer,
             );
 
@@ -202,6 +203,33 @@ export default function VolunteersList({
                                             <p className="text-muted-foreground mb-4 line-clamp-2 text-sm">
                                                 {volunteer.description}
                                             </p>
+
+                                            {volunteer.skills.length > 0 && (
+                                                <div className="mb-4 flex flex-wrap gap-2">
+                                                    {volunteer.skills.slice(0, 5).map((skill, index) => (
+                                                        <Chip
+                                                            key={`skill-${index}`}
+                                                            color={"success"}
+                                                            variant="flat"
+                                                            size="sm"
+                                                            className="text-xs font-medium"
+                                                        >
+                                                            {skill}
+                                                        </Chip>
+                                                    ))}
+                                                    {volunteer.skills.length > 5 && (
+                                                        <Chip
+                                                            key="more-skills"
+                                                            color="default"
+                                                            variant="bordered"
+                                                            size="sm"
+                                                            className="text-xs font-medium opacity-70"
+                                                        >
+                                                            +{volunteer.skills.length - 5}
+                                                        </Chip>
+                                                    )}
+                                                </div>
+                                            )}
 
                                             {/* Stats */}
                                             <div className="mb-4 flex items-center gap-4">

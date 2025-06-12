@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Clock, Heart, Mail, MessageCircle, Phone } from "lucide-react";
+import { ArrowLeft, Clock, Heart, Mail, MessageCircle, Phone, Plus, X } from "lucide-react";
 
 import { useEffect, useState } from "react";
 
@@ -8,17 +8,20 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import { getDownloadPresignedUrl } from "@/api/files";
-import { VolunteerDto, getVolunteerById } from "@/api/volunteer";
+import { SkillDto, VolunteerDto, getVolunteerById, updateSkills } from "@/api/volunteer";
 import MyAnimalsTab from "@/app/volunteers/[id]/_components/animals-tabs";
 import { Certificates } from "@/app/volunteers/components/certificates";
 import { PaymentDetails } from "@/app/volunteers/components/requisites";
 import { SocialMedia } from "@/app/volunteers/components/socialMedia";
-import { Avatar, Button, Card, CardBody, CardHeader, Tab, Tabs } from "@heroui/react";
+import { Avatar, Button, Card, CardBody, CardHeader, Chip, Input, Tab, Tabs } from "@heroui/react";
 
 export default function VolunteerProfilePage() {
     const [volunteer, setVolunteer] = useState<VolunteerDto | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [skills, setSkills] = useState<string[]>([]);
+    const [newSkill, setNewSkill] = useState("");
+    const [isAddingSkill, setIsAddingSkill] = useState(false);
     const params = useParams();
     const id = params.id as string;
 
@@ -40,6 +43,7 @@ export default function VolunteerProfilePage() {
                 volunteer.avatarUrl = presignedUrl.data.downloadUrl;
 
                 setVolunteer(volunteer);
+                setSkills(volunteer.skills.map((s) => s.skillName));
             } catch (err) {
                 setError(err instanceof Error ? err.message : "Произошла ошибка");
                 console.error(err);
@@ -50,6 +54,35 @@ export default function VolunteerProfilePage() {
 
         void loadVolunteer();
     }, [id]);
+
+    const handleAddSkill = async () => {
+        if (newSkill.trim() && !skills.includes(newSkill.trim())) {
+            const updatedSkills = [...skills, newSkill.trim()];
+            setSkills(updatedSkills);
+            setNewSkill("");
+            setIsAddingSkill(false);
+
+            const skillsDtos: SkillDto[] = updatedSkills.map((s) => ({ skillName: s }));
+            await updateSkills(volunteer!.id, skillsDtos);
+        }
+    };
+
+    const handleRemoveSkill = async (skillToRemove: string) => {
+        const updatedSkills = skills.filter((skill) => skill !== skillToRemove);
+        setSkills(updatedSkills);
+
+        const skillsDtos: SkillDto[] = updatedSkills.map((s) => ({ skillName: s }));
+        await updateSkills(volunteer!.id, skillsDtos);
+    };
+
+    const handleKeyPress = async (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            await handleAddSkill();
+        } else if (e.key === "Escape") {
+            setIsAddingSkill(false);
+            setNewSkill("");
+        }
+    };
 
     if (loading) {
         return (
@@ -120,6 +153,98 @@ export default function VolunteerProfilePage() {
                                     <div className="bg-background/50 flex items-center gap-3 rounded-lg p-3">
                                         <Phone className="text-primary h-4 w-4" />
                                         <span className="text-sm">{volunteer.phoneNumber}</span>
+                                    </div>
+                                </div>
+
+                                <div className="mb-6">
+                                    <div className="mb-3 flex items-center justify-between">
+                                        <h3 className="text-foreground text-sm font-semibold">Навыки</h3>
+                                        {!isAddingSkill && (
+                                            <Button
+                                                isIconOnly
+                                                size="sm"
+                                                variant="light"
+                                                className="text-primary hover:bg-primary/10"
+                                                onPress={() => {
+                                                    setIsAddingSkill(true);
+                                                }}
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {/* Existing Skills */}
+                                        <div className="flex flex-wrap gap-2">
+                                            {skills.map((skill, index) => (
+                                                <Chip
+                                                    key={`skill-${index}`}
+                                                    color="success"
+                                                    variant="flat"
+                                                    size="sm"
+                                                    className="text-xs font-medium"
+                                                    endContent={
+                                                        <button
+                                                            onClick={() => {
+                                                                void handleRemoveSkill(skill);
+                                                            }}
+                                                            className="hover:bg-danger/20 ml-1 rounded-full p-0.5 transition-colors"
+                                                        >
+                                                            <X className="h-3 w-3" />
+                                                        </button>
+                                                    }
+                                                >
+                                                    {skill}
+                                                </Chip>
+                                            ))}
+                                        </div>
+
+                                        {/* Add New Skill Input */}
+                                        {isAddingSkill && (
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    size="sm"
+                                                    placeholder="Введите навык"
+                                                    value={newSkill}
+                                                    onChange={(e) => {
+                                                        setNewSkill(e.target.value);
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        void handleKeyPress(e);
+                                                    }}
+                                                    className="flex-1"
+                                                    autoFocus
+                                                />
+                                                <Button
+                                                    isIconOnly
+                                                    size="sm"
+                                                    color="success"
+                                                    variant="flat"
+                                                    onPress={() => {
+                                                        void handleAddSkill();
+                                                    }}
+                                                    isDisabled={!newSkill.trim()}
+                                                >
+                                                    <Plus className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    isIconOnly
+                                                    size="sm"
+                                                    variant="light"
+                                                    onPress={() => {
+                                                        setIsAddingSkill(false);
+                                                        setNewSkill("");
+                                                    }}
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        )}
+
+                                        {skills.length === 0 && !isAddingSkill && (
+                                            <p className="text-muted-foreground text-xs italic">Навыки не добавлены</p>
+                                        )}
                                     </div>
                                 </div>
 

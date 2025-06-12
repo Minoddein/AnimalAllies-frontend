@@ -26,6 +26,10 @@ export interface VolunteerCreateDto {
     requisites: Requisite[];
 }
 
+export interface Skill {
+    skillName: string;
+}
+
 export interface VolunteerDto {
     id: string;
     firstName: string;
@@ -39,6 +43,7 @@ export interface VolunteerDto {
     isDeleted: boolean;
     description: string;
     animalsCount: number;
+    skills: Skill[];
 }
 
 export async function createVolunteer(data: VolunteerCreateDto): Promise<AxiosResponse<Envelope<Result>>> {
@@ -78,6 +83,14 @@ export async function getVolunteersWithPagination(
 
 export async function getVolunteerById(id: string): Promise<AxiosResponse<Envelope<ResultWith<VolunteerDto>>>> {
     return api.get<Envelope<ResultWith<VolunteerDto>>>(`${API_URL}Volunteer/${id}`);
+}
+
+export interface SkillDto {
+    skillName: string;
+}
+
+export async function updateSkills(id: string, skillsDtos: SkillDto[]): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.put<Envelope<Result>>(`${API_URL}Volunteer/${id}/skills`, { skillsDtos });
 }
 
 interface FullNameDto {
