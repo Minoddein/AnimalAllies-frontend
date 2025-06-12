@@ -54,7 +54,7 @@ export default function MyAnimalsTab() {
     };
 
     const handleAddAnimal = () => {
-        router.push("/my-animals/edit");
+        router.push("/animals/edit");
     };
 
     const handleEditAnimal = (id: string) => {
@@ -193,7 +193,9 @@ export default function MyAnimalsTab() {
                                                                     variant="light"
                                                                     isIconOnly
                                                                     className="text-gray-400 hover:text-white"
-                                                                    onPress={() => { handleEditAnimal(animal.id); }}
+                                                                    onPress={() => {
+                                                                        handleEditAnimal(animal.id);
+                                                                    }}
                                                                 >
                                                                     <Edit className="h-4 w-4" />
                                                                 </Button>
