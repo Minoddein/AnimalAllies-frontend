@@ -22,6 +22,11 @@ interface Animal {
     dateAdded: string;
 }
 
+interface AnimalStatus {
+    label: string;
+    color: "default" | "primary" | "secondary" | "success" | "warning" | "danger" | undefined;
+}
+
 export default function MyAnimalsTab() {
     const [animals, setAnimals] = useState<Animal[]>([
         {
@@ -75,7 +80,7 @@ export default function MyAnimalsTab() {
     ]);
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
-    const getStatusLabel = (status: string) => {
+    const getStatusLabel = (status: string): AnimalStatus => {
         switch (status) {
             case "active":
                 return { label: "Активен", color: "success" };
