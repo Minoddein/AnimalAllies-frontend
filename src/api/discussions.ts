@@ -54,3 +54,17 @@ export async function closeDiscussion(discussionId: string): Promise<AxiosRespon
         DiscussionId: discussionId,
     });
 }
+
+export interface DiscussionId {
+    id: string;
+}
+
+export async function createDiscussion(
+    secondMemberId: string,
+    relationId: string,
+): Promise<AxiosResponse<Envelope<ResultWith<DiscussionId>>>> {
+    return api.post<Envelope<ResultWith<DiscussionId>>>(`${API_URL}Discussion/open-discussion`, {
+        secondMemberId,
+        relationId,
+    });
+}

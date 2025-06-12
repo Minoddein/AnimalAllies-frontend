@@ -13,7 +13,6 @@ export default function VolunteersPage() {
         experienceFrom: undefined as number | undefined,
         experienceTo: undefined as number | undefined,
     });
-
     const handleSearch = (searchTerm: string, experienceFrom: number | undefined, experienceTo: number | undefined) => {
         setSearchParams({ searchTerm, experienceFrom, experienceTo });
     };

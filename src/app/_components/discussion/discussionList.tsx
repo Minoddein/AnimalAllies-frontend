@@ -131,7 +131,7 @@ export function DiscussionList() {
                         id: user?.id ?? "",
                         name: user?.firstName ?? "",
                         surname: user?.secondName ?? "",
-                        avatar: (user?.firstName[0] ?? "") + (user?.secondName[0] ?? ""),
+                        avatar: user?.avatarUrl ?? (user?.firstName[0] ?? "") + (user?.secondName[0] ?? ""),
                     }}
                     onBack={() => {
                         setSelectedChat(null);

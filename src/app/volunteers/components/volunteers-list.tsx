@@ -160,56 +160,47 @@ export default function VolunteersList({
                 {pagedData.items.map((volunteer) => (
                     <Card
                         key={volunteer.id}
-                        className="card-hover glass-effect group overflow-hidden border-0 shadow-lg"
+                        className="card-hover glass-effect group relative min-h-[320px] overflow-hidden border-0 shadow-lg"
                     >
-                        <CardBody className="p-0">
-                            <div className="relative">
-                                {/* Background gradient */}
-                                <div className="from-primary/10 absolute inset-0 bg-gradient-to-br via-transparent to-green-500/10" />
+                        <CardBody className="h-full p-0">
+                            {/* Градиент на всю высоту */}
+                            <div className="from-primary/10 absolute inset-0 rounded-lg bg-gradient-to-br via-transparent to-green-500/10" />
 
-                                <div className="relative p-6">
-                                    <div className="flex items-start gap-4">
-                                        {/* Avatar */}
-                                        <div className="relative">
-                                            <Avatar className="ring-primary/20 h-20 w-20 ring-4" src={volunteer.avatar}>
-                                                {/*<AvatarImage
-                                                    src={volunteer.avatar || "/placeholder.svg"}
-                                                    alt={volunteer.name}
-                                                    className="object-cover"
-                                                />*/}
-                                                {/*<AvatarFallback className="bg-primary/10 text-primary text-lg font-semibold">
-                                                    {volunteer.name.charAt(0)}
-                                                </AvatarFallback>*/}
-                                            </Avatar>
-                                        </div>
+                            <div className="relative flex h-full flex-col p-6">
+                                <div className="flex flex-grow items-start gap-4">
+                                    {/* Аватар */}
+                                    <div className="relative flex-shrink-0">
+                                        <Avatar className="ring-primary/20 h-20 w-20 ring-4" src={volunteer.avatar} />
+                                    </div>
 
-                                        {/* Main Info */}
-                                        <div className="min-w-0 flex-1">
-                                            <div className="mb-2 flex items-start justify-between">
-                                                <div>
-                                                    <h3 className="group-hover:text-primary text-xl font-bold transition-colors">
-                                                        {volunteer.name}
-                                                    </h3>
-                                                    <div className="text-muted-foreground mt-1 flex items-center gap-4 text-sm">
-                                                        <div className="flex items-center gap-1">
-                                                            <Clock className="h-3 w-3" />
-                                                            <span>{volunteer.experience}</span>
-                                                        </div>
-                                                    </div>
+                                    {/* Основная информация */}
+                                    <div className="flex h-full min-w-0 flex-1 flex-col">
+                                        {/* Заголовок и опыт */}
+                                        <div>
+                                            <h3 className="group-hover:text-primary text-xl font-bold transition-colors">
+                                                {volunteer.name}
+                                            </h3>
+                                            <div className="text-muted-foreground mt-1 flex items-center gap-4 text-sm">
+                                                <div className="flex items-center gap-1">
+                                                    <Clock className="h-3 w-3" />
+                                                    <span>{volunteer.experience}</span>
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            {/* Description */}
-                                            <p className="text-muted-foreground mb-4 line-clamp-2 text-sm">
-                                                {volunteer.description}
-                                            </p>
+                                        {/* Описание */}
+                                        <p className="text-muted-foreground my-4 line-clamp-2 min-h-[40px] text-sm">
+                                            {volunteer.description || "\u00A0"}
+                                        </p>
 
+                                        {/* Навыки */}
+                                        <div className="mb-4 min-h-[56px]">
                                             {volunteer.skills.length > 0 && (
-                                                <div className="mb-4 flex flex-wrap gap-2">
+                                                <div className="flex flex-wrap gap-2">
                                                     {volunteer.skills.slice(0, 5).map((skill, index) => (
                                                         <Chip
                                                             key={`skill-${index}`}
-                                                            color={"success"}
+                                                            color="success"
                                                             variant="flat"
                                                             size="sm"
                                                             className="text-xs font-medium"
@@ -217,36 +208,20 @@ export default function VolunteersList({
                                                             {skill}
                                                         </Chip>
                                                     ))}
-                                                    {volunteer.skills.length > 5 && (
-                                                        <Chip
-                                                            key="more-skills"
-                                                            color="default"
-                                                            variant="bordered"
-                                                            size="sm"
-                                                            className="text-xs font-medium opacity-70"
-                                                        >
-                                                            +{volunteer.skills.length - 5}
-                                                        </Chip>
-                                                    )}
                                                 </div>
                                             )}
+                                        </div>
 
-                                            {/* Stats */}
+                                        {/* Кнопки - прижаты к низу */}
+                                        <div className="mt-auto">
                                             <div className="mb-4 flex items-center gap-4">
                                                 <div className="flex items-center gap-1 text-sm">
                                                     <Heart className="h-4 w-4 text-red-500" />
                                                     <span className="font-medium">{volunteer.animalsHelped}</span>
                                                     <span className="text-muted-foreground">животных</span>
                                                 </div>
-                                                {/*<div className="flex items-center gap-1 text-sm">
-                                                    <Calendar className="text-primary h-4 w-4" />
-                                                    <span className="text-muted-foreground">
-                                                        с {volunteer.joinDate}
-                                                    </span>
-                                                </div>*/}
                                             </div>
 
-                                            {/* Actions */}
                                             <div className="flex gap-2">
                                                 <Button size="sm" variant="flat" className="flex-1">
                                                     <MessageCircle className="mr-2 h-4 w-4" />
