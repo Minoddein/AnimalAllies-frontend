@@ -95,7 +95,7 @@ const Header = () => {
                     </Link>
                 </NavbarItem>
                 <NavbarItem>
-                    <Link color="foreground" href="#">
+                    <Link color="foreground" href="/events">
                         События
                     </Link>
                 </NavbarItem>

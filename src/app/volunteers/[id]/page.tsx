@@ -7,7 +7,6 @@ import { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-import { createDiscussion } from "@/api/discussions";
 import { getDownloadPresignedUrl } from "@/api/files";
 import { SkillDto, VolunteerDto, getVolunteerById, updateSkills } from "@/api/volunteer";
 import MyAnimalsTab from "@/app/volunteers/[id]/_components/animals-tabs";
@@ -28,23 +27,6 @@ export default function VolunteerProfilePage() {
     const [isOwn, setIsOwn] = useState(false);
     const params = useParams();
     const id = params.id as string;
-    const [, setIsChatOpen] = useState(false);
-
-    const handleStartChat = async () => {
-        try {
-            // Создаем новую дискуссию
-            const response = await createDiscussion(volunteer!.id, volunteer!.id);
-            const newDiscussion = response.data.result;
-
-            if (newDiscussion) {
-                // Открываем чат
-                setIsChatOpen(true);
-            }
-        } catch (error) {
-            console.error("Ошибка при создании чата:", error);
-            // Можно добавить уведомление об ошибке
-        }
-    };
 
     useEffect(() => {
         async function loadVolunteer() {
@@ -275,9 +257,9 @@ export default function VolunteerProfilePage() {
                                 {/* Action Buttons */}
                                 <Button
                                     className="bg-primary hover:bg-primary/90 w-full space-y-2"
-                                    onPress={() => {
+                                    /*onPress={() => {
                                         void handleStartChat();
-                                    }}
+                                    }}*/
                                 >
                                     <MessageCircle className="mr-2 h-4 w-4" />
                                     Написать сообщение
