@@ -4,23 +4,13 @@ import { Clock, Edit, GripVertical, Heart, MapPin, Plus, Trash2 } from "lucide-r
 
 import { useState } from "react";
 
-import ModalOrDrawer from "@/components/modal-or-drawer";
-import { DragDropContext, Draggable, DropResult, Droppable } from "@hello-pangea/dnd";
-import { Chip } from "@heroui/chip";
-import { Button, Card, CardBody, Image, useDisclosure } from "@heroui/react";
+import { useRouter } from "next/navigation";
 
-interface Animal {
-    id: string;
-    name: string;
-    type: string;
-    breed: string;
-    age: string;
-    gender: string;
-    status: "active" | "adopted" | "pending";
-    location: string;
-    image: string;
-    dateAdded: string;
-}
+import ModalOrDrawer from "@/components/modal-or-drawer";
+import { myAnimals } from "@/data/my-animals";
+import { Animal } from "@/types/Animal";
+import { DragDropContext, Draggable, DropResult, Droppable } from "@hello-pangea/dnd";
+import { Button, Card, CardBody, Chip, Image, useDisclosure } from "@heroui/react";
 
 interface AnimalStatus {
     label: string;
@@ -28,66 +18,18 @@ interface AnimalStatus {
 }
 
 export default function MyAnimalsTab() {
-    const [animals, setAnimals] = useState<Animal[]>([
-        {
-            id: "animal-1",
-            name: "Пушинка",
-            type: "Кролик",
-            breed: "Декоративный",
-            age: "1 год",
-            gender: "Самка",
-            status: "active",
-            location: "Москва",
-            image: "/placeholder.svg?height=200&width=200",
-            dateAdded: "15.03.2025",
-        },
-        {
-            id: "animal-2",
-            name: "Барсик",
-            type: "Кот",
-            breed: "Сибирский",
-            age: "3 года",
-            gender: "Самец",
-            status: "pending",
-            location: "Москва",
-            image: "/placeholder.svg?height=200&width=200",
-            dateAdded: "02.04.2025",
-        },
-        {
-            id: "animal-3",
-            name: "Рекс",
-            type: "Собака",
-            breed: "Лабрадор",
-            age: "2 года",
-            gender: "Самец",
-            status: "adopted",
-            location: "Санкт-Петербург",
-            image: "/placeholder.svg?height=200&width=200",
-            dateAdded: "10.01.2025",
-        },
-        {
-            id: "animal-4",
-            name: "Мурка",
-            type: "Кошка",
-            breed: "Британская",
-            age: "5 лет",
-            gender: "Самка",
-            status: "active",
-            location: "Москва",
-            image: "/placeholder.svg?height=200&width=200",
-            dateAdded: "23.05.2025",
-        },
-    ]);
+    const router = useRouter();
+    const [animals, setAnimals] = useState<Animal[]>(myAnimals);
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
     const getStatusLabel = (status: string): AnimalStatus => {
         switch (status) {
-            case "active":
-                return { label: "Активен", color: "success" };
             case "adopted":
-                return { label: "Пристроен", color: "secondary" };
-            case "pending":
-                return { label: "В процессе", color: "warning" };
+                return { label: "Пристроен", color: "success" };
+            case "looking_for_home":
+                return { label: "В поисках дома", color: "warning" };
+            case "needs_help":
+                return { label: "Нуждается в помощи", color: "danger" };
             default:
                 return { label: "Неизвестно", color: "default" };
         }
@@ -111,6 +53,14 @@ export default function MyAnimalsTab() {
         setAnimals(items);
     };
 
+    const handleAddAnimal = () => {
+        router.push("/my-animals/edit");
+    };
+
+    const handleEditAnimal = (id: string) => {
+        router.push(`/my-animals/edit?id=${id}`);
+    };
+
     return (
         <div className="min-h-screen bg-black text-white">
             {/* Main Content */}
@@ -120,7 +70,7 @@ export default function MyAnimalsTab() {
                         <h1 className="mb-2 text-3xl font-bold">Мои животные</h1>
                         <p className="text-gray-400">Управляйте списком ваших животных и их статусами</p>
                     </div>
-                    <Button className="bg-green-500 text-white hover:bg-green-600">
+                    <Button className="bg-green-500 text-white hover:bg-green-600" onPress={handleAddAnimal}>
                         <Plus className="mr-2 h-4 w-4" />
                         Добавить животное
                     </Button>
@@ -215,16 +165,20 @@ export default function MyAnimalsTab() {
                                                                 <div className="mb-1 flex items-center gap-2">
                                                                     <h3 className="font-semibold">{animal.name}</h3>
                                                                     <Chip
-                                                                        className="text-xs"
-                                                                        variant="bordered"
+                                                                        className="text-xs text-white"
                                                                         color={status.color}
+                                                                        variant="bordered"
                                                                     >
                                                                         {status.label}
                                                                     </Chip>
                                                                 </div>
                                                                 <div className="text-sm text-gray-400">
                                                                     {animal.type} • {animal.breed} • {animal.age} •{" "}
-                                                                    {animal.gender}
+                                                                    {animal.gender === "male"
+                                                                        ? "Самец"
+                                                                        : animal.gender === "female"
+                                                                          ? "Самка"
+                                                                          : "Неизвестно"}
                                                                 </div>
                                                                 <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
                                                                     <div className="flex items-center">
@@ -239,6 +193,7 @@ export default function MyAnimalsTab() {
                                                                     variant="light"
                                                                     isIconOnly
                                                                     className="text-gray-400 hover:text-white"
+                                                                    onPress={() => { handleEditAnimal(animal.id); }}
                                                                 >
                                                                     <Edit className="h-4 w-4" />
                                                                 </Button>
