@@ -292,7 +292,7 @@ export default function EditAnimalPage() {
                                                 className="rounded-lg object-cover"
                                             />
                                         </div>
-                                        <Button type="button" variant="outline" className="w-full">
+                                        <Button type="button" variant="faded" className="w-full">
                                             <Upload className="mr-2 h-4 w-4" />
                                             Загрузить фото
                                         </Button>
@@ -311,7 +311,9 @@ export default function EditAnimalPage() {
                                                 id="name"
                                                 value={animal.name}
                                                 label="Имя"
-                                                onChange={(e) => { setAnimal({ ...animal, name: e.target.value }); }}
+                                                onChange={(e) => {
+                                                    setAnimal({ ...animal, name: e.target.value });
+                                                }}
                                                 isRequired={true}
                                             />
 
@@ -325,7 +327,9 @@ export default function EditAnimalPage() {
                                                         </Button>
                                                     </DropdownTrigger>
                                                     <DropdownMenu
-                                                        onAction={(key) => { setAnimal({ ...animal, type: key }); }}
+                                                        onAction={(key) => {
+                                                            setAnimal({ ...animal, type: String(key) });
+                                                        }}
                                                     >
                                                         <DropdownItem key="Кошка">Кошка</DropdownItem>
                                                         <DropdownItem key="Собака">Собака</DropdownItem>
@@ -342,7 +346,9 @@ export default function EditAnimalPage() {
                                                 id="breed"
                                                 label="Порода"
                                                 value={animal.breed}
-                                                onChange={(e) => { setAnimal({ ...animal, breed: e.target.value }); }}
+                                                onChange={(e) => {
+                                                    setAnimal({ ...animal, breed: e.target.value });
+                                                }}
                                             />
 
                                             {/* Пол */}
@@ -350,9 +356,12 @@ export default function EditAnimalPage() {
                                                 <p className="text-base text-white">Пол *</p>
                                                 <RadioGroup
                                                     value={animal.gender}
-                                                    onValueChange={(value: "male" | "female" | "unknown") =>
-                                                        { setAnimal({ ...animal, gender: value }); }
-                                                    }
+                                                    onValueChange={(value) => {
+                                                        setAnimal({
+                                                            ...animal,
+                                                            gender: value as "male" | "female" | "unknown",
+                                                        });
+                                                    }}
                                                     className="flex space-x-6"
                                                     orientation="horizontal"
                                                 >
@@ -366,12 +375,12 @@ export default function EditAnimalPage() {
                                                 id="birthDate"
                                                 label="Дата рождения"
                                                 value={animal.birthDate ? parseDate(animal.birthDate) : null}
-                                                onChange={(e) =>
-                                                    { setAnimal({
+                                                onChange={(e) => {
+                                                    setAnimal({
                                                         ...animal,
                                                         birthDate: e?.toString() ?? "",
-                                                    }); }
-                                                }
+                                                    });
+                                                }}
                                                 isRequired={true}
                                             />
 
@@ -379,19 +388,21 @@ export default function EditAnimalPage() {
                                                 id="arrivalDate"
                                                 label="Дата поступления в приют"
                                                 value={animal.arrivalDate ? parseDate(animal.arrivalDate) : null}
-                                                onChange={(e) =>
-                                                    { setAnimal({
+                                                onChange={(e) => {
+                                                    setAnimal({
                                                         ...animal,
                                                         arrivalDate: e?.toString() ?? "",
-                                                    }); }
-                                                }
+                                                    });
+                                                }}
                                                 isRequired={true}
                                             />
 
                                             <Input
                                                 label="Цвет"
                                                 value={animal.color}
-                                                onChange={(e) => { setAnimal({ ...animal, color: e.target.value }); }}
+                                                onChange={(e) => {
+                                                    setAnimal({ ...animal, color: e.target.value });
+                                                }}
                                                 isRequired={true}
                                             />
 
@@ -399,7 +410,9 @@ export default function EditAnimalPage() {
                                                 id="height"
                                                 label="Рост"
                                                 value={animal.height}
-                                                onChange={(e) => { setAnimal({ ...animal, height: e.target.value }); }}
+                                                onChange={(e) => {
+                                                    setAnimal({ ...animal, height: e.target.value });
+                                                }}
                                                 isRequired={true}
                                                 placeholder="Например: 30 см"
                                             />
@@ -408,7 +421,9 @@ export default function EditAnimalPage() {
                                                 id="weight"
                                                 label="Вес"
                                                 value={animal.weight}
-                                                onChange={(e) => { setAnimal({ ...animal, weight: e.target.value }); }}
+                                                onChange={(e) => {
+                                                    setAnimal({ ...animal, weight: e.target.value });
+                                                }}
                                                 isRequired={true}
                                                 placeholder="Например: 4.5 кг"
                                             />
@@ -425,9 +440,12 @@ export default function EditAnimalPage() {
                                                         </Button>
                                                     </DropdownTrigger>
                                                     <DropdownMenu
-                                                        onAction={(value: "stray" | "shelter" | "person") =>
-                                                            { setAnimal({ ...animal, source: value }); }
-                                                        }
+                                                        onAction={(value) => {
+                                                            setAnimal({
+                                                                ...animal,
+                                                                source: String(value) as "stray" | "shelter" | "person",
+                                                            });
+                                                        }}
                                                     >
                                                         <DropdownItem key="stray">Бездомный</DropdownItem>
                                                         <DropdownItem key="shelter">Из другого приюта</DropdownItem>
@@ -440,7 +458,9 @@ export default function EditAnimalPage() {
                                                 id="lastOwner"
                                                 label="Последний хозяин"
                                                 value={animal.lastOwner ?? ""}
-                                                onChange={(e) => { setAnimal({ ...animal, lastOwner: e.target.value }); }}
+                                                onChange={(e) => {
+                                                    setAnimal({ ...animal, lastOwner: e.target.value });
+                                                }}
                                                 placeholder="ФИО или название"
                                             />
 
@@ -449,12 +469,12 @@ export default function EditAnimalPage() {
                                                 id="shelterAddress"
                                                 label="Адрес приюта"
                                                 value={animal.shelterAddress ?? ""}
-                                                onChange={(e) =>
-                                                    { setAnimal({
+                                                onChange={(e) => {
+                                                    setAnimal({
                                                         ...animal,
                                                         shelterAddress: e.target.value,
-                                                    }); }
-                                                }
+                                                    });
+                                                }}
                                                 isRequired={true}
                                                 placeholder="Улица, город"
                                             />
@@ -469,9 +489,15 @@ export default function EditAnimalPage() {
                                                         </Button>
                                                     </DropdownTrigger>
                                                     <DropdownMenu
-                                                        onAction={(
-                                                            key: "needs_help" | "looking_for_home" | "adopted",
-                                                        ) => { setAnimal({ ...animal, status: key }); }}
+                                                        onAction={(key) => {
+                                                            setAnimal({
+                                                                ...animal,
+                                                                status: String(key) as
+                                                                    | "needs_help"
+                                                                    | "looking_for_home"
+                                                                    | "adopted",
+                                                            });
+                                                        }}
                                                     >
                                                         <DropdownItem key="needs_help">Нуждается в помощи</DropdownItem>
                                                         <DropdownItem key="looking_for_home">Ищет дом</DropdownItem>
@@ -485,7 +511,9 @@ export default function EditAnimalPage() {
                                             id="description"
                                             label="Описание"
                                             value={animal.description ?? ""}
-                                            onChange={(e) => { setAnimal({ ...animal, description: e.target.value }); }}
+                                            onChange={(e) => {
+                                                setAnimal({ ...animal, description: e.target.value });
+                                            }}
                                             isRequired={true}
                                             className="min-h-[120px]"
                                             placeholder="Опишите животное, его характер и особенности"
@@ -495,7 +523,9 @@ export default function EditAnimalPage() {
                                             id="healthStatus"
                                             label="Состояние здоровья"
                                             value={animal.healthStatus ?? ""}
-                                            onChange={(e) => { setAnimal({ ...animal, healthStatus: e.target.value }); }}
+                                            onChange={(e) => {
+                                                setAnimal({ ...animal, healthStatus: e.target.value });
+                                            }}
                                             isRequired={true}
                                             placeholder="Опишите общее состояние здоровья животного"
                                         />
@@ -521,12 +551,12 @@ export default function EditAnimalPage() {
                                                 <Checkbox
                                                     id="isVaccinated"
                                                     checked={medicalInfo.isVaccinated}
-                                                    onValueChange={(checked) =>
-                                                        { setMedicalInfo({
+                                                    onValueChange={(checked) => {
+                                                        setMedicalInfo({
                                                             ...medicalInfo,
                                                             isVaccinated: checked,
-                                                        }); }
-                                                    }
+                                                        });
+                                                    }}
                                                 >
                                                     Привит
                                                 </Checkbox>
@@ -543,12 +573,12 @@ export default function EditAnimalPage() {
                                                                 ? parseDate(medicalInfo.vaccinationDate)
                                                                 : null
                                                         }
-                                                        onChange={(e) =>
-                                                            { setMedicalInfo({
+                                                        onChange={(e) => {
+                                                            setMedicalInfo({
                                                                 ...medicalInfo,
                                                                 vaccinationDate: e?.toString() ?? "",
-                                                            }); }
-                                                        }
+                                                            });
+                                                        }}
                                                     />
                                                 </div>
                                             )}
@@ -560,12 +590,12 @@ export default function EditAnimalPage() {
                                                 <Checkbox
                                                     id="isSterilized"
                                                     isSelected={medicalInfo.isSterilized}
-                                                    onValueChange={(checked) =>
-                                                        { setMedicalInfo({
+                                                    onValueChange={(checked) => {
+                                                        setMedicalInfo({
                                                             ...medicalInfo,
                                                             isSterilized: checked,
-                                                        }); }
-                                                    }
+                                                        });
+                                                    }}
                                                 >
                                                     Стерилизован/кастрирован
                                                 </Checkbox>
@@ -578,12 +608,12 @@ export default function EditAnimalPage() {
                                                 <Checkbox
                                                     id="hasChronicDiseases"
                                                     isSelected={medicalInfo.hasChronicDiseases}
-                                                    onValueChange={(checked) =>
-                                                        { setMedicalInfo({
+                                                    onValueChange={(checked) => {
+                                                        setMedicalInfo({
                                                             ...medicalInfo,
                                                             hasChronicDiseases: checked,
-                                                        }); }
-                                                    }
+                                                        });
+                                                    }}
                                                 >
                                                     Имеет хронические заболевания
                                                 </Checkbox>
@@ -596,12 +626,12 @@ export default function EditAnimalPage() {
                                                 <Checkbox
                                                     id="needsSpecialDiet"
                                                     isSelected={medicalInfo.needsSpecialDiet}
-                                                    onValueChange={(checked) =>
-                                                        { setMedicalInfo({
+                                                    onValueChange={(checked) => {
+                                                        setMedicalInfo({
                                                             ...medicalInfo,
                                                             needsSpecialDiet: checked,
-                                                        }); }
-                                                    }
+                                                        });
+                                                    }}
                                                 >
                                                     Нуждается в специальном питании
                                                 </Checkbox>
@@ -614,12 +644,12 @@ export default function EditAnimalPage() {
                                                 <Checkbox
                                                     id="hasAllergies"
                                                     isSelected={medicalInfo.hasAllergies}
-                                                    onValueChange={(checked) =>
-                                                        { setMedicalInfo({
+                                                    onValueChange={(checked) => {
+                                                        setMedicalInfo({
                                                             ...medicalInfo,
                                                             hasAllergies: checked,
-                                                        }); }
-                                                    }
+                                                        });
+                                                    }}
                                                 >
                                                     Имеет аллергии
                                                 </Checkbox>
@@ -631,12 +661,12 @@ export default function EditAnimalPage() {
                                                         id="allergiesDescription"
                                                         label="Описание аллергий"
                                                         value={medicalInfo.allergiesDescription}
-                                                        onChange={(e) =>
-                                                            { setMedicalInfo({
+                                                        onChange={(e) => {
+                                                            setMedicalInfo({
                                                                 ...medicalInfo,
                                                                 allergiesDescription: e.target.value,
-                                                            }); }
-                                                        }
+                                                            });
+                                                        }}
                                                         placeholder="Опишите аллергии животного"
                                                     />
                                                 </div>
@@ -650,12 +680,12 @@ export default function EditAnimalPage() {
                                             id="medicalDescription"
                                             label="Медицинское описание состояния здоровья"
                                             value={medicalInfo.medicalDescription}
-                                            onChange={(e) =>
-                                                { setMedicalInfo({
+                                            onChange={(e) => {
+                                                setMedicalInfo({
                                                     ...medicalInfo,
                                                     medicalDescription: e.target.value,
-                                                }); }
-                                            }
+                                                });
+                                            }}
                                             className="min-h-[120px]"
                                             placeholder="Подробное описание состояния здоровья, перенесенных болезней, операций и т.д."
                                         />
@@ -689,12 +719,12 @@ export default function EditAnimalPage() {
                                                 maxValue={10}
                                                 step={1}
                                                 value={[temperament.aggressionLevel]}
-                                                onChange={(value: number) =>
-                                                    { setTemperament({
+                                                onChange={(value) => {
+                                                    setTemperament({
                                                         ...temperament,
-                                                        aggressionLevel: value,
-                                                    }); }
-                                                }
+                                                        aggressionLevel: value as number,
+                                                    });
+                                                }}
                                                 className="w-full"
                                                 showSteps={true}
                                             />
@@ -717,12 +747,12 @@ export default function EditAnimalPage() {
                                                 maxValue={10}
                                                 step={1}
                                                 value={[temperament.friendlinessLevel]}
-                                                onChange={(value: number) =>
-                                                    { setTemperament({
+                                                onChange={(value) => {
+                                                    setTemperament({
                                                         ...temperament,
-                                                        friendlinessLevel: value,
-                                                    }); }
-                                                }
+                                                        friendlinessLevel: value as number,
+                                                    });
+                                                }}
                                                 className="w-full"
                                                 showSteps={true}
                                             />
@@ -746,12 +776,12 @@ export default function EditAnimalPage() {
                                                 maxValue={10}
                                                 step={1}
                                                 value={[temperament.activityLevel]}
-                                                onChange={(value: number) =>
-                                                    { setTemperament({
+                                                onChange={(value) => {
+                                                    setTemperament({
                                                         ...temperament,
-                                                        activityLevel: value,
-                                                    }); }
-                                                }
+                                                        activityLevel: value as number,
+                                                    });
+                                                }}
                                                 className="w-full"
                                                 showSteps={true}
                                             />
@@ -770,12 +800,12 @@ export default function EditAnimalPage() {
                                                 <Checkbox
                                                     id="goodWithChildren"
                                                     isSelected={temperament.goodWithChildren}
-                                                    onValueChange={(checked) =>
-                                                        { setTemperament({
+                                                    onValueChange={(checked) => {
+                                                        setTemperament({
                                                             ...temperament,
                                                             goodWithChildren: checked,
-                                                        }); }
-                                                    }
+                                                        });
+                                                    }}
                                                 >
                                                     Хорошо относится к детям
                                                 </Checkbox>
@@ -788,12 +818,12 @@ export default function EditAnimalPage() {
                                                 <Checkbox
                                                     id="goodWithPeople"
                                                     isSelected={temperament.goodWithPeople}
-                                                    onValueChange={(checked) =>
-                                                        { setTemperament({
+                                                    onValueChange={(checked) => {
+                                                        setTemperament({
                                                             ...temperament,
                                                             goodWithPeople: checked,
-                                                        }); }
-                                                    }
+                                                        });
+                                                    }}
                                                 >
                                                     Хорошо относится к людям
                                                 </Checkbox>
@@ -806,12 +836,12 @@ export default function EditAnimalPage() {
                                                 <Checkbox
                                                     id="goodWithAnimals"
                                                     isSelected={temperament.goodWithAnimals}
-                                                    onValueChange={(checked) =>
-                                                        { setTemperament({
+                                                    onValueChange={(checked) => {
+                                                        setTemperament({
                                                             ...temperament,
                                                             goodWithAnimals: checked,
-                                                        }); }
-                                                    }
+                                                        });
+                                                    }}
                                                 >
                                                     Хорошо относится к другим животным
                                                 </Checkbox>
@@ -828,8 +858,10 @@ export default function EditAnimalPage() {
                         <div className="mx-auto flex max-w-6xl justify-between">
                             <Button
                                 type="button"
-                                variant="outline"
-                                onPress={() => { router.push("/volunteers"); }}
+                                variant="light"
+                                onPress={() => {
+                                    router.push("/volunteers");
+                                }}
                                 className="border-gray-600"
                             >
                                 <X className="mr-2 h-4 w-4" />

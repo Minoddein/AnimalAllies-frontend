@@ -107,7 +107,7 @@ export default function MyAnimalsTab() {
                             <div>
                                 <p className="mb-1 text-gray-400">В процессе</p>
                                 <p className="text-center text-3xl font-bold">
-                                    {animals.filter((a) => a.status === "pending").length}
+                                    {animals.filter((a) => a.status === "needs_help").length}
                                 </p>
                             </div>
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500/20 text-yellow-500">
