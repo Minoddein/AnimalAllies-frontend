@@ -337,7 +337,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
                                             <div
                                                 className="h-2 rounded-full bg-red-500"
                                                 style={{
-                                                    width: `${(selectedAnimal?.temperament.aggressionLevel ?? 0 / 10) * 100}%`,
+                                                    width: `${((selectedAnimal?.temperament.aggressionLevel ?? 0) / 10) * 100}%`,
                                                 }}
                                             />
                                         </div>
@@ -354,7 +354,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
                                             <div
                                                 className="h-2 rounded-full bg-green-500"
                                                 style={{
-                                                    width: `${(selectedAnimal?.temperament.friendlinessLevel ?? 0 / 10) * 100}%`,
+                                                    width: `${((selectedAnimal?.temperament.friendlinessLevel ?? 0) / 10) * 100}%`,
                                                 }}
                                             />
                                         </div>
@@ -371,7 +371,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
                                             <div
                                                 className="h-2 rounded-full bg-blue-500"
                                                 style={{
-                                                    width: `${(selectedAnimal?.temperament.activityLevel ?? 0 / 10) * 100}%`,
+                                                    width: `${((selectedAnimal?.temperament.activityLevel ?? 0) / 10) * 100}%`,
                                                 }}
                                             />
                                         </div>
