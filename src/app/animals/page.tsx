@@ -29,7 +29,7 @@ export default function AnimalsPage() {
     useEffect(() => {
         setAnimalsData({
             items: Array.from({ length: 14 }, (_, index) => ({
-                id: `id-${index}`,
+                id: `animal-${index + 1}`,
                 name: `Барсик-${index + 1}`,
                 image: `https://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA1ueISv.img?w=1280&h=857&m=4&q=91`,
                 age: `${index + 1} лет 2 месяца`,
