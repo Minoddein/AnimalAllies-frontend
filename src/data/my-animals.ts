@@ -21,6 +21,7 @@ export const myAnimals: Animal[] = [
         weight: "1.5 кг",
         healthStatus: "Здоров",
         shelterAddress: "ул. Примерная, 123, Москва",
+        phoneNumber: "123456789",
     },
     {
         id: "animal-2",
@@ -42,6 +43,7 @@ export const myAnimals: Animal[] = [
         weight: "4.2 кг",
         healthStatus: "Требуется лечение",
         shelterAddress: "ул. Примерная, 123, Москва",
+        phoneNumber: "123456789",
     },
     {
         id: "animal-3",
@@ -63,6 +65,7 @@ export const myAnimals: Animal[] = [
         weight: "25 кг",
         healthStatus: "Здоров",
         shelterAddress: "ул. Ленина, 45, Санкт-Петербург",
+        phoneNumber: "123456789",
     },
     {
         id: "animal-4",
@@ -84,5 +87,6 @@ export const myAnimals: Animal[] = [
         weight: "3.8 кг",
         healthStatus: "Здорова",
         shelterAddress: "ул. Примерная, 123, Москва",
+        phoneNumber: "123456789",
     },
 ];
