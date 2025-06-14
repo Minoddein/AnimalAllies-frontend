@@ -2,10 +2,12 @@
 
 import { Clock, Edit, GripVertical, Heart, MapPin, Plus, Trash2 } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import { PetDto } from "@/api/dtos/pet/petDtos";
+import { getPetWithPaginationByVolunteerId } from "@/api/pet";
 import ModalOrDrawer from "@/components/modal-or-drawer";
 import { myAnimals } from "@/data/my-animals";
 import { Animal } from "@/types/Animal";
@@ -25,19 +27,101 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
     const router = useRouter();
     const [animals, setAnimals] = useState<Animal[]>(myAnimals);
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+    const [currentPage] = useState(1);
+    const [pagedData, setPagedData] = useState<{ items: PetDto[]; totalCount: number }>({
+        items: [],
+        totalCount: 0,
+    });
+    const pageSize = 10;
 
     const getStatusLabel = (status: string): AnimalStatus => {
         switch (status) {
-            case "adopted":
+            case "FoundHome":
                 return { label: "Пристроен", color: "success" };
-            case "looking_for_home":
+            case "SearchingHome":
                 return { label: "В поисках дома", color: "warning" };
-            case "needs_help":
+            case "NeedsHelp":
                 return { label: "Нуждается в помощи", color: "danger" };
             default:
                 return { label: "Неизвестно", color: "default" };
         }
     };
+
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return "Не указана";
+
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString("ru-RU", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+            });
+        } catch {
+            return "Неверный формат";
+        }
+    };
+    const calculateAge = (birthDateString: string | undefined): string => {
+        if (!birthDateString) return "Возраст неизвестен";
+
+        try {
+            const birthDate = new Date(birthDateString);
+            const today = new Date();
+
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            const lastDigit = age % 10;
+            const lastTwoDigits = age % 100;
+
+            let ageWord = "лет";
+            if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+                ageWord = "лет";
+            } else {
+                switch (lastDigit) {
+                    case 1:
+                        ageWord = "год";
+                        break;
+                    case 2:
+                    case 3:
+                    case 4:
+                        ageWord = "года";
+                        break;
+                    default:
+                        ageWord = "лет";
+                }
+            }
+
+            return `${age} ${ageWord}`;
+        } catch (error) {
+            console.error("Ошибка при вычислении возраста:", error);
+            return "Возраст неизвестен";
+        }
+    };
+
+    async function loadAnimals() {
+        try {
+            const response = await getPetWithPaginationByVolunteerId(volunteerId, pageSize, currentPage);
+            if (!response.data.result?.value) {
+                throw new Error("cannot load pet for volunteer");
+            }
+
+            setPagedData({
+                items: response.data.result.value.items,
+                totalCount: response.data.result.value.totalCount,
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    useEffect(() => {
+        void loadAnimals();
+    }, [currentPage]);
 
     const handleDragEnd = (result: DropResult) => {
         if (!result.destination) return;
@@ -140,10 +224,10 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                                         ref={provided.innerRef}
                                         className="divide-y divide-gray-800"
                                     >
-                                        {animals.map((animal, index) => {
-                                            const status = getStatusLabel(animal.status);
+                                        {pagedData.items.map((animal, index) => {
+                                            const status = getStatusLabel(animal.helpStatus);
                                             return (
-                                                <Draggable key={animal.id} draggableId={animal.id} index={index}>
+                                                <Draggable key={animal.petId} draggableId={animal.petId} index={index}>
                                                     {(provided) => (
                                                         <div
                                                             ref={provided.innerRef}
@@ -158,8 +242,8 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                                                             </div>
                                                             <div className="mr-4 h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
                                                                 <Image
-                                                                    src={animal.image || "/placeholder.svg"}
-                                                                    alt={animal.name}
+                                                                    src={"/placeholder.svg"}
+                                                                    alt={animal.petName}
                                                                     width={64}
                                                                     height={64}
                                                                     className="h-full w-full object-cover"
@@ -167,7 +251,7 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                                                             </div>
                                                             <div className="flex-1">
                                                                 <div className="mb-1 flex items-center gap-2">
-                                                                    <h3 className="font-semibold">{animal.name}</h3>
+                                                                    <h3 className="font-semibold">{animal.petName}</h3>
                                                                     <Chip
                                                                         className="text-xs text-white"
                                                                         color={status.color}
@@ -177,19 +261,22 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                                                                     </Chip>
                                                                 </div>
                                                                 <div className="text-sm text-gray-400">
-                                                                    {animal.type} • {animal.breed} • {animal.age} •{" "}
-                                                                    {animal.gender === "male"
+                                                                    {animal.speciesName} • {animal.breedName} •{" "}
+                                                                    {calculateAge(animal.birthDate)} •{" "}
+                                                                    {animal.sex === "Male"
                                                                         ? "Самец"
-                                                                        : animal.gender === "female"
+                                                                        : animal.sex === "Female"
                                                                           ? "Самка"
                                                                           : "Неизвестно"}
                                                                 </div>
                                                                 <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
                                                                     <div className="flex items-center">
                                                                         <MapPin className="mr-1 h-3 w-3" />
-                                                                        {animal.location}
+                                                                        {animal.state + "," + animal.city}
                                                                     </div>
-                                                                    <div>Добавлено: {animal.dateAdded}</div>
+                                                                    <div>
+                                                                        Добавлено: {formatDate(animal.arriveDate)}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div className="ml-4 flex items-center gap-2">
@@ -198,7 +285,7 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                                                                     isIconOnly
                                                                     className="text-gray-400 hover:text-white"
                                                                     onPress={() => {
-                                                                        handleEditAnimal(animal.id);
+                                                                        handleEditAnimal(animal.petId);
                                                                     }}
                                                                 >
                                                                     <Edit className="h-4 w-4" />
@@ -229,7 +316,7 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                                                                             variant="light"
                                                                             color="danger"
                                                                             onPress={() => {
-                                                                                animalDelete(animal.id);
+                                                                                animalDelete(animal.petId);
                                                                                 onClose();
                                                                             }}
                                                                         >

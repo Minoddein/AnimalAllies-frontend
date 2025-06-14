@@ -339,7 +339,11 @@ export default function EditAnimalPage() {
                         : new Date().toISOString(),
                     lastOwner: animal.lastOwner ?? "",
                     from:
-                        animal.source === "stray" ? "Stray" : animal.source === "shelter" ? "Shelter" : "PrivatePerson",
+                        animal.source === "stray"
+                            ? "Homeless"
+                            : animal.source === "shelter"
+                              ? "Shelter"
+                              : "PrivatePerson",
                 },
                 temperamentDto: {
                     aggressionLevel: Number(temperament.aggressionLevel),
@@ -761,10 +765,12 @@ export default function EditAnimalPage() {
                                                                 : null
                                                         }
                                                         onChange={(e) => {
-                                                            setMedicalInfo({
-                                                                ...medicalInfo,
-                                                                vaccinationDate: e?.toString() ?? "",
-                                                            });
+                                                            if (e) {
+                                                                setMedicalInfo({
+                                                                    ...medicalInfo,
+                                                                    vaccinationDate: e.toString(),
+                                                                });
+                                                            }
                                                         }}
                                                     />
                                                 </div>
