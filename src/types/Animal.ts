@@ -7,7 +7,7 @@ export interface Animal {
     gender: "male" | "female" | "unknown";
     status: "needs_help" | "looking_for_home" | "adopted";
     location: string;
-    image: string;
+    images: string[];
     dateAdded: string;
     phoneNumber: string;
     description?: string;
