@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
-import { PetDto } from "@/api/dtos/pet/petDtos";
+import { PetDto, PetPhotoDto } from "@/api/dtos/pet/petDtos";
+import { FileKey, getManyDownloadPresignedUrls } from "@/api/files";
 import { getPetWithPaginationByVolunteerId } from "@/api/pet";
 import ModalOrDrawer from "@/components/modal-or-drawer";
 import { myAnimals } from "@/data/my-animals";
@@ -110,8 +111,36 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                 throw new Error("cannot load pet for volunteer");
             }
 
+            const animals = response.data.result.value.items;
+
+            const fileKeys: FileKey[] = response.data.result.value.items
+                .filter((a) => a.petPhotos.length > 0)
+                .flatMap((item) => item.petPhotos)
+                .filter((photo): photo is PetPhotoDto => !!photo.path)
+                .map((photo) => {
+                    const filename = photo.path.split("/").pop() ?? "";
+                    const [fileId, ...extensionParts] = filename.split(".");
+                    const extension = extensionParts.join(".");
+
+                    return {
+                        fileId,
+                        extension,
+                    };
+                });
+
+            const responseUrls = await getManyDownloadPresignedUrls({
+                bucketName: "photos",
+                fileKeys,
+            });
+
+            for (let i = 0; i < responseUrls.data.length; i++) {
+                if (animals[i].petPhotos.length > 0) {
+                    animals[i].petPhotos[0].path = responseUrls.data[i];
+                }
+            }
+
             setPagedData({
-                items: response.data.result.value.items,
+                items: animals,
                 totalCount: response.data.result.value.totalCount,
             });
         } catch (error) {
@@ -242,7 +271,11 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                                                             </div>
                                                             <div className="mr-4 h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
                                                                 <Image
-                                                                    src={"/placeholder.svg"}
+                                                                    src={
+                                                                        animal.petPhotos.length > 0
+                                                                            ? animal.petPhotos[0].path
+                                                                            : "/placeholder.svg"
+                                                                    }
                                                                     alt={animal.petName}
                                                                     width={64}
                                                                     height={64}

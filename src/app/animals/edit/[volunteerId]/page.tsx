@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 import { AddPetRequest } from "@/api/dtos/pet/petDtos";
-import { addPetToVolunteer } from "@/api/pet";
+import { UploadFileDto, addPetPhotos, addPetToVolunteer } from "@/api/pet";
 import { getAllSpeciesWithBreeds } from "@/api/species";
 import { UploadForm } from "@/app/animals/edit/[volunteerId]/_components/upload-form";
 import { Breed } from "@/models/breed";
@@ -194,6 +194,12 @@ const sampleAnimals: Record<string, { animal: Animal; medical: MedicalInfo; temp
     },
 };
 
+export function getContentTypeFromExtension(extension: string): string {
+    const formattedExtension = extension.replace(".", "").toLowerCase();
+
+    return formattedExtension === "jpg" ? "image/jpeg" : `image/${formattedExtension}`;
+}
+
 export default function EditAnimalPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -289,6 +295,16 @@ export default function EditAnimalPage() {
         void fetchSpecies();
     }, [animalId]);
 
+    const uploadFileToS3 = async (presignedUrl: string, file: File) => {
+        return fetch(presignedUrl, {
+            method: "PUT",
+            headers: {
+                "Content-Type": file.type,
+            },
+            body: file,
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -378,6 +394,28 @@ export default function EditAnimalPage() {
             const response = await addPetToVolunteer(volunteerId, request);
 
             if (response.data.result?.isSuccess) {
+                if (files.length > 0) {
+                    const uploadFilesDtos: UploadFileDto[] = files.map((file: FilePreview) => {
+                        const lastDotIndex = file.name.lastIndexOf(".");
+                        const extension =
+                            lastDotIndex === -1 ? "" : file.name.substring(lastDotIndex + 1).toLowerCase();
+
+                        return {
+                            bucketName: "photos",
+                            fileName: file.name,
+                            contentType: getContentTypeFromExtension(extension),
+                        };
+                    });
+
+                    const urlsResponse = await addPetPhotos(volunteerId, response.data.result.value!, uploadFilesDtos);
+                    if (urlsResponse.data.result?.value) {
+                        const urlToUpload = urlsResponse.data.result.value.fileUrls;
+                        for (let i = 0; i < urlToUpload.length; i++) {
+                            await uploadFileToS3(urlToUpload[i], files[i]);
+                        }
+                    }
+                }
+
                 router.push("/volunteers");
             } else {
                 console.error("Ошибка при добавлении животного:", response.data.errors);
