@@ -1,6 +1,6 @@
 "use client";
 
-import { Save, Upload, X } from "lucide-react";
+import { Save, X } from "lucide-react";
 
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -10,9 +10,11 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { AddPetRequest } from "@/api/dtos/pet/petDtos";
 import { addPetToVolunteer } from "@/api/pet";
 import { getAllSpeciesWithBreeds } from "@/api/species";
+import { UploadForm } from "@/app/animals/edit/[volunteerId]/_components/upload-form";
 import { Breed } from "@/models/breed";
 import { Species } from "@/models/species";
 import { Animal } from "@/types/Animal";
+import { FilePreview } from "@/types/file-preview";
 import {
     Button,
     Card,
@@ -31,6 +33,7 @@ import {
     Tab,
     Tabs,
     Textarea,
+    addToast,
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
 
@@ -209,6 +212,9 @@ export default function EditAnimalPage() {
     const [breeds, setBreeds] = useState<Breed[]>([]);
     const [selectedBreedId, setSelectedBreedId] = useState<string>("");
     const [isLoadingSpecies, setIsLoadingSpecies] = useState(false);
+
+    const [files, setFiles] = useState<FilePreview[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
 
     const getStatusLabel = (status: string) => {
         switch (status) {
@@ -402,6 +408,36 @@ export default function EditAnimalPage() {
         });
     };
 
+    const handleUpload = async (filesToUpload: File[]) => {
+        setIsUploading(true);
+
+        try {
+            const formData = new FormData();
+
+            filesToUpload.forEach((file) => {
+                formData.append("Files", file);
+            });
+
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+
+            console.log(files);
+
+            //setFiles([]);
+            addToast({
+                title: "Успех",
+                description: "Фото успешно загружены",
+                color: "success",
+                timeout: 3000,
+                shouldShowTimeoutProgress: true,
+            });
+        } catch (error) {
+            console.error("Upload failed:", error);
+            throw error;
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-black text-white">
             {/* Main Content */}
@@ -433,7 +469,7 @@ export default function EditAnimalPage() {
                                         <p className="text-xs text-gray-400">Загрузите фотографию животного</p>
                                     </CardHeader>
                                     <CardBody className="flex flex-col items-center">
-                                        <div className="relative mb-4 h-48 w-48">
+                                        {/*<div className="relative mb-4 h-48 w-48">
                                             <img
                                                 src={
                                                     animal.image ||
@@ -444,9 +480,15 @@ export default function EditAnimalPage() {
                                             />
                                         </div>
                                         <Button type="button" variant="faded" className="w-full">
-                                            <Upload className="mr-2 h-4 w-4" />
+                                            <Upload className="mr-2 h-4 w-4"/>
                                             Загрузить фото
-                                        </Button>
+                                        </Button>*/}
+                                        <UploadForm
+                                            files={files}
+                                            setFiles={setFiles}
+                                            onUpload={handleUpload}
+                                            isUploading={isUploading}
+                                        />
                                     </CardBody>
                                 </Card>
 
