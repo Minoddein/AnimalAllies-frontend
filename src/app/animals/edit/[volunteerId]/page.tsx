@@ -11,10 +11,13 @@ import { AddPetRequest } from "@/api/dtos/pet/petDtos";
 import { addPetToVolunteer } from "@/api/pet";
 import { getAllSpeciesWithBreeds } from "@/api/species";
 import { UploadForm } from "@/app/animals/edit/[volunteerId]/_components/upload-form";
+import { sampleAnimals } from "@/data/sample-animals";
 import { Breed } from "@/models/breed";
 import { Species } from "@/models/species";
 import { Animal } from "@/types/Animal";
 import { FilePreview } from "@/types/file-preview";
+import { MedicalInfo } from "@/types/medical-info";
+import { Temperament } from "@/types/temperament";
 import {
     Button,
     Card,
@@ -47,7 +50,7 @@ const emptyAnimal: Animal = {
     gender: "unknown",
     status: "needs_help",
     location: "",
-    image: "https://i1.sndcdn.com/artworks-HrbpVDMzAPVyRM3Y-WjskEg-t1080x1080.jpg",
+    images: ["https://i1.sndcdn.com/artworks-HrbpVDMzAPVyRM3Y-WjskEg-t1080x1080.jpg"],
     dateAdded: new Date().toLocaleDateString("ru-RU"),
     description: "",
     birthDate: "",
@@ -61,28 +64,6 @@ const emptyAnimal: Animal = {
     phoneNumber: "",
     shelterAddress: "",
 };
-
-// Дополнительные поля для медицинской информации
-interface MedicalInfo {
-    isVaccinated: boolean;
-    vaccinationDate: string;
-    isSterilized: boolean;
-    hasChronicDiseases: boolean;
-    medicalDescription: string;
-    needsSpecialDiet: boolean;
-    hasAllergies: boolean;
-    allergiesDescription: string;
-}
-
-// Дополнительные поля для темперамента
-interface Temperament {
-    aggressionLevel: number;
-    friendlinessLevel: number;
-    activityLevel: number;
-    goodWithChildren: boolean;
-    goodWithPeople: boolean;
-    goodWithAnimals: boolean;
-}
 
 // Пример данных для медицинской информации
 const emptyMedicalInfo: MedicalInfo = {
@@ -104,94 +85,6 @@ const emptyTemperament: Temperament = {
     goodWithChildren: false,
     goodWithPeople: true,
     goodWithAnimals: false,
-};
-
-// Примеры животных для демонстрации
-const sampleAnimals: Record<string, { animal: Animal; medical: MedicalInfo; temperament: Temperament }> = {
-    "animal-1": {
-        animal: {
-            id: "animal-1",
-            name: "Пушинка",
-            type: "Кролик",
-            breed: "Декоративный",
-            age: "1 год",
-            gender: "female",
-            status: "looking_for_home",
-            location: "Москва",
-            image: "/placeholder.svg?height=200&width=200",
-            dateAdded: "15.03.2025",
-            description: "Милый и пушистый кролик, который принесет радость в ваш дом.",
-            birthDate: "2024-03-15",
-            arrivalDate: "2025-03-01",
-            source: "person",
-            color: "Белый",
-            height: "20 см",
-            weight: "1.5 кг",
-            healthStatus: "Здоров",
-            phoneNumber: "12345678910",
-            shelterAddress: "ул. Примерная, 123, Москва",
-        },
-        medical: {
-            isVaccinated: true,
-            vaccinationDate: "2025-03-05",
-            isSterilized: false,
-            hasChronicDiseases: false,
-            medicalDescription: "Полностью здоров, прошел ветеринарный осмотр.",
-            needsSpecialDiet: false,
-            hasAllergies: false,
-            allergiesDescription: "",
-        },
-        temperament: {
-            aggressionLevel: 1,
-            friendlinessLevel: 9,
-            activityLevel: 7,
-            goodWithChildren: true,
-            goodWithPeople: true,
-            goodWithAnimals: true,
-        },
-    },
-    "animal-2": {
-        animal: {
-            id: "animal-2",
-            name: "Барсик",
-            type: "Кот",
-            breed: "Сибирский",
-            age: "3 года",
-            gender: "male",
-            status: "needs_help",
-            location: "Москва",
-            image: "https://i.pinimg.com/originals/0a/a9/fd/0aa9fd22cf073e4f3918b5def662b1e1.jpg",
-            dateAdded: "02.04.2025",
-            description: "Ласковый кот, любит играть и мурлыкать.",
-            birthDate: "2022-04-10",
-            arrivalDate: "2025-04-01",
-            source: "stray",
-            color: "Серый",
-            height: "30 см",
-            weight: "4.2 кг",
-            healthStatus: "Требуется лечение",
-            phoneNumber: "12345678910",
-            shelterAddress: "ул. Примерная, 123, Москва",
-        },
-        medical: {
-            isVaccinated: false,
-            vaccinationDate: "",
-            isSterilized: true,
-            hasChronicDiseases: true,
-            medicalDescription: "Хроническое заболевание почек, требуется специальная диета.",
-            needsSpecialDiet: true,
-            hasAllergies: false,
-            allergiesDescription: "",
-        },
-        temperament: {
-            aggressionLevel: 3,
-            friendlinessLevel: 7,
-            activityLevel: 5,
-            goodWithChildren: false,
-            goodWithPeople: true,
-            goodWithAnimals: false,
-        },
-    },
 };
 
 export default function EditAnimalPage() {
