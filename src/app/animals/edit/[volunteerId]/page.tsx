@@ -5,8 +5,13 @@ import { Save, Upload, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
+import { AddPetRequest } from "@/api/dtos/pet/petDtos";
+import { addPetToVolunteer } from "@/api/pet";
+import { getAllSpeciesWithBreeds } from "@/api/species";
+import { Breed } from "@/models/breed";
+import { Species } from "@/models/species";
 import { Animal } from "@/types/Animal";
 import {
     Button,
@@ -50,6 +55,7 @@ const emptyAnimal: Animal = {
     height: "",
     weight: "",
     healthStatus: "",
+    phoneNumber: "",
     shelterAddress: "",
 };
 
@@ -119,6 +125,7 @@ const sampleAnimals: Record<string, { animal: Animal; medical: MedicalInfo; temp
             height: "20 см",
             weight: "1.5 кг",
             healthStatus: "Здоров",
+            phoneNumber: "12345678910",
             shelterAddress: "ул. Примерная, 123, Москва",
         },
         medical: {
@@ -160,6 +167,7 @@ const sampleAnimals: Record<string, { animal: Animal; medical: MedicalInfo; temp
             height: "30 см",
             weight: "4.2 кг",
             healthStatus: "Требуется лечение",
+            phoneNumber: "12345678910",
             shelterAddress: "ул. Примерная, 123, Москва",
         },
         medical: {
@@ -188,11 +196,19 @@ export default function EditAnimalPage() {
     const searchParams = useSearchParams();
     const animalId = searchParams.get("id");
     const isEditMode = !!animalId;
+    const params = useParams();
+    const volunteerId = params.volunteerId as string;
 
     const [animal, setAnimal] = useState<Animal>(emptyAnimal);
     const [medicalInfo, setMedicalInfo] = useState<MedicalInfo>(emptyMedicalInfo);
     const [temperament, setTemperament] = useState<Temperament>(emptyTemperament);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [species, setSpecies] = useState<Species[]>([]);
+    const [selectedSpeciesId, setSelectedSpeciesId] = useState<string>("");
+    const [breeds, setBreeds] = useState<Breed[]>([]);
+    const [selectedBreedId, setSelectedBreedId] = useState<string>("");
+    const [isLoadingSpecies, setIsLoadingSpecies] = useState(false);
 
     const getStatusLabel = (status: string) => {
         switch (status) {
@@ -234,21 +250,156 @@ export default function EditAnimalPage() {
         }
     }, [animalId]);
 
+    useEffect(() => {
+        const fetchSpecies = async () => {
+            setIsLoadingSpecies(true);
+            try {
+                const response = await getAllSpeciesWithBreeds();
+                if (response.data.result?.isSuccess && response.data.result.value) {
+                    setSpecies(response.data.result.value);
+                    // Если редактируем существующее животное, устанавливаем выбранные значения
+                    if (animalId && sampleAnimals[animalId].animal.type) {
+                        const animalType = sampleAnimals[animalId].animal.type;
+                        const foundSpecies = response.data.result.value.find((s) => s.speciesName === animalType);
+                        if (foundSpecies) {
+                            setSelectedSpeciesId(foundSpecies.speciesId);
+                            setBreeds(foundSpecies.breeds ?? []);
+                            // Аналогично для породы
+                            const animalBreed = sampleAnimals[animalId].animal.breed;
+                            const foundBreed = foundSpecies.breeds?.find((b) => b.breedName === animalBreed);
+                            if (foundBreed) {
+                                setSelectedBreedId(foundBreed.breedId);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Ошибка при загрузке видов и пород:", error);
+            } finally {
+                setIsLoadingSpecies(false);
+            }
+        };
+
+        void fetchSpecies();
+    }, [animalId]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
 
+        console.log("Проверка типов:", {
+            aggressionLevel: {
+                value: temperament.aggressionLevel,
+                type: typeof temperament.aggressionLevel,
+            },
+            friendlinessLevel: {
+                value: temperament.friendlinessLevel,
+                type: typeof temperament.friendlinessLevel,
+            },
+            activityLevel: {
+                value: temperament.activityLevel,
+                type: typeof temperament.activityLevel,
+            },
+        });
+
         try {
-            console.log("Сохраняем данные:", { animal, medicalInfo, temperament });
+            const request: AddPetRequest = {
+                name: animal.name || "",
+                petPhysicCharacteristicsDto: {
+                    color: animal.color ?? "",
+                    healthInformation: animal.healthStatus ?? "",
+                    weight: parseFloat(animal.weight ?? "0"),
+                    height: parseFloat(animal.height ?? "0"),
+                },
+                petDetailsDto: {
+                    description: animal.description ?? "",
+                    birthDate: animal.birthDate ? new Date(animal.birthDate).toISOString() : new Date().toISOString(),
+                },
+                addressDto: {
+                    street: animal.location.split(",")[2] || "",
+                    city: animal.location.split(",")[1] || "",
+                    state: animal.location.split(",")[0] || "",
+                    zipCode: animal.location.split(",")[3] || "",
+                },
+                phoneNumber: animal.phoneNumber,
+                helpStatus:
+                    animal.status === "needs_help"
+                        ? "NeedsHelp"
+                        : animal.status === "looking_for_home"
+                          ? "SearchingHome"
+                          : "FoundHome",
+                animalTypeDto: {
+                    speciesId: selectedSpeciesId,
+                    breedId: selectedBreedId,
+                },
+                animalSex: animal.gender === "male" ? "Male" : animal.gender === "female" ? "Female" : "Неизвестно",
+                historyDto: {
+                    arriveTime: animal.arrivalDate
+                        ? new Date(animal.arrivalDate).toISOString()
+                        : new Date().toISOString(),
+                    lastOwner: animal.lastOwner ?? "",
+                    from:
+                        animal.source === "stray" ? "Stray" : animal.source === "shelter" ? "Shelter" : "PrivatePerson",
+                },
+                temperamentDto: {
+                    aggressionLevel: Number(temperament.aggressionLevel),
+                    friendliness: Number(temperament.friendlinessLevel),
+                    activityLevel: Number(temperament.activityLevel),
+                    goodWithKids: temperament.goodWithChildren,
+                    goodWithPeople: temperament.goodWithPeople,
+                    goodWithOtherAnimals: temperament.goodWithAnimals,
+                },
+                medicalInfoDto: {
+                    isSpayedNeutered: medicalInfo.isSterilized,
+                    isVaccinated: medicalInfo.isVaccinated,
+                    lastVaccinationDate: medicalInfo.vaccinationDate
+                        ? new Date(medicalInfo.vaccinationDate).toISOString()
+                        : null,
+                    hasChronicDiseases: medicalInfo.hasChronicDiseases,
+                    medicalNotes: medicalInfo.medicalDescription || null,
+                    requiresSpecialDiet: medicalInfo.needsSpecialDiet,
+                    hasAllergies: medicalInfo.hasAllergies,
+                },
+                requisitesDto: [],
+            };
 
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            console.log("Sending request:", JSON.stringify(request, null, 2)); // Для отладки
 
-            router.push("/volunteers");
+            const response = await addPetToVolunteer(volunteerId, request);
+
+            if (response.data.result?.isSuccess) {
+                router.push("/volunteers");
+            } else {
+                console.error("Ошибка при добавлении животного:", response.data.errors);
+            }
         } catch (error) {
             console.error("Ошибка при сохранении:", error);
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSpeciesChange = (speciesId: string) => {
+        setSelectedSpeciesId(speciesId);
+        const selectedSpecies = species.find((s) => s.speciesId === speciesId);
+        setBreeds(selectedSpecies?.breeds ?? []);
+        setSelectedBreedId("");
+        // Обновляем animal.type
+        setAnimal({
+            ...animal,
+            type: selectedSpecies?.speciesName ?? "",
+            breed: "",
+        });
+    };
+
+    const handleBreedChange = (breedId: string) => {
+        setSelectedBreedId(breedId);
+        const selectedBreed = breeds.find((b) => b.breedId === breedId);
+        // Обновляем animal.breed
+        setAnimal({
+            ...animal,
+            breed: selectedBreed?.breedName ?? "",
+        });
     };
 
     return (
@@ -322,34 +473,58 @@ export default function EditAnimalPage() {
                                                 <p className="h-15 pt-4 text-base text-white">Вид животного *:</p>
                                                 <Dropdown>
                                                     <DropdownTrigger className="border-gray-700 bg-gray-800">
-                                                        <Button variant="bordered">
-                                                            {animal.type ? animal.type : "Выберите вид"}
+                                                        <Button variant="bordered" isLoading={isLoadingSpecies}>
+                                                            {animal.type || "Выберите вид"}
                                                         </Button>
                                                     </DropdownTrigger>
                                                     <DropdownMenu
                                                         onAction={(key) => {
-                                                            setAnimal({ ...animal, type: String(key) });
+                                                            handleSpeciesChange(String(key));
                                                         }}
+                                                        disabledKeys={
+                                                            isLoadingSpecies ? species.map((s) => s.speciesId) : []
+                                                        }
                                                     >
-                                                        <DropdownItem key="Кошка">Кошка</DropdownItem>
-                                                        <DropdownItem key="Собака">Собака</DropdownItem>
-                                                        <DropdownItem key="Кролик">Кролик</DropdownItem>
-                                                        <DropdownItem key="Хомяк">Хомяк</DropdownItem>
-                                                        <DropdownItem key="Морская свинка">Морская свинка</DropdownItem>
-                                                        <DropdownItem key="Птица">Птица</DropdownItem>
-                                                        <DropdownItem key="Другое">Другое</DropdownItem>
+                                                        {species.map((specie) => (
+                                                            <DropdownItem key={specie.speciesId}>
+                                                                {specie.speciesName}
+                                                            </DropdownItem>
+                                                        ))}
                                                     </DropdownMenu>
                                                 </Dropdown>
                                             </div>
 
-                                            <Input
-                                                id="breed"
-                                                label="Порода"
-                                                value={animal.breed}
-                                                onChange={(e) => {
-                                                    setAnimal({ ...animal, breed: e.target.value });
-                                                }}
-                                            />
+                                            {/* Порода */}
+                                            <div className="flex flex-row items-center space-x-2">
+                                                <p className="h-15 pt-4 text-base text-white">Порода *:</p>
+                                                <Dropdown>
+                                                    <DropdownTrigger className="border-gray-700 bg-gray-800">
+                                                        <Button
+                                                            variant="bordered"
+                                                            isDisabled={!selectedSpeciesId || isLoadingSpecies}
+                                                        >
+                                                            {animal.breed ||
+                                                                (selectedSpeciesId
+                                                                    ? "Выберите породу"
+                                                                    : "Сначала выберите вид")}
+                                                        </Button>
+                                                    </DropdownTrigger>
+                                                    <DropdownMenu
+                                                        onAction={(key) => {
+                                                            handleBreedChange(String(key));
+                                                        }}
+                                                        disabledKeys={
+                                                            !selectedSpeciesId ? breeds.map((b) => b.breedId) : []
+                                                        }
+                                                    >
+                                                        {breeds.map((breed) => (
+                                                            <DropdownItem key={breed.breedId}>
+                                                                {breed.breedName}
+                                                            </DropdownItem>
+                                                        ))}
+                                                    </DropdownMenu>
+                                                </Dropdown>
+                                            </div>
 
                                             {/* Пол */}
                                             <div className="space-y-2">
@@ -428,6 +603,18 @@ export default function EditAnimalPage() {
                                                 placeholder="Например: 4.5 кг"
                                             />
 
+                                            <Input
+                                                id="phoneNumber"
+                                                label="Номер телефона"
+                                                value={animal.phoneNumber}
+                                                onChange={(e) => {
+                                                    const value = e.target.value.replace(/[^0-9+]/g, "");
+                                                    setAnimal({ ...animal, phoneNumber: value });
+                                                }}
+                                                isRequired={true}
+                                                placeholder="+79991234567"
+                                            />
+
                                             {/* Откуда поступил */}
                                             <div className="flex flex-row items-center space-x-2">
                                                 <p className="h-15 pt-4 text-base text-white">Откуда поступил *:</p>
@@ -467,16 +654,16 @@ export default function EditAnimalPage() {
                                             {/* Адрес приюта */}
                                             <Input
                                                 id="shelterAddress"
-                                                label="Адрес приюта"
-                                                value={animal.shelterAddress ?? ""}
+                                                label="Адрес"
+                                                value={animal.location}
                                                 onChange={(e) => {
                                                     setAnimal({
                                                         ...animal,
-                                                        shelterAddress: e.target.value,
+                                                        location: e.target.value,
                                                     });
                                                 }}
                                                 isRequired={true}
-                                                placeholder="Улица, город"
+                                                placeholder="Страна, город, улица, почтовый индекс"
                                             />
 
                                             {/* Статус помощи */}
@@ -718,11 +905,12 @@ export default function EditAnimalPage() {
                                                 minValue={1}
                                                 maxValue={10}
                                                 step={1}
-                                                value={[temperament.aggressionLevel]}
+                                                value={[temperament.aggressionLevel]} // Всегда массив
                                                 onChange={(value) => {
+                                                    const numValue = Array.isArray(value) ? value[0] : value;
                                                     setTemperament({
                                                         ...temperament,
-                                                        aggressionLevel: value as number,
+                                                        aggressionLevel: Number(numValue), // Явное преобразование в число
                                                     });
                                                 }}
                                                 className="w-full"
@@ -748,9 +936,10 @@ export default function EditAnimalPage() {
                                                 step={1}
                                                 value={[temperament.friendlinessLevel]}
                                                 onChange={(value) => {
+                                                    const numValue = Array.isArray(value) ? value[0] : value;
                                                     setTemperament({
                                                         ...temperament,
-                                                        friendlinessLevel: value as number,
+                                                        friendlinessLevel: Number(numValue),
                                                     });
                                                 }}
                                                 className="w-full"
@@ -771,15 +960,15 @@ export default function EditAnimalPage() {
                                                 </span>
                                             </div>
                                             <Slider
-                                                id="activityLevel"
                                                 minValue={1}
                                                 maxValue={10}
                                                 step={1}
                                                 value={[temperament.activityLevel]}
                                                 onChange={(value) => {
+                                                    const numValue = Array.isArray(value) ? value[0] : value;
                                                     setTemperament({
                                                         ...temperament,
-                                                        activityLevel: value as number,
+                                                        activityLevel: Number(numValue),
                                                     });
                                                 }}
                                                 className="w-full"

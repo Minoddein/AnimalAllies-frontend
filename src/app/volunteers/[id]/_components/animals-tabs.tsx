@@ -17,7 +17,11 @@ interface AnimalStatus {
     color: "default" | "primary" | "secondary" | "success" | "warning" | "danger" | undefined;
 }
 
-export default function MyAnimalsTab() {
+interface MyAnimalsTabProps {
+    volunteerId: string;
+}
+
+export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
     const router = useRouter();
     const [animals, setAnimals] = useState<Animal[]>(myAnimals);
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -54,7 +58,7 @@ export default function MyAnimalsTab() {
     };
 
     const handleAddAnimal = () => {
-        router.push("/animals/edit");
+        router.push(`/animals/edit/${volunteerId}`);
     };
 
     const handleEditAnimal = (id: string) => {

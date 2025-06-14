@@ -9,6 +9,7 @@ export interface Animal {
     location: string;
     image: string;
     dateAdded: string;
+    phoneNumber: string;
     description?: string;
     birthDate?: string;
     arrivalDate?: string;
