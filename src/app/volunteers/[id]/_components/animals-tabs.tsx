@@ -11,13 +11,9 @@ import { getPetWithPaginationByVolunteerId } from "@/api/pet";
 import ModalOrDrawer from "@/components/modal-or-drawer";
 import { myAnimals } from "@/data/my-animals";
 import { Animal } from "@/types/Animal";
+import { AnimalStatus } from "@/types/animal-status";
 import { DragDropContext, Draggable, DropResult, Droppable } from "@hello-pangea/dnd";
 import { Button, Card, CardBody, Chip, Image, useDisclosure } from "@heroui/react";
-
-interface AnimalStatus {
-    label: string;
-    color: "default" | "primary" | "secondary" | "success" | "warning" | "danger" | undefined;
-}
 
 interface MyAnimalsTabProps {
     volunteerId: string;
