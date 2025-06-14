@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 
 import { sampleAnimals } from "@/data/sample-animals";
 import { Animal } from "@/types/Animal";
+import { AnimalStatus } from "@/types/animal-status";
 import { MedicalInfo } from "@/types/medical-info";
 import { Temperament } from "@/types/temperament";
 import { Chip } from "@heroui/chip";
@@ -41,7 +42,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
         setSelectedAnimal(sampleAnimals[selectedAnimalId]);
     }, [selectedAnimalId]);
 
-    const getStatusLabel = (status: string) => {
+    const getStatusLabel = (status: string): AnimalStatus => {
         switch (status) {
             case "adopted":
                 return { label: "Пристроен", color: "success" };
@@ -116,7 +117,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
                             alt={`${selectedAnimal?.animal.name} - фото ${currentImageIndex + 1}`}
                             className="object-cover"
                         />
-                        {selectedAnimal?.animal.images.length > 1 && (
+                        {selectedAnimal && selectedAnimal.animal.images.length > 1 && (
                             <>
                                 <Button
                                     variant="flat"
@@ -132,22 +133,24 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
                                     isIconOnly
                                     className="absolute top-1/2 right-2 -translate-y-1/2 transform bg-black/50 hover:bg-black/70"
                                     onPress={nextImage}
-                                    isDisabled={currentImageIndex === selectedAnimal?.animal.images.length - 1}
+                                    isDisabled={currentImageIndex === selectedAnimal.animal.images.length - 1}
                                 >
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </>
                         )}
                     </div>
-                    {selectedAnimal?.animal.images.length > 1 && (
+                    {selectedAnimal && selectedAnimal.animal.images.length > 1 && (
                         <div className="flex justify-center gap-2">
-                            {selectedAnimal?.animal.images.map((_, index) => (
+                            {selectedAnimal.animal.images.map((_, index) => (
                                 <button
                                     key={index}
                                     className={`h-2 w-2 rounded-full ${
                                         index === currentImageIndex ? "bg-green-500" : "bg-gray-600"
                                     }`}
-                                    onClick={() => { setCurrentImageIndex(index); }}
+                                    onClick={() => {
+                                        setCurrentImageIndex(index);
+                                    }}
                                 />
                             ))}
                         </div>
@@ -334,7 +337,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
                                             <div
                                                 className="h-2 rounded-full bg-red-500"
                                                 style={{
-                                                    width: `${(selectedAnimal?.temperament.aggressionLevel / 10) * 100}%`,
+                                                    width: `${(selectedAnimal?.temperament.aggressionLevel ?? 0 / 10) * 100}%`,
                                                 }}
                                             />
                                         </div>
@@ -351,7 +354,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
                                             <div
                                                 className="h-2 rounded-full bg-green-500"
                                                 style={{
-                                                    width: `${(selectedAnimal?.temperament.friendlinessLevel / 10) * 100}%`,
+                                                    width: `${(selectedAnimal?.temperament.friendlinessLevel ?? 0 / 10) * 100}%`,
                                                 }}
                                             />
                                         </div>
@@ -368,7 +371,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
                                             <div
                                                 className="h-2 rounded-full bg-blue-500"
                                                 style={{
-                                                    width: `${(selectedAnimal?.temperament.activityLevel / 10) * 100}%`,
+                                                    width: `${(selectedAnimal?.temperament.activityLevel ?? 0 / 10) * 100}%`,
                                                 }}
                                             />
                                         </div>
@@ -429,7 +432,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
                     Добавлено: {selectedAnimal?.animal.dateAdded} • {selectedAnimal?.animal.location}
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" className="border-gray-600">
+                    <Button variant="faded" className="border-gray-600">
                         <Heart className="mr-2 h-4 w-4" />В избранное
                     </Button>
                     <Button className="bg-green-500 hover:bg-green-600">Связаться с приютом</Button>
