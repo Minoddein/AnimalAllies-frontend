@@ -7,6 +7,8 @@ import { MainCards } from "@/components/main-cards";
 import { SearchCardOrDrawer } from "@/components/search/search-card-or-drawer";
 import { AnimalItem } from "@/types/AnimalItem";
 import { SearchAnimalsParams } from "@/types/search";
+import { Input } from "@heroui/react";
+import { Icon } from "@iconify/react";
 
 interface Paged<T> {
     items: T[];
@@ -69,6 +71,18 @@ export default function AnimalsPage() {
             <div className="flex min-h-[100vh] w-full">
                 <SearchCardOrDrawer onSearchAction={handleSearch} />
                 <div className="flex-1 p-4">
+                    <Input
+                        label="Поиск по имени"
+                        type="text"
+                        startContent={<Icon icon="material-symbols:search-rounded" className="h-5 w-5" />}
+                        value={searchParamsState?.name ?? ""}
+                        onChange={(e) => {
+                            setSearchParamsState((prev) => ({
+                                ...prev,
+                                name: e.target.value.trim(), // trim() убирает пробелы по краям
+                            }));
+                        }}
+                    />
                     <MainCards<AnimalItem>
                         isLoading={isLoading}
                         pageItems={animalsPageItems}

@@ -5,4 +5,5 @@ export interface SearchAnimalsParams {
     place?: string;
     health?: string;
     other?: string;
+    filter?: string;
 }
