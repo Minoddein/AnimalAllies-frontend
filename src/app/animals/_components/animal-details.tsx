@@ -30,6 +30,27 @@ interface DetailsProps {
     selectedAnimalId: string;
 }
 
+function getAgeWord(age: number): string {
+    if (age % 100 >= 11 && age % 100 <= 14) return "лет";
+
+    const lastDigit = age % 10;
+    return lastDigit === 1 ? "год" : lastDigit >= 2 && lastDigit <= 4 ? "года" : "лет";
+}
+
+function calculateAge(birthDate: string | Date): string {
+    const birth = new Date(birthDate);
+    const now = new Date();
+
+    let age = now.getFullYear() - birth.getFullYear();
+    const monthDiff = now.getMonth() - birth.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) {
+        age--;
+    }
+
+    return `${age} ${getAgeWord(age)}`;
+}
+
 export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
     const [selectedAnimal, setSelectedAnimal] = useState<{
         animal: Animal;
@@ -97,7 +118,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
 
     return (
         <div className="block h-[80vh] md:h-full">
-            <h3 className="mb-2 flex items-center justify-between text-xl font-bold text-white md:mb-0 md:text-2xl">
+            <h3 className="mb-2 flex items-center justify-between text-xl font-bold text-white md:text-2xl">
                 {selectedAnimal?.animal.name}
                 <Chip
                     className="text-white"
@@ -166,7 +187,7 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
                                     <div className="flex items-center gap-2">
                                         <Calendar className="h-4 w-4 text-green-500" />
                                         <span className="text-gray-400">Возраст:</span>
-                                        <span>{selectedAnimal?.animal.age}</span>
+                                        <span>{calculateAge(String(selectedAnimal?.animal.birthDate))}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Users className="h-4 w-4 text-green-500" />
