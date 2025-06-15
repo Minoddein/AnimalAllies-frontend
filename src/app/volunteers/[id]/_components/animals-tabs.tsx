@@ -6,12 +6,10 @@ import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
-import { PetDto, PetPhotoDto } from "@/api/dtos/pet/petDtos";
+import { PetDto } from "@/api/dtos/pet/petDtos";
 import { FileKey, getManyDownloadPresignedUrls } from "@/api/files";
-import { getPetWithPaginationByVolunteerId } from "@/api/pet";
+import { deletePetSoft, getPetWithPaginationByVolunteerId, movePet } from "@/api/pet";
 import ModalOrDrawer from "@/components/modal-or-drawer";
-import { myAnimals } from "@/data/my-animals";
-import { Animal } from "@/types/Animal";
 import { AnimalStatus } from "@/types/animal-status";
 import { DragDropContext, Draggable, DropResult, Droppable } from "@hello-pangea/dnd";
 import { Button, Card, CardBody, Chip, Image, useDisclosure } from "@heroui/react";
@@ -22,14 +20,14 @@ interface MyAnimalsTabProps {
 
 export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
     const router = useRouter();
-    const [animals, setAnimals] = useState<Animal[]>(myAnimals);
+    /*const [animals, setAnimals] = useState<Animal[]>(myAnimals);*/
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [currentPage] = useState(1);
     const [pagedData, setPagedData] = useState<{ items: PetDto[]; totalCount: number }>({
         items: [],
         totalCount: 0,
     });
-    const pageSize = 10;
+    const pageSize = 40;
 
     const getStatusLabel = (status: string): AnimalStatus => {
         switch (status) {
@@ -111,10 +109,9 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
 
             const fileKeys: FileKey[] = response.data.result.value.items
                 .filter((a) => a.petPhotos.length > 0)
-                .flatMap((item) => item.petPhotos)
-                .filter((photo): photo is PetPhotoDto => !!photo.path)
-                .map((photo) => {
-                    const filename = photo.path.split("/").pop() ?? "";
+                .map((item) => {
+                    const mainPhoto = item.petPhotos.find((photo) => photo.isMain) ?? item.petPhotos[0];
+                    const filename = mainPhoto.path.split("/").pop() ?? "";
                     const [fileId, ...extensionParts] = filename.split(".");
                     const extension = extensionParts.join(".");
 
@@ -122,7 +119,8 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                         fileId,
                         extension,
                     };
-                });
+                })
+                .filter((key): key is FileKey => !!key.fileId);
 
             const responseUrls = await getManyDownloadPresignedUrls({
                 bucketName: "photos",
@@ -148,22 +146,38 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
         void loadAnimals();
     }, [currentPage]);
 
-    const handleDragEnd = (result: DropResult) => {
+    const handleDragEnd = async (result: DropResult) => {
         if (!result.destination) return;
 
-        const items = Array.from(animals);
+        const items = Array.from(pagedData.items);
         const [reorderedItem] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, reorderedItem);
 
-        setAnimals(items);
+        try {
+            const response = await movePet(volunteerId, reorderedItem.petId, result.destination.index + 1);
+
+            if (response.data.result?.isSuccess) {
+                setPagedData({
+                    items: items,
+                    totalCount: items.length,
+                });
+            } else {
+                await loadAnimals();
+            }
+        } catch (error) {
+            console.error("Error moving pet position:", error);
+            await loadAnimals();
+        }
     };
 
-    const animalDelete = (id: string) => {
-        const items = Array.from(animals);
-        const deletedAnimalIndex = items.findIndex((a) => a.id === id);
+    const animalDelete = async (id: string) => {
+        const items = Array.from(pagedData.items);
+        const deletedAnimalIndex = items.findIndex((a) => a.petId === id);
         items.splice(deletedAnimalIndex, 1);
-
-        setAnimals(items);
+        const response = await deletePetSoft(volunteerId, id);
+        if (response.data.result?.isSuccess) {
+            await loadAnimals();
+        }
     };
 
     const handleAddAnimal = () => {
@@ -195,7 +209,7 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                         <CardBody className="flex items-center justify-between space-y-2 p-6">
                             <div>
                                 <p className="mb-1 text-gray-400">Всего животных</p>
-                                <p className="text-center text-3xl font-bold">{animals.length}</p>
+                                <p className="text-center text-3xl font-bold">{pagedData.items.length}</p>
                             </div>
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-blue-500">
                                 <Heart className="h-6 w-6" />
@@ -207,7 +221,7 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                             <div>
                                 <p className="mb-1 text-gray-400">Пристроено</p>
                                 <p className="text-center text-3xl font-bold">
-                                    {animals.filter((a) => a.status === "adopted").length}
+                                    {pagedData.items.filter((a) => a.helpStatus === "FoundHome").length}
                                 </p>
                             </div>
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20 text-green-500">
@@ -220,7 +234,11 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                             <div>
                                 <p className="mb-1 text-gray-400">В процессе</p>
                                 <p className="text-center text-3xl font-bold">
-                                    {animals.filter((a) => a.status === "needs_help").length}
+                                    {
+                                        pagedData.items.filter(
+                                            (a) => a.helpStatus === "NeedsHelp" || a.helpStatus === "SearchingHome",
+                                        ).length
+                                    }
                                 </p>
                             </div>
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500/20 text-yellow-500">
@@ -241,7 +259,11 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                 {/* Animals List */}
                 <Card className="border-gray-700 bg-gray-900/50">
                     <CardBody className="p-0">
-                        <DragDropContext onDragEnd={handleDragEnd}>
+                        <DragDropContext
+                            onDragEnd={(e) => {
+                                void handleDragEnd(e);
+                            }}
+                        >
                             <Droppable droppableId="animals">
                                 {(provided) => (
                                     <div
@@ -345,7 +367,7 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                                                                             variant="light"
                                                                             color="danger"
                                                                             onPress={() => {
-                                                                                animalDelete(animal.petId);
+                                                                                void animalDelete(animal.petId);
                                                                                 onClose();
                                                                             }}
                                                                         >

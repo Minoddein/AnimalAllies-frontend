@@ -3,7 +3,7 @@ import { AxiosResponse } from "axios";
 import { API_URL, api } from "@/api/api";
 import { PagedResponse } from "@/api/requests";
 import { Envelope } from "@/models/envelope";
-import { ResultWith } from "@/models/result";
+import { Result, ResultWith } from "@/models/result";
 
 import { AddPetRequest, PetDto } from "./dtos/pet/petDtos";
 
@@ -48,4 +48,22 @@ export async function addPetPhotos(
             Files: dtos,
         },
     );
+}
+
+export async function deletePetSoft(volunteerId: string, petId: string): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.delete<Envelope<Result>>(`${API_URL}Volunteer/${volunteerId}/${petId}/pet-removing-soft`);
+}
+
+interface PositionDto {
+    position: number;
+}
+
+export async function movePet(
+    volunteerId: string,
+    petId: string,
+    position: number,
+): Promise<AxiosResponse<Envelope<Result>>> {
+    return api.post<Envelope<Result>>(`${API_URL}Volunteer/${volunteerId}/${petId}/pet-position`, {
+        Position: { position } as PositionDto,
+    });
 }

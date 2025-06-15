@@ -47,7 +47,7 @@ const emptyAnimal: Animal = {
     gender: "unknown",
     status: "needs_help",
     location: "",
-    image: "https://i1.sndcdn.com/artworks-HrbpVDMzAPVyRM3Y-WjskEg-t1080x1080.jpg",
+    images: ["https://i1.sndcdn.com/artworks-HrbpVDMzAPVyRM3Y-WjskEg-t1080x1080.jpg"],
     dateAdded: new Date().toLocaleDateString("ru-RU"),
     description: "",
     birthDate: "",
@@ -118,7 +118,7 @@ const sampleAnimals: Record<string, { animal: Animal; medical: MedicalInfo; temp
             gender: "female",
             status: "looking_for_home",
             location: "Москва",
-            image: "/placeholder.svg?height=200&width=200",
+            images: ["/placeholder.svg?height=200&width=200"],
             dateAdded: "15.03.2025",
             description: "Милый и пушистый кролик, который принесет радость в ваш дом.",
             birthDate: "2024-03-15",
@@ -160,7 +160,7 @@ const sampleAnimals: Record<string, { animal: Animal; medical: MedicalInfo; temp
             gender: "male",
             status: "needs_help",
             location: "Москва",
-            image: "https://i.pinimg.com/originals/0a/a9/fd/0aa9fd22cf073e4f3918b5def662b1e1.jpg",
+            images: ["https://i.pinimg.com/originals/0a/a9/fd/0aa9fd22cf073e4f3918b5def662b1e1.jpg"],
             dateAdded: "02.04.2025",
             description: "Ласковый кот, любит играть и мурлыкать.",
             birthDate: "2022-04-10",
@@ -410,9 +410,18 @@ export default function EditAnimalPage() {
                     const urlsResponse = await addPetPhotos(volunteerId, response.data.result.value!, uploadFilesDtos);
                     if (urlsResponse.data.result?.value) {
                         const urlToUpload = urlsResponse.data.result.value.fileUrls;
-                        for (let i = 0; i < urlToUpload.length; i++) {
-                            await uploadFileToS3(urlToUpload[i], files[i]);
-                        }
+
+                        const uploadPromises = urlToUpload.map((url, index) =>
+                            uploadFileToS3(url, files[index]).catch((error: unknown) => {
+                                console.error(`Ошибка загрузки файла ${files[index].name}:`, error);
+                                return null;
+                            }),
+                        );
+
+                        const results = await Promise.all(uploadPromises);
+
+                        const successfulUploads = results.filter((result) => result !== null);
+                        console.log(`Успешно загружено ${successfulUploads.length} из ${files.length} файлов.`);
                     }
                 }
 
