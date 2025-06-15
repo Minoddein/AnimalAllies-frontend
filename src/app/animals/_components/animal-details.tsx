@@ -96,8 +96,8 @@ export default function AnimalDetails({ selectedAnimalId }: DetailsProps) {
     };
 
     return (
-        <div>
-            <h3 className="flex items-center justify-between text-2xl font-bold text-white">
+        <div className="block h-[80vh] md:h-full">
+            <h3 className="mb-2 flex items-center justify-between text-xl font-bold text-white md:mb-0 md:text-2xl">
                 {selectedAnimal?.animal.name}
                 <Chip
                     className="text-white"
