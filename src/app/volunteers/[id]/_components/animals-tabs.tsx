@@ -185,7 +185,7 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
     };
 
     const handleEditAnimal = (id: string) => {
-        router.push(`/my-animals/edit?id=${id}`);
+        router.push(`/animals/edit/${volunteerId}?id=${id}`);
     };
 
     return (

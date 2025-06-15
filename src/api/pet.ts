@@ -14,6 +14,27 @@ export async function addPetToVolunteer(
     return api.post<Envelope<ResultWith<string>>>(`${API_URL}Volunteer/${volunteerId}/pet`, request);
 }
 
+export async function updatePet(
+    volunteerId: string,
+    petId: string,
+    request: AddPetRequest,
+): Promise<AxiosResponse<Envelope<ResultWith<string>>>> {
+    return api.put<Envelope<ResultWith<string>>>(`${API_URL}Volunteer/${volunteerId}/${petId}/pet`, {
+        name: request.name,
+        petPhysicCharacteristicsDto: request.petPhysicCharacteristicsDto,
+        petDetailsDto: request.petDetailsDto,
+        addressDto: request.addressDto,
+        phoneNumber: request.phoneNumber,
+        helpStatus: request.helpStatus,
+        animalTypeDto: request.animalTypeDto,
+        animalSex: request.animalSex,
+        historyDto: request.historyDto,
+        temperamentDto: request.temperamentDto,
+        medicalInfoDto: request.medicalInfoDto,
+        requisitesDto: request.requisitesDto,
+    });
+}
+
 export async function getPetWithPaginationByVolunteerId(
     volunteerId: string,
     pageSize: number,
@@ -56,6 +77,10 @@ export async function deletePetSoft(volunteerId: string, petId: string): Promise
 
 interface PositionDto {
     position: number;
+}
+
+export async function getPetById(petId: string): Promise<AxiosResponse<Envelope<ResultWith<PetDto>>>> {
+    return api.get<Envelope<ResultWith<PetDto>>>(`${API_URL}Volunteer/${petId}/pet-by-id-dapper`);
 }
 
 export async function movePet(

@@ -68,6 +68,21 @@ export interface AddPetRequest {
     requisitesDto: RequisiteDto[];
 }
 
+export interface UpdatePetRequest {
+    name: string;
+    petPhysicCharacteristicsDto: PetPhysicCharacteristicsDto;
+    petDetailsDto: PetDetailsDto;
+    addressDto: AddressDto;
+    phoneNumber: string;
+    helpStatus: string;
+    animalTypeDto: AnimalTypeDto;
+    animalSex: string;
+    historyDto: HistoryDto;
+    temperamentDto: TemperamentDto | null;
+    medicalInfoDto: MedicalInfoDto | null;
+    requisitesDto: RequisiteDto[];
+}
+
 export interface PetDto {
     petId: string;
     petName: string;

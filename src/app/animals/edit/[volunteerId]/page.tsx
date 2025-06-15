@@ -7,8 +7,8 @@ import { useEffect, useState } from "react";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
-import { AddPetRequest } from "@/api/dtos/pet/petDtos";
-import { UploadFileDto, addPetPhotos, addPetToVolunteer } from "@/api/pet";
+import { AddPetRequest, PetDto } from "@/api/dtos/pet/petDtos";
+import { UploadFileDto, addPetPhotos, addPetToVolunteer, getPetById, updatePet } from "@/api/pet";
 import { getAllSpeciesWithBreeds } from "@/api/species";
 import { UploadForm } from "@/app/animals/edit/[volunteerId]/_components/upload-form";
 import { Breed } from "@/models/breed";
@@ -43,11 +43,10 @@ const emptyAnimal: Animal = {
     name: "",
     type: "",
     breed: "",
-    age: "",
     gender: "unknown",
     status: "needs_help",
     location: "",
-    images: ["https://i1.sndcdn.com/artworks-HrbpVDMzAPVyRM3Y-WjskEg-t1080x1080.jpg"],
+    images: [],
     dateAdded: new Date().toLocaleDateString("ru-RU"),
     description: "",
     birthDate: "",
@@ -60,6 +59,12 @@ const emptyAnimal: Animal = {
     healthStatus: "",
     phoneNumber: "",
     shelterAddress: "",
+    state: "",
+    city: "",
+    street: "",
+    zipCode: "",
+    speciesName: "",
+    breedName: "",
 };
 
 // Дополнительные поля для медицинской информации
@@ -71,7 +76,6 @@ interface MedicalInfo {
     medicalDescription: string;
     needsSpecialDiet: boolean;
     hasAllergies: boolean;
-    allergiesDescription: string;
 }
 
 // Дополнительные поля для темперамента
@@ -93,7 +97,6 @@ const emptyMedicalInfo: MedicalInfo = {
     medicalDescription: "",
     needsSpecialDiet: false,
     hasAllergies: false,
-    allergiesDescription: "",
 };
 
 // Пример данных для темперамента
@@ -106,93 +109,54 @@ const emptyTemperament: Temperament = {
     goodWithAnimals: false,
 };
 
-// Примеры животных для демонстрации
-const sampleAnimals: Record<string, { animal: Animal; medical: MedicalInfo; temperament: Temperament }> = {
-    "animal-1": {
-        animal: {
-            id: "animal-1",
-            name: "Пушинка",
-            type: "Кролик",
-            breed: "Декоративный",
-            age: "1 год",
-            gender: "female",
-            status: "looking_for_home",
-            location: "Москва",
-            images: ["/placeholder.svg?height=200&width=200"],
-            dateAdded: "15.03.2025",
-            description: "Милый и пушистый кролик, который принесет радость в ваш дом.",
-            birthDate: "2024-03-15",
-            arrivalDate: "2025-03-01",
-            source: "person",
-            color: "Белый",
-            height: "20 см",
-            weight: "1.5 кг",
-            healthStatus: "Здоров",
-            phoneNumber: "12345678910",
-            shelterAddress: "ул. Примерная, 123, Москва",
-        },
-        medical: {
-            isVaccinated: true,
-            vaccinationDate: "2025-03-05",
-            isSterilized: false,
-            hasChronicDiseases: false,
-            medicalDescription: "Полностью здоров, прошел ветеринарный осмотр.",
-            needsSpecialDiet: false,
-            hasAllergies: false,
-            allergiesDescription: "",
-        },
-        temperament: {
-            aggressionLevel: 1,
-            friendlinessLevel: 9,
-            activityLevel: 7,
-            goodWithChildren: true,
-            goodWithPeople: true,
-            goodWithAnimals: true,
-        },
-    },
-    "animal-2": {
-        animal: {
-            id: "animal-2",
-            name: "Барсик",
-            type: "Кот",
-            breed: "Сибирский",
-            age: "3 года",
-            gender: "male",
-            status: "needs_help",
-            location: "Москва",
-            images: ["https://i.pinimg.com/originals/0a/a9/fd/0aa9fd22cf073e4f3918b5def662b1e1.jpg"],
-            dateAdded: "02.04.2025",
-            description: "Ласковый кот, любит играть и мурлыкать.",
-            birthDate: "2022-04-10",
-            arrivalDate: "2025-04-01",
-            source: "stray",
-            color: "Серый",
-            height: "30 см",
-            weight: "4.2 кг",
-            healthStatus: "Требуется лечение",
-            phoneNumber: "12345678910",
-            shelterAddress: "ул. Примерная, 123, Москва",
-        },
-        medical: {
-            isVaccinated: false,
-            vaccinationDate: "",
-            isSterilized: true,
-            hasChronicDiseases: true,
-            medicalDescription: "Хроническое заболевание почек, требуется специальная диета.",
-            needsSpecialDiet: true,
-            hasAllergies: false,
-            allergiesDescription: "",
-        },
-        temperament: {
-            aggressionLevel: 3,
-            friendlinessLevel: 7,
-            activityLevel: 5,
-            goodWithChildren: false,
-            goodWithPeople: true,
-            goodWithAnimals: false,
-        },
-    },
-};
+const petDtoToAnimal = (pet: PetDto): Animal => ({
+    id: pet.petId,
+    name: pet.petName,
+    type: pet.speciesName || "",
+    breed: pet.breedName || "",
+    gender: pet.sex ? (pet.sex.toLowerCase() as "male" | "female" | "unknown") : "unknown",
+    status:
+        pet.helpStatus === "NeedsHelp"
+            ? "needs_help"
+            : pet.helpStatus === "SearchingHome"
+              ? "looking_for_home"
+              : "adopted",
+    location: `${pet.state || ""}, ${pet.city || ""}`,
+    images: pet.petPhotos.length > 0 ? pet.petPhotos.map((p) => p.path) : [],
+    description: pet.description || "",
+    dateAdded: new Date().toLocaleDateString("ru-RU"),
+    birthDate: pet.birthDate || "",
+    arrivalDate: pet.arriveDate ?? new Date().toISOString().split("T")[0],
+    lastOwner: pet.lastOwner ?? "",
+    source: pet.from === "Homeless" ? "stray" : pet.from === "Shelter" ? "shelter" : "person",
+    color: pet.color || "",
+    height: pet.height ? pet.height.toString() : "",
+    weight: pet.weight ? pet.weight.toString() : "",
+    healthStatus: pet.healthInformation || "",
+    phoneNumber: pet.phoneNumber || "",
+    shelterAddress: pet.street || "",
+    state: pet.state || "",
+    city: pet.city || "",
+    street: pet.street || "",
+    zipCode: pet.zipCode || "",
+    speciesName: pet.speciesName || "",
+    breedName: pet.breedName || "",
+    arriveDate: pet.arriveDate,
+    sex: pet.sex,
+    isSpayedNeutered: pet.isSpayedNeutered ?? false,
+    isVaccinated: pet.isVaccinated ?? false,
+    lastVaccinationDate: pet.lastVaccinationDate,
+    hasChronicDiseases: pet.hasChronicDiseases ?? false,
+    medicalNotes: pet.medicalNotes,
+    requiresSpecialDiet: pet.requiresSpecialDiet ?? false,
+    hasAllergies: pet.hasAllergies ?? false,
+    aggressionLevel: pet.aggressionLevel ?? 1,
+    friendliness: pet.friendliness ?? 5,
+    activityLevel: pet.activityLevel ?? 5,
+    goodWithKids: pet.goodWithKids ?? false,
+    goodWithPeople: pet.goodWithPeople ?? true,
+    goodWithOtherAnimals: pet.goodWithOtherAnimals ?? false,
+});
 
 export function getContentTypeFromExtension(extension: string): string {
     const formattedExtension = extension.replace(".", "").toLowerCase();
@@ -248,39 +212,47 @@ export default function EditAnimalPage() {
         }
     };
 
-    useEffect(() => {
+    /*useEffect(() => {
         if (animalId) {
-            // Загрузка данных животного для редактирования
-            setAnimal(sampleAnimals[animalId].animal);
-            setMedicalInfo(sampleAnimals[animalId].medical);
-            setTemperament(sampleAnimals[animalId].temperament);
         } else {
             // Сброс формы для нового животного
             setAnimal(emptyAnimal);
             setMedicalInfo(emptyMedicalInfo);
             setTemperament(emptyTemperament);
         }
-    }, [animalId]);
+    }, [animalId]);*/
 
     useEffect(() => {
         const fetchSpecies = async () => {
             setIsLoadingSpecies(true);
             try {
-                const response = await getAllSpeciesWithBreeds();
-                if (response.data.result?.isSuccess && response.data.result.value) {
-                    setSpecies(response.data.result.value);
+                const responseSpecies = await getAllSpeciesWithBreeds();
+                if (responseSpecies.data.result?.isSuccess && responseSpecies.data.result.value) {
+                    setSpecies(responseSpecies.data.result.value);
+
                     // Если редактируем существующее животное, устанавливаем выбранные значения
-                    if (animalId && sampleAnimals[animalId].animal.type) {
-                        const animalType = sampleAnimals[animalId].animal.type;
-                        const foundSpecies = response.data.result.value.find((s) => s.speciesName === animalType);
-                        if (foundSpecies) {
-                            setSelectedSpeciesId(foundSpecies.speciesId);
-                            setBreeds(foundSpecies.breeds ?? []);
-                            // Аналогично для породы
-                            const animalBreed = sampleAnimals[animalId].animal.breed;
-                            const foundBreed = foundSpecies.breeds?.find((b) => b.breedName === animalBreed);
-                            if (foundBreed) {
-                                setSelectedBreedId(foundBreed.breedId);
+                    if (animalId) {
+                        const response = await getPetById(animalId);
+                        if (response.data.result?.isSuccess && response.data.result.value) {
+                            const petData = response.data.result.value;
+
+                            if (petData.speciesName) {
+                                const foundSpecies = responseSpecies.data.result.value.find(
+                                    (s) => s.speciesName === petData.speciesName,
+                                );
+                                if (foundSpecies) {
+                                    setSelectedSpeciesId(foundSpecies.speciesId);
+                                    setBreeds(foundSpecies.breeds ?? []);
+
+                                    if (petData.breedName) {
+                                        const foundBreed = foundSpecies.breeds?.find(
+                                            (b) => b.breedName === petData.breedName,
+                                        );
+                                        if (foundBreed) {
+                                            setSelectedBreedId(foundBreed.breedId);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -328,20 +300,20 @@ export default function EditAnimalPage() {
             const request: AddPetRequest = {
                 name: animal.name || "",
                 petPhysicCharacteristicsDto: {
-                    color: animal.color ?? "",
-                    healthInformation: animal.healthStatus ?? "",
-                    weight: parseFloat(animal.weight ?? "0"),
-                    height: parseFloat(animal.height ?? "0"),
+                    color: animal.color,
+                    healthInformation: animal.healthStatus,
+                    weight: parseFloat(animal.weight),
+                    height: parseFloat(animal.height),
                 },
                 petDetailsDto: {
-                    description: animal.description ?? "",
+                    description: animal.description,
                     birthDate: animal.birthDate ? new Date(animal.birthDate).toISOString() : new Date().toISOString(),
                 },
                 addressDto: {
-                    street: animal.location.split(",")[2] || "",
-                    city: animal.location.split(",")[1] || "",
-                    state: animal.location.split(",")[0] || "",
-                    zipCode: animal.location.split(",")[3] || "",
+                    street: animal.street ?? "",
+                    city: animal.city ?? "",
+                    state: animal.state ?? "",
+                    zipCode: animal.zipCode ?? "",
                 },
                 phoneNumber: animal.phoneNumber,
                 helpStatus:
@@ -391,10 +363,15 @@ export default function EditAnimalPage() {
 
             console.log("Sending request:", JSON.stringify(request, null, 2)); // Для отладки
 
-            const response = await addPetToVolunteer(volunteerId, request);
+            let response;
+            if (animalId) {
+                response = await updatePet(volunteerId, animalId, request);
+            } else {
+                response = await addPetToVolunteer(volunteerId, request);
+            }
 
             if (response.data.result?.isSuccess) {
-                if (files.length > 0) {
+                if (files.length > 0 && !animalId) {
                     const uploadFilesDtos: UploadFileDto[] = files.map((file: FilePreview) => {
                         const lastDotIndex = file.name.lastIndexOf(".");
                         const extension =
@@ -435,6 +412,89 @@ export default function EditAnimalPage() {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        const fetchAnimalData = async () => {
+            if (animalId) {
+                try {
+                    setIsLoading(true);
+                    const response = await getPetById(animalId);
+                    if (response.data.result?.isSuccess && response.data.result.value) {
+                        const petData = response.data.result.value;
+
+                        // Преобразуем PetDto в Animal
+                        const animalData = petDtoToAnimal(petData);
+                        setAnimal(animalData);
+
+                        // Устанавливаем медицинскую информацию
+                        setMedicalInfo({
+                            isVaccinated: petData.isVaccinated ?? false,
+                            vaccinationDate: petData.lastVaccinationDate ?? "",
+                            isSterilized: petData.isSpayedNeutered ?? false,
+                            hasChronicDiseases: petData.hasChronicDiseases ?? false,
+                            medicalDescription: petData.medicalNotes ?? "",
+                            needsSpecialDiet: petData.requiresSpecialDiet ?? false,
+                            hasAllergies: petData.hasAllergies ?? false,
+                        });
+
+                        // Устанавливаем темперамент
+                        setTemperament({
+                            aggressionLevel: petData.aggressionLevel ?? 1,
+                            friendlinessLevel: petData.friendliness ?? 5,
+                            activityLevel: petData.activityLevel ?? 5,
+                            goodWithChildren: petData.goodWithKids ?? false,
+                            goodWithPeople: petData.goodWithPeople ?? true,
+                            goodWithAnimals: petData.goodWithOtherAnimals ?? false,
+                        });
+
+                        if (petData.speciesName) {
+                            const foundSpecies = species.find((s) => s.speciesName === petData.speciesName);
+                            if (foundSpecies) {
+                                setSelectedSpeciesId(foundSpecies.speciesId);
+                                setBreeds(foundSpecies.breeds ?? []);
+
+                                if (petData.breedName) {
+                                    const foundBreed = foundSpecies.breeds?.find(
+                                        (b) => b.breedName === petData.breedName,
+                                    );
+                                    if (foundBreed) {
+                                        setSelectedBreedId(foundBreed.breedId);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Загрузка фото
+                        if (petData.petPhotos.length > 0) {
+                            const files = await Promise.all(
+                                petData.petPhotos.map(async (photo) => {
+                                    try {
+                                        const response = await fetch(photo.path);
+                                        const blob = await response.blob();
+                                        return {
+                                            name: photo.path.split("/").pop() ?? `photo-${Date.now()}.jpg`,
+                                            preview: photo.path,
+                                            file: new File([blob], `photo-${Date.now()}.jpg`, { type: blob.type }),
+                                        };
+                                    } catch (error) {
+                                        console.error("Error loading photo:", error);
+                                        return null;
+                                    }
+                                }),
+                            );
+                            setFiles(files.filter(Boolean) as unknown as FilePreview[]);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Ошибка при загрузке данных животного:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        void fetchAnimalData();
+    }, [animalId, species]);
 
     const handleSpeciesChange = (speciesId: string) => {
         setSelectedSpeciesId(speciesId);
@@ -642,11 +702,13 @@ export default function EditAnimalPage() {
                                             <DatePicker
                                                 id="birthDate"
                                                 label="Дата рождения"
-                                                value={animal.birthDate ? parseDate(animal.birthDate) : null}
+                                                value={
+                                                    animal.birthDate ? parseDate(animal.birthDate.split("T")[0]) : null
+                                                }
                                                 onChange={(e) => {
                                                     setAnimal({
                                                         ...animal,
-                                                        birthDate: e?.toString() ?? "",
+                                                        birthDate: e ? `${e.toString()}T00:00:00` : "",
                                                     });
                                                 }}
                                                 isRequired={true}
@@ -655,11 +717,15 @@ export default function EditAnimalPage() {
                                             <DatePicker
                                                 id="arrivalDate"
                                                 label="Дата поступления в приют"
-                                                value={animal.arrivalDate ? parseDate(animal.arrivalDate) : null}
+                                                value={
+                                                    animal.arrivalDate
+                                                        ? parseDate(animal.arrivalDate.split("T")[0])
+                                                        : null
+                                                }
                                                 onChange={(e) => {
                                                     setAnimal({
                                                         ...animal,
-                                                        arrivalDate: e?.toString() ?? "",
+                                                        arrivalDate: e ? `${e.toString()}T00:00:00` : "",
                                                     });
                                                 }}
                                                 isRequired={true}
@@ -714,9 +780,7 @@ export default function EditAnimalPage() {
                                                 <Dropdown>
                                                     <DropdownTrigger className="border-gray-700 bg-gray-800">
                                                         <Button variant="bordered">
-                                                            {animal.source
-                                                                ? getSourceLabel(animal.source)
-                                                                : "Выберите источник"}
+                                                            {getSourceLabel(animal.source)}
                                                         </Button>
                                                     </DropdownTrigger>
                                                     <DropdownMenu
@@ -737,7 +801,7 @@ export default function EditAnimalPage() {
                                             <Input
                                                 id="lastOwner"
                                                 label="Последний хозяин"
-                                                value={animal.lastOwner ?? ""}
+                                                value={animal.lastOwner}
                                                 onChange={(e) => {
                                                     setAnimal({ ...animal, lastOwner: e.target.value });
                                                 }}
@@ -747,16 +811,46 @@ export default function EditAnimalPage() {
                                             {/* Адрес приюта */}
                                             <Input
                                                 id="shelterAddress"
-                                                label="Адрес"
-                                                value={animal.location}
+                                                label="Страна"
+                                                value={animal.state}
                                                 onChange={(e) => {
                                                     setAnimal({
                                                         ...animal,
-                                                        location: e.target.value,
+                                                        state: e.target.value,
                                                     });
                                                 }}
                                                 isRequired={true}
-                                                placeholder="Страна, город, улица, почтовый индекс"
+                                                placeholder="Страна"
+                                            />
+
+                                            <Input
+                                                label="Город"
+                                                value={animal.city ?? ""}
+                                                onChange={(e) => {
+                                                    setAnimal({ ...animal, city: e.target.value });
+                                                }}
+                                                isRequired={true}
+                                                placeholder="Город"
+                                            />
+
+                                            <Input
+                                                label="Улица"
+                                                value={animal.street ?? ""}
+                                                onChange={(e) => {
+                                                    setAnimal({ ...animal, street: e.target.value });
+                                                }}
+                                                isRequired={true}
+                                                placeholder="Улица"
+                                            />
+
+                                            <Input
+                                                label="Индекс"
+                                                value={animal.zipCode ?? ""}
+                                                onChange={(e) => {
+                                                    setAnimal({ ...animal, zipCode: e.target.value });
+                                                }}
+                                                isRequired={true}
+                                                placeholder="Индекс"
                                             />
 
                                             {/* Статус помощи */}
@@ -790,7 +884,7 @@ export default function EditAnimalPage() {
                                         <Textarea
                                             id="description"
                                             label="Описание"
-                                            value={animal.description ?? ""}
+                                            value={animal.description}
                                             onChange={(e) => {
                                                 setAnimal({ ...animal, description: e.target.value });
                                             }}
@@ -802,7 +896,7 @@ export default function EditAnimalPage() {
                                         <Textarea
                                             id="healthStatus"
                                             label="Состояние здоровья"
-                                            value={animal.healthStatus ?? ""}
+                                            value={animal.healthStatus}
                                             onChange={(e) => {
                                                 setAnimal({ ...animal, healthStatus: e.target.value });
                                             }}
@@ -847,19 +941,16 @@ export default function EditAnimalPage() {
                                                     <DatePicker
                                                         id="vaccinationDate"
                                                         label="Дата прививки"
-                                                        showMonthAndYearPickers
                                                         value={
                                                             medicalInfo.vaccinationDate
-                                                                ? parseDate(medicalInfo.vaccinationDate)
+                                                                ? parseDate(medicalInfo.vaccinationDate.split("T")[0])
                                                                 : null
                                                         }
                                                         onChange={(e) => {
-                                                            if (e) {
-                                                                setMedicalInfo({
-                                                                    ...medicalInfo,
-                                                                    vaccinationDate: e.toString(),
-                                                                });
-                                                            }
+                                                            setMedicalInfo({
+                                                                ...medicalInfo,
+                                                                vaccinationDate: e ? `${e.toString()}T00:00:00` : "",
+                                                            });
                                                         }}
                                                     />
                                                 </div>
@@ -936,23 +1027,6 @@ export default function EditAnimalPage() {
                                                     Имеет аллергии
                                                 </Checkbox>
                                             </div>
-
-                                            {medicalInfo.hasAllergies && (
-                                                <div className="space-y-2">
-                                                    <Textarea
-                                                        id="allergiesDescription"
-                                                        label="Описание аллергий"
-                                                        value={medicalInfo.allergiesDescription}
-                                                        onChange={(e) => {
-                                                            setMedicalInfo({
-                                                                ...medicalInfo,
-                                                                allergiesDescription: e.target.value,
-                                                            });
-                                                        }}
-                                                        placeholder="Опишите аллергии животного"
-                                                    />
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
 
