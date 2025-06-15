@@ -58,6 +58,10 @@ export interface AddPetPhotosResponse {
     fileUrls: string[];
 }
 
+export interface DeletePetPhotosResponse {
+    fileUrls: string[];
+}
+
 export async function addPetPhotos(
     volunteerId: string,
     petId: string,
@@ -91,4 +95,17 @@ export async function movePet(
     return api.post<Envelope<Result>>(`${API_URL}Volunteer/${volunteerId}/${petId}/pet-position`, {
         Position: { position } as PositionDto,
     });
+}
+
+export async function deletePetPhotos(
+    volunteerId: string,
+    petId: string,
+    filePaths: string[],
+): Promise<AxiosResponse<Envelope<ResultWith<DeletePetPhotosResponse>>>> {
+    return api.delete<Envelope<ResultWith<DeletePetPhotosResponse>>>(
+        `${API_URL}Volunteer/${volunteerId}/${petId}/delete-pet-photos`,
+        {
+            data: { FilePaths: filePaths },
+        },
+    );
 }

@@ -32,7 +32,8 @@
         "@hello-pangea/dnd": "^18.0.1",
         "lucide-react": "^0.513.0",
         "next": "15.3.2",
-        "react": "^19.0.0"
+        "react": "^19.0.0",
+        "uuid": "^11.1.0"
     },
     "devDependencies": {
         "@eslint/compat": "^1.2.6",

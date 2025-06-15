@@ -16,9 +16,10 @@ import { Button, Card, CardBody, Chip, Image, useDisclosure } from "@heroui/reac
 
 interface MyAnimalsTabProps {
     volunteerId: string;
+    isOwn: boolean;
 }
 
-export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
+export default function MyAnimalsTab({ volunteerId, isOwn }: MyAnimalsTabProps) {
     const router = useRouter();
     /*const [animals, setAnimals] = useState<Animal[]>(myAnimals);*/
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -171,6 +172,7 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
     };
 
     const animalDelete = async (id: string) => {
+        if (!isOwn) return;
         const items = Array.from(pagedData.items);
         const deletedAnimalIndex = items.findIndex((a) => a.petId === id);
         items.splice(deletedAnimalIndex, 1);
@@ -181,10 +183,12 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
     };
 
     const handleAddAnimal = () => {
+        if (!isOwn) return;
         router.push(`/animals/edit/${volunteerId}`);
     };
 
     const handleEditAnimal = (id: string) => {
+        if (!isOwn) return;
         router.push(`/animals/edit/${volunteerId}?id=${id}`);
     };
 
@@ -195,12 +199,14 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                 <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h1 className="mb-2 text-3xl font-bold">Мои животные</h1>
-                        <p className="text-gray-400">Управляйте списком ваших животных и их статусами</p>
+                        {isOwn && <p className="text-gray-400">Управляйте списком ваших животных и их статусами</p>}
                     </div>
-                    <Button className="bg-green-500 text-white hover:bg-green-600" onPress={handleAddAnimal}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Добавить животное
-                    </Button>
+                    {isOwn && (
+                        <Button className="bg-green-500 text-white hover:bg-green-600" onPress={handleAddAnimal}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Добавить животное
+                        </Button>
+                    )}
                 </div>
 
                 {/* Stats Cards */}
@@ -249,143 +255,206 @@ export default function MyAnimalsTab({ volunteerId }: MyAnimalsTabProps) {
                 </div>
 
                 {/* Instructions */}
-                <div className="mb-8 rounded-lg border border-gray-700 bg-gray-800/50 p-4">
-                    <p className="text-gray-300">
-                        <strong>Подсказка:</strong> Вы можете изменить порядок животных, перетаскивая их за иконку{" "}
-                        <GripVertical className="inline h-4 w-4" />
-                    </p>
-                </div>
+                {!isOwn && (
+                    <div className="mb-4 rounded-lg border border-gray-700 bg-gray-800/50 p-4 text-center">
+                        <p className="text-gray-400">Вы просматриваете животных другого волонтёра</p>
+                    </div>
+                )}
+
+                {isOwn && (
+                    <div className="mb-8 rounded-lg border border-gray-700 bg-gray-800/50 p-4">
+                        <p className="text-gray-300">
+                            <strong>Подсказка:</strong> Вы можете изменить порядок животных, перетаскивая их за иконку{" "}
+                            <GripVertical className="inline h-4 w-4" />
+                        </p>
+                    </div>
+                )}
 
                 {/* Animals List */}
                 <Card className="border-gray-700 bg-gray-900/50">
                     <CardBody className="p-0">
-                        <DragDropContext
-                            onDragEnd={(e) => {
-                                void handleDragEnd(e);
-                            }}
-                        >
-                            <Droppable droppableId="animals">
-                                {(provided) => (
-                                    <div
-                                        {...provided.droppableProps}
-                                        ref={provided.innerRef}
-                                        className="divide-y divide-gray-800"
-                                    >
-                                        {pagedData.items.map((animal, index) => {
-                                            const status = getStatusLabel(animal.helpStatus);
-                                            return (
-                                                <Draggable key={animal.petId} draggableId={animal.petId} index={index}>
-                                                    {(provided) => (
-                                                        <div
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            className="flex items-center p-4 transition-colors hover:bg-gray-800/50"
-                                                        >
+                        {isOwn ? (
+                            <DragDropContext onDragEnd={(e) => void handleDragEnd(e)}>
+                                <Droppable droppableId="animals">
+                                    {(provided) => (
+                                        <div
+                                            {...provided.droppableProps}
+                                            ref={provided.innerRef}
+                                            className="divide-y divide-gray-800"
+                                        >
+                                            {pagedData.items.map((animal, index) => {
+                                                const status = getStatusLabel(animal.helpStatus);
+                                                return (
+                                                    <Draggable
+                                                        key={animal.petId}
+                                                        draggableId={animal.petId}
+                                                        index={index}
+                                                    >
+                                                        {(provided) => (
                                                             <div
-                                                                {...provided.dragHandleProps}
-                                                                className="mr-4 cursor-move text-gray-500"
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                className="flex items-center p-4 transition-colors hover:bg-gray-800/50"
                                                             >
-                                                                <GripVertical className="h-5 w-5" />
-                                                            </div>
-                                                            <div className="mr-4 h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
-                                                                <Image
-                                                                    src={
-                                                                        animal.petPhotos.length > 0
-                                                                            ? animal.petPhotos[0].path
-                                                                            : "/placeholder.svg"
-                                                                    }
-                                                                    alt={animal.petName}
-                                                                    width={64}
-                                                                    height={64}
-                                                                    className="h-full w-full object-cover"
-                                                                />
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <div className="mb-1 flex items-center gap-2">
-                                                                    <h3 className="font-semibold">{animal.petName}</h3>
-                                                                    <Chip
-                                                                        className="text-xs text-white"
-                                                                        color={status.color}
-                                                                        variant="bordered"
-                                                                    >
-                                                                        {status.label}
-                                                                    </Chip>
-                                                                </div>
-                                                                <div className="text-sm text-gray-400">
-                                                                    {animal.speciesName} • {animal.breedName} •{" "}
-                                                                    {calculateAge(animal.birthDate)} •{" "}
-                                                                    {animal.sex === "Male"
-                                                                        ? "Самец"
-                                                                        : animal.sex === "Female"
-                                                                          ? "Самка"
-                                                                          : "Неизвестно"}
-                                                                </div>
-                                                                <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                                                                    <div className="flex items-center">
-                                                                        <MapPin className="mr-1 h-3 w-3" />
-                                                                        {animal.state + "," + animal.city}
-                                                                    </div>
-                                                                    <div>
-                                                                        Добавлено: {formatDate(animal.arriveDate)}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="ml-4 flex items-center gap-2">
-                                                                <Button
-                                                                    variant="light"
-                                                                    isIconOnly
-                                                                    className="text-gray-400 hover:text-white"
-                                                                    onPress={() => {
-                                                                        handleEditAnimal(animal.petId);
-                                                                    }}
+                                                                <div
+                                                                    {...provided.dragHandleProps}
+                                                                    className="mr-4 cursor-move text-gray-500"
                                                                 >
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="light"
-                                                                    isIconOnly
-                                                                    className="text-gray-400 hover:text-red-500"
-                                                                    onPress={onOpen}
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                                <ModalOrDrawer
-                                                                    label="Подтверждение"
-                                                                    isOpen={isOpen}
-                                                                    onOpenChangeAction={onOpenChange}
-                                                                >
-                                                                    <p>
-                                                                        Вы уверены что хотите удалить закреплённое
-                                                                        животное из списка?
-                                                                    </p>
-                                                                    <div className="flex flex-row justify-end gap-4">
-                                                                        <Button onPress={onClose}>Нет</Button>
-                                                                        <Button
-                                                                            startContent={
-                                                                                <Trash2 className="h-4 w-4" />
-                                                                            }
-                                                                            variant="light"
-                                                                            color="danger"
-                                                                            onPress={() => {
-                                                                                void animalDelete(animal.petId);
-                                                                                onClose();
-                                                                            }}
+                                                                    <GripVertical className="h-5 w-5" />
+                                                                </div>
+                                                                <div className="mr-4 h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
+                                                                    <Image
+                                                                        src={
+                                                                            animal.petPhotos.length > 0
+                                                                                ? animal.petPhotos[0].path
+                                                                                : "/placeholder.svg"
+                                                                        }
+                                                                        alt={animal.petName}
+                                                                        width={64}
+                                                                        height={64}
+                                                                        className="h-full w-full object-cover"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <div className="mb-1 flex items-center gap-2">
+                                                                        <h3 className="font-semibold">
+                                                                            {animal.petName}
+                                                                        </h3>
+                                                                        <Chip
+                                                                            className="text-xs text-white"
+                                                                            color={status.color}
+                                                                            variant="bordered"
                                                                         >
-                                                                            Да
-                                                                        </Button>
+                                                                            {status.label}
+                                                                        </Chip>
                                                                     </div>
-                                                                </ModalOrDrawer>
+                                                                    <div className="text-sm text-gray-400">
+                                                                        {animal.speciesName} • {animal.breedName} •{" "}
+                                                                        {calculateAge(animal.birthDate)} •{" "}
+                                                                        {animal.sex === "Male"
+                                                                            ? "Самец"
+                                                                            : animal.sex === "Female"
+                                                                              ? "Самка"
+                                                                              : "Неизвестно"}
+                                                                    </div>
+                                                                    <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                                                                        <div className="flex items-center">
+                                                                            <MapPin className="mr-1 h-3 w-3" />
+                                                                            {animal.state + "," + animal.city}
+                                                                        </div>
+                                                                        <div>
+                                                                            Добавлено: {formatDate(animal.arriveDate)}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="ml-4 flex items-center gap-2">
+                                                                    <Button
+                                                                        variant="light"
+                                                                        isIconOnly
+                                                                        className="text-gray-400 hover:text-white"
+                                                                        onPress={() => {
+                                                                            handleEditAnimal(animal.petId);
+                                                                        }}
+                                                                    >
+                                                                        <Edit className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="light"
+                                                                        isIconOnly
+                                                                        className="text-gray-400 hover:text-red-500"
+                                                                        onPress={onOpen}
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <ModalOrDrawer
+                                                                        label="Подтверждение"
+                                                                        isOpen={isOpen}
+                                                                        onOpenChangeAction={onOpenChange}
+                                                                    >
+                                                                        <p>
+                                                                            Вы уверены что хотите удалить закреплённое
+                                                                            животное из списка?
+                                                                        </p>
+                                                                        <div className="flex flex-row justify-end gap-4">
+                                                                            <Button onPress={onClose}>Нет</Button>
+                                                                            <Button
+                                                                                startContent={
+                                                                                    <Trash2 className="h-4 w-4" />
+                                                                                }
+                                                                                variant="light"
+                                                                                color="danger"
+                                                                                onPress={() => {
+                                                                                    void animalDelete(animal.petId);
+                                                                                    onClose();
+                                                                                }}
+                                                                            >
+                                                                                Да
+                                                                            </Button>
+                                                                        </div>
+                                                                    </ModalOrDrawer>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )}
-                                                </Draggable>
-                                            );
-                                        })}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
+                                                        )}
+                                                    </Draggable>
+                                                );
+                                            })}
+                                            {provided.placeholder}
+                                        </div>
+                                    )}
+                                </Droppable>
+                            </DragDropContext>
+                        ) : (
+                            <div className="divide-y divide-gray-800">
+                                {pagedData.items.map((animal) => {
+                                    const status = getStatusLabel(animal.helpStatus);
+                                    return (
+                                        <div key={animal.petId} className="flex items-center p-4">
+                                            <div className="mr-4 h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
+                                                <Image
+                                                    src={
+                                                        animal.petPhotos.length > 0
+                                                            ? animal.petPhotos[0].path
+                                                            : "/placeholder.svg"
+                                                    }
+                                                    alt={animal.petName}
+                                                    width={64}
+                                                    height={64}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="mb-1 flex items-center gap-2">
+                                                    <h3 className="font-semibold">{animal.petName}</h3>
+                                                    <Chip
+                                                        className="text-xs text-white"
+                                                        color={status.color}
+                                                        variant="bordered"
+                                                    >
+                                                        {status.label}
+                                                    </Chip>
+                                                </div>
+                                                <div className="text-sm text-gray-400">
+                                                    {animal.speciesName} • {animal.breedName} •{" "}
+                                                    {calculateAge(animal.birthDate)} •{" "}
+                                                    {animal.sex === "Male"
+                                                        ? "Самец"
+                                                        : animal.sex === "Female"
+                                                          ? "Самка"
+                                                          : "Неизвестно"}
+                                                </div>
+                                                <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                                                    <div className="flex items-center">
+                                                        <MapPin className="mr-1 h-3 w-3" />
+                                                        {animal.state + "," + animal.city}
+                                                    </div>
+                                                    <div>Добавлено: {formatDate(animal.arriveDate)}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </CardBody>
                 </Card>
             </main>

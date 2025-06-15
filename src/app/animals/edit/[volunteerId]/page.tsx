@@ -8,7 +8,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 import { AddPetRequest, PetDto } from "@/api/dtos/pet/petDtos";
-import { UploadFileDto, addPetPhotos, addPetToVolunteer, getPetById, updatePet } from "@/api/pet";
+import { getManyDownloadPresignedUrls } from "@/api/files";
+import { UploadFileDto, addPetPhotos, addPetToVolunteer, deletePetPhotos, getPetById, updatePet } from "@/api/pet";
 import { getAllSpeciesWithBreeds } from "@/api/species";
 import { UploadForm } from "@/app/animals/edit/[volunteerId]/_components/upload-form";
 import { Breed } from "@/models/breed";
@@ -172,6 +173,8 @@ export default function EditAnimalPage() {
     const params = useParams();
     const volunteerId = params.volunteerId as string;
 
+    const [removedFiles, setRemovedFiles] = useState<string[]>([]);
+
     const [animal, setAnimal] = useState<Animal>(emptyAnimal);
     const [medicalInfo, setMedicalInfo] = useState<MedicalInfo>(emptyMedicalInfo);
     const [temperament, setTemperament] = useState<Temperament>(emptyTemperament);
@@ -211,16 +214,6 @@ export default function EditAnimalPage() {
                 return "Неизвестно";
         }
     };
-
-    /*useEffect(() => {
-        if (animalId) {
-        } else {
-            // Сброс формы для нового животного
-            setAnimal(emptyAnimal);
-            setMedicalInfo(emptyMedicalInfo);
-            setTemperament(emptyTemperament);
-        }
-    }, [animalId]);*/
 
     useEffect(() => {
         const fetchSpecies = async () => {
@@ -275,6 +268,16 @@ export default function EditAnimalPage() {
             },
             body: file,
         });
+    };
+
+    const handleRemoveFile = (id: string, isExisting: boolean) => {
+        setFiles((prev) => prev.filter((file) => file.id !== id));
+        if (isExisting) {
+            const fileToRemove = files.find((f) => f.id === id);
+            if (fileToRemove?.preview) {
+                setRemovedFiles((prev) => [...prev, fileToRemove.preview]);
+            }
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -366,6 +369,9 @@ export default function EditAnimalPage() {
             let response;
             if (animalId) {
                 response = await updatePet(volunteerId, animalId, request);
+                if (removedFiles.length > 0) {
+                    await deletePetPhotos(volunteerId, animalId, removedFiles);
+                }
             } else {
                 response = await addPetToVolunteer(volunteerId, request);
             }
@@ -466,15 +472,28 @@ export default function EditAnimalPage() {
 
                         // Загрузка фото
                         if (petData.petPhotos.length > 0) {
+                            const presignedUrlsResponse = await getManyDownloadPresignedUrls({
+                                bucketName: "photos",
+                                fileKeys: petData.petPhotos.map((photo) => ({
+                                    fileId: photo.path.split("/").pop()?.split(".")[0] ?? "",
+                                    extension: photo.path.split(".").pop() ?? "jpg",
+                                })),
+                            });
+
+                            // 2. Загружаем каждый файл и получаем его размер
                             const files = await Promise.all(
-                                petData.petPhotos.map(async (photo) => {
+                                petData.petPhotos.map(async (photo, index) => {
                                     try {
-                                        const response = await fetch(photo.path);
+                                        const response = await fetch(presignedUrlsResponse.data[index]);
                                         const blob = await response.blob();
+
                                         return {
                                             name: photo.path.split("/").pop() ?? `photo-${Date.now()}.jpg`,
                                             preview: photo.path,
-                                            file: new File([blob], `photo-${Date.now()}.jpg`, { type: blob.type }),
+                                            file: new File([blob], `photo-${Date.now()}.jpg`, {
+                                                type: blob.type,
+                                            }),
+                                            size: blob.size, // ← Добавляем размер файла
                                         };
                                     } catch (error) {
                                         console.error("Error loading photo:", error);
@@ -482,6 +501,7 @@ export default function EditAnimalPage() {
                                     }
                                 }),
                             );
+
                             setFiles(files.filter(Boolean) as unknown as FilePreview[]);
                         }
                     }
@@ -599,6 +619,7 @@ export default function EditAnimalPage() {
                                             setFiles={setFiles}
                                             onUpload={handleUpload}
                                             isUploading={isUploading}
+                                            onRemoveFile={handleRemoveFile}
                                         />
                                     </CardBody>
                                 </Card>

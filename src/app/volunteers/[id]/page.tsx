@@ -312,7 +312,7 @@ export default function VolunteerProfilePage() {
                                 </div>
                             </Tab>
                             <Tab key="animals" title="Закреплённые животные">
-                                <MyAnimalsTab volunteerId={volunteer.id} />
+                                <MyAnimalsTab volunteerId={volunteer.id} isOwn={isOwn} />
                             </Tab>
                         </Tabs>
                     </div>

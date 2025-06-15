@@ -1,5 +1,7 @@
 "use client";
 
+import { v4 as uuidv4 } from "uuid";
+
 import React, { useCallback, useEffect } from "react";
 
 import Image from "next/image";
@@ -12,10 +14,11 @@ interface UploadFormProps {
     setFiles: React.Dispatch<React.SetStateAction<FilePreview[]>>;
     onUpload: (files: File[]) => Promise<void>;
     isUploading: boolean;
+    onRemoveFile: (id: string, isExisting: boolean) => void;
 }
 
 export function UploadForm({ files, setFiles, onUpload, isUploading }: UploadFormProps) {
-    const generateId = () => Math.random().toString(36).slice(2, 11);
+    const generateId = () => uuidv4();
 
     const onDrop = useCallback(
         (acceptedFiles: File[]) => {
@@ -84,8 +87,11 @@ export function UploadForm({ files, setFiles, onUpload, isUploading }: UploadFor
                     </div>
                 ) : (
                     <div className="space-y-2 pr-4">
-                        {files.map((file) => (
-                            <div key={file.id} className="bg-muted/50 flex items-center gap-4 rounded-md p-2">
+                        {files.map((file, idx) => (
+                            <div
+                                key={file.id || `${file.name}-${idx}`}
+                                className="bg-muted/50 flex items-center gap-4 rounded-md p-2"
+                            >
                                 <div className="relative h-16 w-16 flex-shrink-0">
                                     <Image
                                         fill
