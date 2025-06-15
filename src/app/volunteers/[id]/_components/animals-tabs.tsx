@@ -23,6 +23,7 @@ export default function MyAnimalsTab({ volunteerId, isOwn }: MyAnimalsTabProps) 
     const router = useRouter();
     /*const [animals, setAnimals] = useState<Animal[]>(myAnimals);*/
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+    const [animalToDelete, setAnimalToDelete] = useState<string | null>(null);
     const [currentPage] = useState(1);
     const [pagedData, setPagedData] = useState<{ items: PetDto[]; totalCount: number }>({
         items: [],
@@ -171,7 +172,7 @@ export default function MyAnimalsTab({ volunteerId, isOwn }: MyAnimalsTabProps) 
         }
     };
 
-    const animalDelete = async (id: string) => {
+    /*const animalDelete = async (id: string) => {
         if (!isOwn) return;
         const items = Array.from(pagedData.items);
         const deletedAnimalIndex = items.findIndex((a) => a.petId === id);
@@ -179,6 +180,21 @@ export default function MyAnimalsTab({ volunteerId, isOwn }: MyAnimalsTabProps) 
         const response = await deletePetSoft(volunteerId, id);
         if (response.data.result?.isSuccess) {
             await loadAnimals();
+        }
+    };*/
+
+    const animalDelete = async () => {
+        if (!isOwn || !animalToDelete) return;
+
+        try {
+            const response = await deletePetSoft(volunteerId, animalToDelete);
+            if (response.data.result?.isSuccess) {
+                await loadAnimals();
+            }
+        } catch (error) {
+            console.error("Error deleting pet:", error);
+        } finally {
+            setAnimalToDelete(null);
         }
     };
 
@@ -362,21 +378,36 @@ export default function MyAnimalsTab({ volunteerId, isOwn }: MyAnimalsTabProps) 
                                                                         variant="light"
                                                                         isIconOnly
                                                                         className="text-gray-400 hover:text-red-500"
-                                                                        onPress={onOpen}
+                                                                        onPress={() => {
+                                                                            setAnimalToDelete(animal.petId);
+                                                                            onOpen();
+                                                                        }}
                                                                     >
                                                                         <Trash2 className="h-4 w-4" />
                                                                     </Button>
                                                                     <ModalOrDrawer
                                                                         label="Подтверждение"
                                                                         isOpen={isOpen}
-                                                                        onOpenChangeAction={onOpenChange}
+                                                                        onOpenChangeAction={(isOpen) => {
+                                                                            if (!isOpen) {
+                                                                                setAnimalToDelete(null);
+                                                                            }
+                                                                            onOpenChange();
+                                                                        }}
                                                                     >
                                                                         <p>
                                                                             Вы уверены что хотите удалить закреплённое
                                                                             животное из списка?
                                                                         </p>
                                                                         <div className="flex flex-row justify-end gap-4">
-                                                                            <Button onPress={onClose}>Нет</Button>
+                                                                            <Button
+                                                                                onPress={() => {
+                                                                                    setAnimalToDelete(null);
+                                                                                    onClose();
+                                                                                }}
+                                                                            >
+                                                                                Нет
+                                                                            </Button>
                                                                             <Button
                                                                                 startContent={
                                                                                     <Trash2 className="h-4 w-4" />
@@ -384,7 +415,7 @@ export default function MyAnimalsTab({ volunteerId, isOwn }: MyAnimalsTabProps) 
                                                                                 variant="light"
                                                                                 color="danger"
                                                                                 onPress={() => {
-                                                                                    void animalDelete(animal.petId);
+                                                                                    void animalDelete();
                                                                                     onClose();
                                                                                 }}
                                                                             >

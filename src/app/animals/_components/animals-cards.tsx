@@ -20,6 +20,7 @@ export default function AnimalsCards({ paginatedData }: Props) {
         setSelected(id);
         onOpen();
     };
+
     return (
         <>
             {selected && (
@@ -27,58 +28,95 @@ export default function AnimalsCards({ paginatedData }: Props) {
                     <AnimalDetails selectedAnimalId={selected} />
                 </ModalOrDrawer>
             )}
-            {paginatedData.map((e) => {
-                return (
+
+            <div className="grid w-full auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {paginatedData.map((e) => (
                     <div
                         key={e.id}
                         onClick={() => {
                             handleClick(e.id);
                         }}
+                        className="w-full cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
                     >
-                        <Card
-                            key={e.id}
-                            className="cursor-pointer transition-shadow hover:shadow-lg"
-                            onPress={() => {
-                                handleClick(e.id);
-                            }}
-                        >
-                            <CardBody className="space-y-4">
-                                <Image alt={e.name} src={e.image} className="w-full rounded-xl object-cover" />
+                        <Card className="h-full w-full">
+                            <CardBody className="space-y-3 p-2">
+                                <div className="relative flex h-48 items-center justify-center overflow-hidden rounded-xl">
+                                    <Image
+                                        alt={e.name}
+                                        src={e.image || "/placeholder.svg"}
+                                        className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-110"
+                                    />
+                                </div>
+
                                 <div className="space-y-2">
-                                    <h3 className="text-2xl font-bold">
-                                        {e.name},<span className="m-1 text-slate-500">{e.age}</span>
-                                    </h3>
-                                    <div className="flex items-center pt-2">
-                                        <Icon icon="iconoir:healthcare" className="h-5 w-5" />
-                                        <p className="mx-2 text-sm font-bold">Вакцинация: </p>
-                                        <Checkbox
-                                            isSelected={e.isVaccinated}
-                                            color="success"
-                                            radius="full"
-                                            isReadOnly={true}
-                                        />
+                                    <div>
+                                        <h3 className="truncate text-lg leading-tight font-bold">{e.name}</h3>
+                                        <span className="text-base font-medium text-slate-500">{e.age}</span>
                                     </div>
-                                    <div className="flex items-center pt-2">
-                                        <Icon icon="iconoir:accessibility" className="h-5 w-5" />
-                                        <p className="mx-2 text-sm font-bold">
-                                            Отношение к людям:
-                                            <span className="text-foreground/50 m-1">{e.humanAttitude}</span>
-                                        </p>
+
+                                    <div className="space-y-1">
+                                        <div className="flex items-center">
+                                            <Icon
+                                                icon="iconoir:healthcare"
+                                                className="h-4 w-4 flex-shrink-0 text-green-600"
+                                            />
+                                            <p className="ml-2 text-sm font-semibold">Вакцинация:</p>
+                                            <Checkbox
+                                                isSelected={e.isVaccinated}
+                                                color="success"
+                                                radius="full"
+                                                isReadOnly={true}
+                                                className="ml-2"
+                                                size="sm"
+                                            />
+                                        </div>
+
+                                        <div className="flex items-start">
+                                            <Icon
+                                                icon="iconoir:accessibility"
+                                                className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600"
+                                            />
+                                            <div className="ml-2 min-w-0">
+                                                <p className="text-sm font-semibold">Отношение к людям:</p>
+                                                <span className="text-foreground/70 text-sm">{e.humanAttitude}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start">
+                                            <Icon
+                                                icon="fluent:animal-cat-16-regular"
+                                                className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-600"
+                                            />
+                                            <div className="ml-2 min-w-0">
+                                                <p className="text-sm font-semibold">К другим животным:</p>
+                                                <span className="text-foreground/70 text-sm">{e.animalsAttitude}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center pt-2">
-                                        <Icon icon="fluent:animal-cat-16-regular" className="h-5 w-5" />
-                                        <p className="mx-2 text-sm font-bold">
-                                            Отношение к другим животным:
-                                            <span className="text-foreground/50 m-1">{e.animalsAttitude}</span>
-                                        </p>
+
+                                    <div className="border-divider border-t pt-1">
+                                        <div className="flex flex-wrap gap-1">
+                                            {e.hashtags.slice(0, 3).map((hashtag, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="bg-primary/10 text-primary inline-block rounded-full px-2 py-0.5 text-xs font-medium"
+                                                >
+                                                    {hashtag}
+                                                </span>
+                                            ))}
+                                            {e.hashtags.length > 3 && (
+                                                <span className="bg-primary/10 text-primary inline-block rounded-full px-2 py-0.5 text-xs font-medium">
+                                                    +{e.hashtags.length - 3}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <p className="pt-2 text-sm">{e.hashtags.map((hashtag) => `${hashtag} `)}</p>
                                 </div>
                             </CardBody>
                         </Card>
                     </div>
-                );
-            })}
+                ))}
+            </div>
         </>
     );
 }

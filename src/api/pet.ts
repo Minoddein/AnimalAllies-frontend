@@ -48,6 +48,18 @@ export async function getPetWithPaginationByVolunteerId(
     });
 }
 
+export async function getPetsWithPagination(
+    pageSize: number,
+    page: number,
+): Promise<AxiosResponse<Envelope<ResultWith<PagedResponse<PetDto>>>>> {
+    return api.get<Envelope<ResultWith<PagedResponse<PetDto>>>>(`${API_URL}Volunteer/pet-all-dapper`, {
+        params: {
+            PageSize: pageSize,
+            Page: page,
+        },
+    });
+}
+
 export interface UploadFileDto {
     bucketName: string;
     fileName: string;
